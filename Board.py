@@ -82,7 +82,6 @@ class Board(object):
         attackerX = attackerCoords[0]
         attackerY = attackerCoords[1]
         
-        # FIX ME!!
         counter = attackerY+1
         while(attackerY+attackerRange+1 > counter):
 
