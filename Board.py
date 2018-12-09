@@ -36,6 +36,15 @@ class Board(object):
         for x in range(len(self.squares)):
             for y in range(len(self.squares[x])):
                 self.squares[x][y].showSquare(display)
+
+    def findTroop(self, troop):
+        """Accepts a Troop object.
+           Iterates through all the squares and returns the square with the matching troop.
+           Returns nothing if the troop isn't found."""
+        for x in range(len(self.squares)):
+            for y in range(len(self.squares[x])):
+                if self.squares[x][y].getTroop() == troop:
+                    return self.squares[x][y]
     
     def getSquareCoords(self, coords):
         """Accepts a tuple of coordinates in the form (x,y)
@@ -56,7 +65,7 @@ class Board(object):
                 if self.squares[x][y].getX() == squareX and self.squares[x][y].getY() == squareY:
                     return self.squares[x][y].getTroop()
     
-    def setSquareIcon(self, pos, troop):
+    def setSquareValue(self, pos, troop):
         """Accepts a tuple of a square's x-position and y-position.
            Accepts a string designating an icon.
            Finds the square at the designated position and sets its icon."""
@@ -75,12 +84,14 @@ class Board(object):
         
         return False
 
-    def attack(self,attackerCoords,attackerRange,attackerStrength):
-        """Accepts a tuple for the square's relative loacation.
-           Accepts an integer for the attacker's attack range.
-           If there's a target within range, decreases that target's health."""
-        attackerX = attackerCoords[0]
-        attackerY = attackerCoords[1]
+    def attack(self,troop):
+        """Accepts a Troop object.
+           If there's a target within range of the troop, decreases that target's health."""
+        troopCoords = (self.findTroop(troop).getX(), self.findTroop(troop).getY())
+        attackerX = troopCoords[0]
+        attackerY = troopCoords[1]
+        attackerRange = troop.getRange()
+        attackerStrength = troop.getAttack()
         
         counter = attackerY+1
         while(attackerY+attackerRange+1 > counter):
@@ -89,7 +100,6 @@ class Board(object):
                 if (counter) <= self.height-1:
                     if self.squares[attackerX][counter].getTroop() != None:
                         self.squares[attackerX][counter].getTroop().takeDamage(attackerStrength)
-                        print(self.squares[attackerX][counter].getTroop())
                         break
 
             counter += 1
@@ -101,3 +111,46 @@ class Board(object):
             for y in range(len(self.squares[x])):
                 if self.squares[x][y].getTroop() != None:
                     self.squares[x][y].killTroop()
+    
+    def move(self, troop, targetCoords):
+        """Accepts a troop object.
+           Accepts a tuple for the desired coordinates to move to.
+           Iterates through all squares and tries to move the troop to the given position."""
+        current = (self.findTroop(troop).getX(), self.findTroop(troop).getY())
+        target  = targetCoords
+        speed   = troop.getSpeed()
+        
+        if current [0] == target[0] and current[1] == target[1]:   # Ignores same-square clicks.
+            return
+        if current[0] != target[0] and current[1] != target[1]:    # Only allows for straight line moves.
+            return
+        else:
+            # Moves vertically
+            if current[0] == target[0]:
+                
+                dist = target[1] - current[1]
+                if dist > speed:
+                    dist = speed    # Prevents troops from moving farther than their speed allows.
+
+                for y in range(dist):
+                    if self.getSquareValue((current[0],current[1]  + y + 1)) == None:
+                        self.setSquareValue((current[0],current[1] + y + 1),troop)
+                        self.setSquareValue((current[0],current[1] + y), None)
+                    else:
+                        return      # Exits the loop if there's another troop in the way.
+
+            # Moves horizontally
+            if current[1] == target[1]:
+
+                dist = target[0] - current[0]
+                if dist > speed:
+                    dist = speed    # Prevents troops from moving farther than their speed allows.
+
+                for x in range(dist):
+                    if self.getSquareValue((current[0]  + x + 1,current[1])) == None:
+                        self.setSquareValue((current[0] + x + 1,current[1]),troop)
+                        self.setSquareValue((current[0] + x, current[1]), None)
+                    else:
+                        return      # Exits the loop if there's another troop in the way.
+            
+                        

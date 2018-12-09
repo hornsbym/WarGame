@@ -1,11 +1,12 @@
 class Troop(object):
     def __init__(self,info):
-        """ name = String
-           level = Integer
-           range = Integer
-          attack = Integer
-           speed = Integer
-          health = Integer
+        """ info = Tuple containing information to build the troop with.
+            name = info[0], str
+           level = info[1], int
+           range = info[2], int
+          attack = info[3], int
+           speed = info[4], int
+          health = info[5], int
         """
         self.name = info[0]
         self.level = info[1]

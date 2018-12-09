@@ -34,11 +34,15 @@ def main():
     sb = TroopButton(("shield",1,1,10,1,200), (50, 175))
     tb = TroopButton(('target',1,0,0,0,100), (50,225))
 
-    attackButton = CommandButton("attack", (450, 75), (0,50,150))
+    attackButton = CommandButton("attack", (450, 75), (0,50,200))
     moveButton = CommandButton("move", (450, 125), (50,150,0))
+    addButton = CommandButton("add", (450, 175), (150,0,150))
 
+
+    # Interface variables
     clicked = None
     square = None
+    newTroop = None
     selectedTroop = None
     command = None
 
@@ -54,21 +58,28 @@ def main():
                 if b.isClicked(coords) == True:
                     clicked = coords
                     square = b.getSquareCoords(coords)
+                else:
+                    clicked = None
+                    square = None
+                    newTroop = None
+                    selectedTroop = None
 
                 # Checks the troop placement buttons
                 if rb.isClicked(coords) == True:
-                    selectedTroop = Troop(rb.getValue())
+                    newTroop = Troop(rb.getValue())
                 if sb.isClicked(coords) == True:
-                    selectedTroop = Troop(sb.getValue())
+                    newTroop = Troop(sb.getValue())
                 if kb.isClicked(coords) == True:
-                    selectedTroop = Troop(kb.getValue())
+                    newTroop = Troop(kb.getValue())
                 if tb.isClicked(coords) == True:
-                    selectedTroop = Troop(tb.getValue())
+                    newTroop = Troop(tb.getValue())
 
                 if attackButton.isClicked(coords) == True:
                     command = attackButton.getValue()
                 if moveButton.isClicked(coords) == True:
                     command = moveButton.getValue()
+                if addButton.isClicked(coords) == True:
+                    command = addButton.getValue()
 
         # Clear previous screen, so it can be updated again.
         display.fill((255,255,255))
@@ -80,29 +91,44 @@ def main():
 
         attackButton.showButton(display)
         moveButton.showButton(display)
+        addButton.showButton(display)
 
         b.showBoard(display)
 
             ### GAME LOGIC ###
 
         # Adds troops to the board.
-        if square != None and selectedTroop != None:
-            b.setSquareIcon(square,selectedTroop)   
-            square = None
-            selectedTroop = None
-        
-        if square != None and selectedTroop == None:
-            selectedTroop = b.getSquareValue(square)
-            if selectedTroop != None and command == "attack":
-                b.attack((square), selectedTroop.getRange(), selectedTroop.getAttack())
+        if square != None:
+            if b.getSquareValue(square) != None:
+                selectedTroop = b.getSquareValue(square)
+
+        if command == "add":
+            if newTroop != None and square != None:
+                b.setSquareValue(square,newTroop)
                 square = None
-        
+
+
+        if command == "attack":
+            if selectedTroop != None and square != None:
+                b.attack(selectedTroop)
+                square = None
+
+
+        if command == "move":
+            if selectedTroop != None and square != None:
+                print('Moving')
+                b.move(selectedTroop,square)
+                square = None
+                
+
         b.killTroops()
 
         # Display game data. Testing purposes only.
         displayText(str(pg.mouse.get_pos()), (0,0))
         displayText(str(square), (displayWidth*.9,0))
-        displayText(str(selectedTroop), (0,displayHeight-30))
+
+        displayText("New: "+str(newTroop), (0,displayHeight-50))
+        displayText("Select: "+str(selectedTroop), (0,displayHeight-30))
         displayText(str(command), (displayWidth*.9,displayHeight-30))
 
 

@@ -41,6 +41,11 @@ class Square(object):
            Stores that Troop object in the state variables.
            Also resets the square's icon to reflect the appropriate troop."""      
         self.troop = troop
+        
+        if troop == None:
+            self.icon = 'square'
+            return
+            
         self.setIcon()
 
     def showSquare(self,display):
