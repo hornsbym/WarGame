@@ -39,7 +39,7 @@ class Square(object):
     def setTroop(self, troop):
         """Accepts a Troop object.
            Stores that Troop object in the state variables.
-           Also resets the square's icon to reflect the appropriate troop."""       
+           Also resets the square's icon to reflect the appropriate troop."""      
         self.troop = troop
         self.setIcon()
 

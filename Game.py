@@ -29,14 +29,13 @@ def main():
     # Creates a new board in the middle of the screen.
     b = Board(5,5,(round(displayWidth/2-80),round(displayHeight/2)-80))
 
-    rb = TroopButton(Troop("rifleman",1,3,10,1,100), (50,75))
-    kb = TroopButton(Troop("knight",1,1,10,2,100), (50,125))
-    sb = TroopButton(Troop("shield",1,1,10,1,200), (50, 175))
-    tb = TroopButton(Troop('target',1,0,0,0,100), (50,225))
+    rb = TroopButton(("rifleman",1,3,10,1,100), (50,75))
+    kb = TroopButton(("knight",1,1,10,2,100), (50,125))
+    sb = TroopButton(("shield",1,1,10,1,200), (50, 175))
+    tb = TroopButton(('target',1,0,0,0,100), (50,225))
 
     attackButton = CommandButton("attack", (450, 75), (0,50,150))
     moveButton = CommandButton("move", (450, 125), (50,150,0))
-
 
     clicked = None
     square = None
@@ -58,13 +57,13 @@ def main():
 
                 # Checks the troop placement buttons
                 if rb.isClicked(coords) == True:
-                    selectedTroop = rb.getValue()
+                    selectedTroop = Troop(rb.getValue())
                 if sb.isClicked(coords) == True:
-                    selectedTroop = sb.getValue()
+                    selectedTroop = Troop(sb.getValue())
                 if kb.isClicked(coords) == True:
-                    selectedTroop = kb.getValue()
+                    selectedTroop = Troop(kb.getValue())
                 if tb.isClicked(coords) == True:
-                    selectedTroop = tb.getValue()
+                    selectedTroop = Troop(tb.getValue())
 
                 if attackButton.isClicked(coords) == True:
                     command = attackButton.getValue()
@@ -74,7 +73,6 @@ def main():
         # Clear previous screen, so it can be updated again.
         display.fill((255,255,255))
 
-        # s.showSquare(display)
         rb.showButton(display)
         kb.showButton(display)
         sb.showButton(display)

@@ -1,5 +1,5 @@
 class Troop(object):
-    def __init__(self,name,level,attackRange,attackPower,speed,health):
+    def __init__(self,info):
         """ name = String
            level = Integer
            range = Integer
@@ -7,12 +7,12 @@ class Troop(object):
            speed = Integer
           health = Integer
         """
-        self.name = name
-        self.level = level
-        self.range = attackRange
-        self.attack = attackPower
-        self.speed = speed
-        self.health = health
+        self.name = info[0]
+        self.level = info[1]
+        self.range = info[2]
+        self.attack = info[3]
+        self.speed = info[4]
+        self.health = info[5]
     
     def __str__(self):
         return "<Troop Object name='%s', level=%i, health =%i>" % (self.name,self.level,self.health)

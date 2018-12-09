@@ -3,7 +3,7 @@ import pygame as pg
 class TroopButton(object):
 
     def __init__(self, value, coords):
-        """ value = Troop object, name should correspond with a file in ./_sprites/.
+        """ value = Tuple of troop information, value[0] should correspond with a file in ./_sprites/.
            coords = Tuple describing coordinates of where the button should be drawn."""
         self.value = value
         self.coords = coords
@@ -15,7 +15,7 @@ class TroopButton(object):
     def showButton(self,display):
         """Accepts a pygame Display object.
            Displays the button on the provided surface"""
-        img = pg.image.load('./_sprites/'+self.value.getName()+'.png')
+        img = pg.image.load('./_sprites/'+self.value[0]+'.png')
         display.blit(img, self.coords)
 
     def isClicked(self, coords):
