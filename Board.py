@@ -5,14 +5,13 @@ class Board(object):
     """Represents the playing surface for the game.
        Holds and represents an array of squares."""
 
-    def __init__(self, width=10, height=9, coords=(0,0)):
+    def __init__(self, width, height, centerCoords):
         """ width = Integer specifying how many squares wide the game board should be. 
            height = Integer specifying how many squares tall the board should be.
-           coords = Tuple specifying the starting position (in pixel coordinates) for the 
-                     upper-left hand corner of the board."""
+           coords = Tuple specifying the center coordinates of the display."""
         self.width = width
         self.height = height
-        self.startingCoords = coords
+        self.centerCoords = centerCoords
         self.squares = []
 
         self.makeBoard()
@@ -21,10 +20,13 @@ class Board(object):
         """Populates the board with squares."""
         board = []
 
+        xOffset = round(self.width * 32//2)
+        yOffset = round(self.height * 32//2)
+
         for x in range(self.width):
             row = []
             for y in range(self.height):
-                row.append(Square(x,y,self.startingCoords))
+                row.append(Square(x,y,(self.centerCoords[0]-xOffset,self.centerCoords[1]-yOffset)))
 
             board.append(row)
 
@@ -75,11 +77,12 @@ class Board(object):
         """Accepts a tuple of coordinates in form (x,y).
            Returns True if the coordinates fall within the board's active area.
            Returns False if not."""
-        xRange = self.startingCoords[0]+(self.width*32)
-        yRange = self.startingCoords[1]+(self.height*32)
+        
+        xRange = self.centerCoords[0]+(self.width*32//2)
+        yRange = self.centerCoords[1]+(self.height*32//2)
 
-        if coords[0] > self.startingCoords[0] and coords[0] < xRange:
-            if coords[1] > self.startingCoords[1] and coords[1] < yRange:
+        if coords[0] > self.centerCoords[0]-(self.width*32//2) and coords[0] < xRange:
+            if coords[1] > self.centerCoords[1]-(self.height*32//2) and coords[1] < yRange:
                 return True
         
         return False
@@ -104,7 +107,8 @@ class Board(object):
 
         # Attacks up or down
         if orientation == (1,1) or orientation == (-1,-1):
-            for y in range(attackerY,attackerY+orientation[1]*(attackerRange),orientation[1]):
+            for y in range(attackerY,attackerY+orientation[1]*(attackerRange+1),orientation[1]):
+                print('attacking y:',y)
                 if y != attackerY:
                     if self.squares[attackerX][y].getTroop() != None:
                         self.squares[attackerX][y].getTroop().takeDamage(attackerStrength)
@@ -112,8 +116,8 @@ class Board(object):
 
         # Attacks left or right
         if orientation == (-1,1) or orientation == (1,-1):
-            for x in range(attackerX,attackerX+orientation[0]*(attackerRange),orientation[0]):
-                print(x)
+            for x in range(attackerX,attackerX+orientation[0]*(attackerRange+1),orientation[0]):
+                print("attacking x:", x)
                 if x != attackerX:
                     if self.squares[x][attackerY].getTroop() != None:
                         self.squares[x][attackerY].getTroop().takeDamage(attackerStrength)

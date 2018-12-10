@@ -20,7 +20,7 @@ class CommandButton(object):
         pg.draw.rect(display, self.color, (self.coords[0], self.coords[1], 75, 30))
         font = pg.font.SysFont(None, 25)
         text = font.render(self.value, True, (255,255,255))
-        display.blit(text, (self.coords[0], self.coords[1]))
+        display.blit(text, (self.coords[0]+.15*75, self.coords[1]+.25*30))
 
     def isClicked(self, coords):
         """Accepts a tuple of coordinates in form (x,y).

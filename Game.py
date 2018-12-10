@@ -7,13 +7,15 @@ from TroopButton import TroopButton
 from CommandButton import CommandButton
 from Troop import Troop
 
-# Canned pg stuff:
+# Boilerplate pygame stuff:
 pg.init()
 clock = pg.time.Clock()
 displayWidth = 600
-displayHeight = 400
+displayHeight = 500
 display = pg.display.set_mode((displayWidth,displayHeight))
 display.fill((255,255,255))
+
+
 
 def displayText(string, tup=(0,0)):
     """Accepts a string and a tuple of x and y coordinates.
@@ -23,26 +25,111 @@ def displayText(string, tup=(0,0)):
     text = font.render(string, True, (0,0,0))
     display.blit(text, tup)
 
-def main():
-    """Executes the startup script and initiates the main game loop."""
+def setupStage():
+    """Determines dimensions of the game board, and eventually the player's army."""
+    loop = True
+    while (loop == True):
+        # Gets all the events from the game window. A.k.a., do stuff here.
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+                quit()
 
+        pg.display.update()
+        clock.tick(60)
+
+def placementStage():
+    """Executes the placement stage of the game"""
     # Creates a new board in the middle of the screen.
-    b = Board(5,5,(round(displayWidth/2-80),round(displayHeight/2)-80))
+    b = Board(10,12,(displayWidth//2,displayHeight//2))    
+    
+    loop = True
 
-    rb = TroopButton(("rifleman",1,3,10,1,100,(1,1)), (50,75))
-    kb = TroopButton(("knight",1,1,10,2,100,(1,-1)), (50,125))
-    sb = TroopButton(("shield",1,1,10,1,200,(-1,-1)), (50, 175))
-    tb = TroopButton(('target',1,0,0,0,100,(1,-1)), (50,225))
+    startButton = CommandButton("start",(displayWidth-70, displayHeight-30), (0,0,0))
+    addButton = CommandButton("add", (displayWidth-75, 175), (150,0,150))
 
-    attackButton = CommandButton("attack", (450, 75), (0,50,200))
-    moveButton = CommandButton("move", (450, 125), (50,150,0))
-    addButton = CommandButton("add", (450, 175), (150,0,150))
-    rotateButton = CommandButton("rotate", (450, 225), (200,100,0))
+    rb = TroopButton(("rifleman",1,3,10,1,100,(1,1)), (15,75))
+    kb = TroopButton(("knight",1,1,10,2,100,(1,1)), (15,125))
+    sb = TroopButton(("shield",1,1,10,1,200,(1,1)), (15, 175))
+    tb = TroopButton(('target',1,0,0,0,100,(1,1)), (15,225))
+
+    newTroop = None
+    command  = None
+    square   = None
+
+    while (loop == True):
+        # Gets all the events from the game window. A.k.a., do stuff here.
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+                quit()
+            
+            if event.type == pg.MOUSEBUTTONDOWN:
+                coords = pg.mouse.get_pos()
+                print(b.isClicked(coords))
+                if startButton.isClicked(coords) == True:
+                    loop = False
+                if b.isClicked(coords) == True:
+                    square = b.getSquareCoords(coords)
+                else:
+                    square = None
+                    newTroop = None
+
+                # Checks the troop placement buttons
+                if rb.isClicked(coords) == True:
+                    newTroop = Troop(rb.getValue())
+                if sb.isClicked(coords) == True:
+                    newTroop = Troop(sb.getValue())
+                if kb.isClicked(coords) == True:
+                    newTroop = Troop(kb.getValue())
+                if tb.isClicked(coords) == True:
+                    newTroop = Troop(tb.getValue())
+                
+                if addButton.isClicked(coords) == True:
+                    command = addButton.getValue()
+        
+        # Clear previous screen, so it can be updated again.
+        display.fill((255,255,255))
+
+        b.showBoard(display)
+
+        rb.showButton(display)
+        kb.showButton(display)
+        sb.showButton(display)
+        tb.showButton(display)
+
+        addButton.showButton(display)
+        startButton.showButton(display)
+
+        if command == "add":
+            if newTroop != None and square != None:
+                b.setSquareValue(square,newTroop)
+                square = None
+                newTroop = None
+
+        displayText("New: "+str(newTroop), (0,displayHeight-50))
+        displayText(str(command), (displayWidth*.9,displayHeight-50))       
+        displayText(str(square), (displayWidth*.9,0))
+        displayText(str(square), (displayWidth*.9,0))
+
+
+        pg.display.update()
+        clock.tick(60)
+    
+    return b
+
+
+def battleStage(board):
+    """Executes the battle stage of the game."""
+    b = board
+
+    attackButton = CommandButton("attack", (displayWidth-75, 75), (0,50,200))
+    moveButton = CommandButton("move", (displayWidth-75, 125), (50,150,0))
+    rotateButton = CommandButton("rotate", (displayWidth-75, 175), (200,100,0))
 
 
     # Interface variables
     square = None
-    newTroop = None
     selectedTroop = None
     command = None
 
@@ -59,39 +146,20 @@ def main():
                     square = b.getSquareCoords(coords)
                 else:
                     square = None
-                    newTroop = None
                     selectedTroop = None
-
-                # Checks the troop placement buttons
-                if rb.isClicked(coords) == True:
-                    newTroop = Troop(rb.getValue())
-                if sb.isClicked(coords) == True:
-                    newTroop = Troop(sb.getValue())
-                if kb.isClicked(coords) == True:
-                    newTroop = Troop(kb.getValue())
-                if tb.isClicked(coords) == True:
-                    newTroop = Troop(tb.getValue())
 
                 if attackButton.isClicked(coords) == True:
                     command = attackButton.getValue()
                 if moveButton.isClicked(coords) == True:
                     command = moveButton.getValue()
-                if addButton.isClicked(coords) == True:
-                    command = addButton.getValue()
                 if rotateButton.isClicked(coords) == True:
                     command = rotateButton.getValue()
 
         # Clear previous screen, so it can be updated again.
         display.fill((255,255,255))
 
-        rb.showButton(display)
-        kb.showButton(display)
-        sb.showButton(display)
-        tb.showButton(display)
-
         attackButton.showButton(display)
         moveButton.showButton(display)
-        addButton.showButton(display)
         rotateButton.showButton(display)
 
         b.showBoard(display)
@@ -101,13 +169,6 @@ def main():
         if square != None:
             if b.getSquareValue(square) != None:
                 selectedTroop = b.getSquareValue(square)
-
-
-        if command == "add":
-            if newTroop != None and square != None:
-                b.setSquareValue(square,newTroop)
-                square = None
-                newTroop = None
 
 
         if command == "attack":
@@ -135,13 +196,13 @@ def main():
         displayText(str(pg.mouse.get_pos()), (0,0))
         displayText(str(square), (displayWidth*.9,0))
 
-        displayText("New: "+str(newTroop), (0,displayHeight-50))
         displayText("Select: "+str(selectedTroop), (0,displayHeight-30))
         displayText(str(command), (displayWidth*.9,displayHeight-30))
 
         pg.display.update()
         clock.tick(60)
-    
-main()
+
+startingBoard = placementStage()
+battleStage(startingBoard)
 pg.quit()
 quit()

@@ -66,7 +66,7 @@ class Square(object):
             if orientation == (-1,-1):
                 img = pg.transform.rotate(img, 180)
         
-        display.blit(img, (self.coords[0] + (self.x * 32),self.coords[1] + ( self.y * 32)))
+        display.blit(img, (self.coords[0] + (self.x * 32), self.coords[1] + ( self.y * 32)))
 
     def isClicked(self, coords):
         """Accepts a tuple of coordinates in form (x,y).
