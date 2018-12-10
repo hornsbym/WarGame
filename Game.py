@@ -15,8 +15,6 @@ displayHeight = 500
 display = pg.display.set_mode((displayWidth,displayHeight))
 display.fill((255,255,255))
 
-
-
 def displayText(string, tup=(0,0)):
     """Accepts a string and a tuple of x and y coordinates.
        X coordinate should be the first value in the tuple.
@@ -25,8 +23,16 @@ def displayText(string, tup=(0,0)):
     text = font.render(string, True, (0,0,0))
     display.blit(text, tup)
 
+
+
 def setupStage():
     """Determines dimensions of the game board, and eventually the player's army."""
+    
+    fiveByEight     = CommandButton("5x8",(displayWidth*.2-35, displayHeight//2), (0,0,0))
+    sixByNine       = CommandButton("6x9",(displayWidth*.4-35, displayHeight//2), (0,0,0))
+    nineByTwelve    = CommandButton("9x12",(displayWidth*.6-35, displayHeight//2), (0,0,0))
+    elevenByFifteen = CommandButton("11x15",(displayWidth*.8-35, displayHeight//2), (0,0,0))
+
     loop = True
     while (loop == True):
         # Gets all the events from the game window. A.k.a., do stuff here.
@@ -35,15 +41,32 @@ def setupStage():
                 pg.quit()
                 quit()
 
+            if event.type == pg.MOUSEBUTTONDOWN:
+                coords = pg.mouse.get_pos()
+
+                # Creates a new board in the middle of the screen.
+                if fiveByEight.isClicked(coords) == True:
+                    return Board(5,7,(displayWidth//2,displayHeight//2))
+                if sixByNine.isClicked(coords) == True:
+                    return Board(6,9,(displayWidth//2,displayHeight//2))
+                if nineByTwelve.isClicked(coords) == True:
+                    return Board(9,12,(displayWidth//2,displayHeight//2))
+                if elevenByFifteen.isClicked(coords) == True:       
+                    return Board(11,15,(displayWidth//2,displayHeight//2)) 
+
+        fiveByEight.showButton(display)
+        sixByNine.showButton(display)
+        nineByTwelve.showButton(display)
+        elevenByFifteen.showButton(display)
+
         pg.display.update()
         clock.tick(60)
 
-def placementStage():
+def placementStage(board):
     """Executes the placement stage of the game"""
     # Creates a new board in the middle of the screen.
-    b = Board(10,12,(displayWidth//2,displayHeight//2))    
-    
-    loop = True
+    # b = Board(9,12,(displayWidth//2,displayHeight//2))    
+    b = board
 
     startButton = CommandButton("start",(displayWidth-70, displayHeight-30), (0,0,0))
     addButton = CommandButton("add", (displayWidth-75, 175), (150,0,150))
@@ -57,6 +80,7 @@ def placementStage():
     command  = None
     square   = None
 
+    loop = True
     while (loop == True):
         # Gets all the events from the game window. A.k.a., do stuff here.
         for event in pg.event.get():
@@ -66,7 +90,6 @@ def placementStage():
             
             if event.type == pg.MOUSEBUTTONDOWN:
                 coords = pg.mouse.get_pos()
-                print(b.isClicked(coords))
                 if startButton.isClicked(coords) == True:
                     loop = False
                 if b.isClicked(coords) == True:
@@ -114,7 +137,7 @@ def placementStage():
 
 
         pg.display.update()
-        clock.tick(60)
+        clock.tick(20)
     
     return b
 
@@ -166,6 +189,8 @@ def battleStage(board):
         
 
             ### GAME LOGIC ###
+
+
         if square != None:
             if b.getSquareValue(square) != None:
                 selectedTroop = b.getSquareValue(square)
@@ -187,9 +212,9 @@ def battleStage(board):
             if selectedTroop != None and square != None:
                 b.setTroopOrientation(selectedTroop,square)
                 square = None
-
                 
 
+                
         b.killTroops()
 
         # Display game data. Testing purposes only.
@@ -200,9 +225,10 @@ def battleStage(board):
         displayText(str(command), (displayWidth*.9,displayHeight-30))
 
         pg.display.update()
-        clock.tick(60)
+        clock.tick(20)
 
-startingBoard = placementStage()
+emptyBoard = setupStage()
+startingBoard = placementStage(emptyBoard)
 battleStage(startingBoard)
 pg.quit()
 quit()

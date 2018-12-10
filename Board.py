@@ -54,6 +54,7 @@ class Board(object):
         for x in range(len(self.squares)):
             for y in range(len(self.squares[x])):
                 if self.squares[x][y].isClicked(coords) == True:
+                    print(self.squares[x][y].getX(), self.squares[x][y].getY())
                     return (self.squares[x][y].getX(), self.squares[x][y].getY())
 
     def getSquareValue(self, tup):
@@ -77,7 +78,6 @@ class Board(object):
         """Accepts a tuple of coordinates in form (x,y).
            Returns True if the coordinates fall within the board's active area.
            Returns False if not."""
-        
         xRange = self.centerCoords[0]+(self.width*32//2)
         yRange = self.centerCoords[1]+(self.height*32//2)
 
@@ -107,8 +107,9 @@ class Board(object):
 
         # Attacks up or down
         if orientation == (1,1) or orientation == (-1,-1):
+            if attackerRange + troopCoords[1] > self.height-1:    # Prevents attacking beyond bottom   
+                attackerRange = (self.height-1) - troopCoords[1]  # of board.
             for y in range(attackerY,attackerY+orientation[1]*(attackerRange+1),orientation[1]):
-                print('attacking y:',y)
                 if y != attackerY:
                     if self.squares[attackerX][y].getTroop() != None:
                         self.squares[attackerX][y].getTroop().takeDamage(attackerStrength)
@@ -116,8 +117,9 @@ class Board(object):
 
         # Attacks left or right
         if orientation == (-1,1) or orientation == (1,-1):
+            if attackerRange + troopCoords[0] > self.width-1:    # Prevents attacking beyond right    
+                attackerRange = (self.width-1) - troopCoords[0]  # side of board.
             for x in range(attackerX,attackerX+orientation[0]*(attackerRange+1),orientation[0]):
-                print("attacking x:", x)
                 if x != attackerX:
                     if self.squares[x][attackerY].getTroop() != None:
                         self.squares[x][attackerY].getTroop().takeDamage(attackerStrength)
@@ -177,6 +179,11 @@ class Board(object):
         selectedTroop = troop
         square = tup
         currentSquare = self.findTroopSquare(selectedTroop)
+        currentOrientation = selectedTroop.getOrientation()
+
+        # Rotation in place; clicking the troop's own square.
+        if square[1] == currentSquare.getY() and square[0] == currentSquare.getX():
+                selectedTroop.setOrientation((( currentOrientation[0]**2) * currentOrientation[1] , -1 * (currentOrientation[1]**2) * currentOrientation[0] ))
 
         # Y rotation here
         if square[0] == currentSquare.getX():
@@ -185,10 +192,13 @@ class Board(object):
             if square[1] < currentSquare.getY():
                 selectedTroop.setOrientation((-1,-1))
 
+
         # X rotation here
         if square[1] == currentSquare.getY():
             if square[0] > currentSquare.getX():
                 selectedTroop.setOrientation((1,-1))
             if square[0] < currentSquare.getX():
                 selectedTroop.setOrientation((-1,1))
+
+        
     
