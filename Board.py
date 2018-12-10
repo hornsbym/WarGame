@@ -84,26 +84,6 @@ class Board(object):
         
         return False
 
-    def attack(self,troop):
-        """Accepts a Troop object.
-           If there's a target within range of the troop, decreases that target's health."""
-        troopCoords = (self.findTroopSquare(troop).getX(), self.findTroopSquare(troop).getY())
-        attackerX = troopCoords[0]
-        attackerY = troopCoords[1]
-        attackerRange = troop.getRange()
-        attackerStrength = troop.getAttack()
-        
-        counter = attackerY+1
-        while(attackerY+attackerRange+1 > counter):
-
-            if (counter) > 0:
-                if (counter) <= self.height-1:
-                    if self.squares[attackerX][counter].getTroop() != None:
-                        self.squares[attackerX][counter].getTroop().takeDamage(attackerStrength)
-                        break
-
-            counter += 1
-    
     def killTroops(self):
         """Iterates through entire board.
            If any square's troop's health has reached 0, resets that square."""
@@ -111,6 +91,33 @@ class Board(object):
             for y in range(len(self.squares[x])):
                 if self.squares[x][y].getTroop() != None:
                     self.squares[x][y].killTroop()
+
+    def attack(self,troop):
+        """Accepts a Troop object.
+           If there's a target within range of the troop, decreases that target's health."""
+        troopCoords = (self.findTroopSquare(troop).getX(), self.findTroopSquare(troop).getY())
+        orientation = troop.getOrientation()
+        attackerX = troopCoords[0]
+        attackerY = troopCoords[1]
+        attackerRange = troop.getRange()
+        attackerStrength = troop.getAttack()
+
+        # Attacks up or down
+        if orientation == (1,1) or orientation == (-1,-1):
+            for y in range(attackerY,attackerY+orientation[1]*(attackerRange),orientation[1]):
+                if y != attackerY:
+                    if self.squares[attackerX][y].getTroop() != None:
+                        self.squares[attackerX][y].getTroop().takeDamage(attackerStrength)
+                        break
+
+        # Attacks left or right
+        if orientation == (-1,1) or orientation == (1,-1):
+            for x in range(attackerX,attackerX+orientation[0]*(attackerRange),orientation[0]):
+                print(x)
+                if x != attackerX:
+                    if self.squares[x][attackerY].getTroop() != None:
+                        self.squares[x][attackerY].getTroop().takeDamage(attackerStrength)
+                        break
     
     def move(self, troop, targetCoords):
         """Accepts a troop object.
@@ -131,9 +138,10 @@ class Board(object):
         else:
             # Moves vertically
             if current[0] == target[0]:
-                dist = target[1] - current[1]
+                dist = abs(target[1] - current[1])
                 if dist > speed:    # Prevents troops from moving farther than their speed allows.
                     dist = speed    
+                dist *= orientation[1]
 
                 for y in range(0,dist,orientation[1]):
                     if self.getSquareValue((current[0],current[1]  + y + orientation[1])) == None:
@@ -145,9 +153,10 @@ class Board(object):
             # Moves horizontally
             if current[1] == target[1]:
 
-                dist = target[0] - current[0]
+                dist = abs(target[0] - current[0])
                 if dist > speed:    # Prevents troops from moving farther than their speed allows.
                     dist = speed    
+                dist *= orientation[0]
 
                 for x in range(0, dist, orientation[0]):
                     if self.getSquareValue((current[0]  + x + orientation[0],current[1])) == None:
@@ -178,4 +187,4 @@ class Board(object):
                 selectedTroop.setOrientation((1,-1))
             if square[0] < currentSquare.getX():
                 selectedTroop.setOrientation((-1,1))
-                        
+    

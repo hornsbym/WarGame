@@ -41,7 +41,6 @@ def main():
 
 
     # Interface variables
-    clicked = None
     square = None
     newTroop = None
     selectedTroop = None
@@ -57,10 +56,8 @@ def main():
             if event.type == pg.MOUSEBUTTONDOWN:
                 coords = pg.mouse.get_pos()
                 if b.isClicked(coords) == True:
-                    clicked = coords
                     square = b.getSquareCoords(coords)
                 else:
-                    clicked = None
                     square = None
                     newTroop = None
                     selectedTroop = None
