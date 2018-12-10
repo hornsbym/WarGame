@@ -50,8 +50,22 @@ class Square(object):
 
     def showSquare(self,display):
         """Accepts a pygame Display object as an argument.
-           Shows the square in that display."""
+           Shows the square in that display.
+           Handles rotations."""
         img = pg.image.load("./_sprites/"+self.icon+".png")
+
+        # Handles rotations
+        if self.getTroop() != None:
+            orientation = self.getTroop().getOrientation()
+            if orientation == (1,1):
+                img = pg.transform.rotate(img, 0)
+            if orientation == (1,-1):
+                img = pg.transform.rotate(img, 90)
+            if orientation == (-1,1):
+                img = pg.transform.rotate(img, -90)
+            if orientation == (-1,-1):
+                img = pg.transform.rotate(img, 180)
+        
         display.blit(img, (self.coords[0] + (self.x * 32),self.coords[1] + ( self.y * 32)))
 
     def isClicked(self, coords):

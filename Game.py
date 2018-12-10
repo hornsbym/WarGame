@@ -29,14 +29,15 @@ def main():
     # Creates a new board in the middle of the screen.
     b = Board(5,5,(round(displayWidth/2-80),round(displayHeight/2)-80))
 
-    rb = TroopButton(("rifleman",1,3,10,1,100), (50,75))
-    kb = TroopButton(("knight",1,1,10,2,100), (50,125))
-    sb = TroopButton(("shield",1,1,10,1,200), (50, 175))
-    tb = TroopButton(('target',1,0,0,0,100), (50,225))
+    rb = TroopButton(("rifleman",1,3,10,1,100,(1,1)), (50,75))
+    kb = TroopButton(("knight",1,1,10,2,100,(1,-1)), (50,125))
+    sb = TroopButton(("shield",1,1,10,1,200,(-1,-1)), (50, 175))
+    tb = TroopButton(('target',1,0,0,0,100,(1,-1)), (50,225))
 
     attackButton = CommandButton("attack", (450, 75), (0,50,200))
     moveButton = CommandButton("move", (450, 125), (50,150,0))
     addButton = CommandButton("add", (450, 175), (150,0,150))
+    rotateButton = CommandButton("rotate", (450, 225), (200,100,0))
 
 
     # Interface variables
@@ -80,6 +81,8 @@ def main():
                     command = moveButton.getValue()
                 if addButton.isClicked(coords) == True:
                     command = addButton.getValue()
+                if rotateButton.isClicked(coords) == True:
+                    command = rotateButton.getValue()
 
         # Clear previous screen, so it can be updated again.
         display.fill((255,255,255))
@@ -92,6 +95,7 @@ def main():
         attackButton.showButton(display)
         moveButton.showButton(display)
         addButton.showButton(display)
+        rotateButton.showButton(display)
 
         b.showBoard(display)
 
@@ -116,9 +120,15 @@ def main():
 
         if command == "move":
             if selectedTroop != None and square != None:
-                print('Moving')
                 b.move(selectedTroop,square)
                 square = None
+        
+        # Testing only? Might implement in game later.
+        if command == "rotate":
+            if selectedTroop != None and square != None:
+                b.setTroopOrientation(selectedTroop,square)
+                square = None
+
                 
 
         b.killTroops()

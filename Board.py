@@ -37,7 +37,7 @@ class Board(object):
             for y in range(len(self.squares[x])):
                 self.squares[x][y].showSquare(display)
 
-    def findTroop(self, troop):
+    def findTroopSquare(self, troop):
         """Accepts a Troop object.
            Iterates through all the squares and returns the square with the matching troop.
            Returns nothing if the troop isn't found."""
@@ -56,7 +56,7 @@ class Board(object):
 
     def getSquareValue(self, tup):
         """Accepts a tuple of form (x,y).
-           Iterates through the squares and returns the troop value of the
+           Iterates through the squares and returns the Troop Object of the
            square at that location."""
         squareX = tup[0]
         squareY = tup[1]
@@ -87,7 +87,7 @@ class Board(object):
     def attack(self,troop):
         """Accepts a Troop object.
            If there's a target within range of the troop, decreases that target's health."""
-        troopCoords = (self.findTroop(troop).getX(), self.findTroop(troop).getY())
+        troopCoords = (self.findTroopSquare(troop).getX(), self.findTroopSquare(troop).getY())
         attackerX = troopCoords[0]
         attackerY = troopCoords[1]
         attackerRange = troop.getRange()
@@ -115,10 +115,14 @@ class Board(object):
     def move(self, troop, targetCoords):
         """Accepts a troop object.
            Accepts a tuple for the desired coordinates to move to.
-           Iterates through all squares and tries to move the troop to the given position."""
-        current = (self.findTroop(troop).getX(), self.findTroop(troop).getY())
+           Iterates through all squares and tries to move the troop to the given position.
+           Applies rotations to troop."""
+        current = (self.findTroopSquare(troop).getX(), self.findTroopSquare(troop).getY())
         target  = targetCoords
         speed   = troop.getSpeed()
+
+        self.setTroopOrientation(troop,target)                     # Resets the troop's orientation to match the desired direction.
+        orientation = troop.getOrientation()
         
         if current [0] == target[0] and current[1] == target[1]:   # Ignores same-square clicks.
             return
@@ -127,14 +131,13 @@ class Board(object):
         else:
             # Moves vertically
             if current[0] == target[0]:
-                
                 dist = target[1] - current[1]
-                if dist > speed:
-                    dist = speed    # Prevents troops from moving farther than their speed allows.
+                if dist > speed:    # Prevents troops from moving farther than their speed allows.
+                    dist = speed    
 
-                for y in range(dist):
-                    if self.getSquareValue((current[0],current[1]  + y + 1)) == None:
-                        self.setSquareValue((current[0],current[1] + y + 1),troop)
+                for y in range(0,dist,orientation[1]):
+                    if self.getSquareValue((current[0],current[1]  + y + orientation[1])) == None:
+                        self.setSquareValue((current[0],current[1] + y + orientation[1]),troop)
                         self.setSquareValue((current[0],current[1] + y), None)
                     else:
                         return      # Exits the loop if there's another troop in the way.
@@ -143,14 +146,36 @@ class Board(object):
             if current[1] == target[1]:
 
                 dist = target[0] - current[0]
-                if dist > speed:
-                    dist = speed    # Prevents troops from moving farther than their speed allows.
+                if dist > speed:    # Prevents troops from moving farther than their speed allows.
+                    dist = speed    
 
-                for x in range(dist):
-                    if self.getSquareValue((current[0]  + x + 1,current[1])) == None:
-                        self.setSquareValue((current[0] + x + 1,current[1]),troop)
+                for x in range(0, dist, orientation[0]):
+                    if self.getSquareValue((current[0]  + x + orientation[0],current[1])) == None:
+                        self.setSquareValue((current[0] + x + orientation[0],current[1]),troop)
                         self.setSquareValue((current[0] + x, current[1]), None)
                     else:
                         return      # Exits the loop if there's another troop in the way.
-            
+    
+    def setTroopOrientation(self,troop,tup):
+        """Accepts a Troop Object.
+           Accepts a tuple of form (x,y).
+           Changes the provided troop's orientation to match where the mouseclick is.
+        """
+        selectedTroop = troop
+        square = tup
+        currentSquare = self.findTroopSquare(selectedTroop)
+
+        # Y rotation here
+        if square[0] == currentSquare.getX():
+            if square[1] > currentSquare.getY():
+                selectedTroop.setOrientation((1,1))
+            if square[1] < currentSquare.getY():
+                selectedTroop.setOrientation((-1,-1))
+
+        # X rotation here
+        if square[1] == currentSquare.getY():
+            if square[0] > currentSquare.getX():
+                selectedTroop.setOrientation((1,-1))
+            if square[0] < currentSquare.getX():
+                selectedTroop.setOrientation((-1,1))
                         
