@@ -98,18 +98,19 @@ def main():
         rotateButton.showButton(display)
 
         b.showBoard(display)
+        
 
             ### GAME LOGIC ###
-
-        # Adds troops to the board.
         if square != None:
             if b.getSquareValue(square) != None:
                 selectedTroop = b.getSquareValue(square)
+
 
         if command == "add":
             if newTroop != None and square != None:
                 b.setSquareValue(square,newTroop)
                 square = None
+                newTroop = None
 
 
         if command == "attack":
@@ -123,7 +124,7 @@ def main():
                 b.move(selectedTroop,square)
                 square = None
         
-        # Testing only? Might implement in game later.
+
         if command == "rotate":
             if selectedTroop != None and square != None:
                 b.setTroopOrientation(selectedTroop,square)
@@ -140,7 +141,6 @@ def main():
         displayText("New: "+str(newTroop), (0,displayHeight-50))
         displayText("Select: "+str(selectedTroop), (0,displayHeight-30))
         displayText(str(command), (displayWidth*.9,displayHeight-30))
-
 
         pg.display.update()
         clock.tick(60)
