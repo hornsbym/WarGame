@@ -14,6 +14,8 @@ class Player(object):
         self.army   = armyType
         self.tokens = spendableTokens
         self.moves  = moves
+
+        self.troops = []
     
     def __str__(self):
         return '<Player Object name = "%s" army = "%s" tokens = %i moves = %i>' % \
@@ -44,3 +46,21 @@ class Player(object):
         """Decreases the number of remaining moves by 1."""
         self.moves -= 1
 
+    def addTroop(self,troop):
+        """Accepts a Troop object.
+           Adds Troop Object to the player's list of troops.
+           Also sets that Troop's team to the player's name."""
+        troop.setTeam(self.name)
+        self.troops.append(troop)
+    
+    def removeTroop(self,troop):
+        """Accepts a Troop object.
+           Removes that troop from the player's list of troops."""
+        self.troops.remove(troop)
+
+    def killTroops(self):
+        """Iterates through player's troops and removes any troops 
+           whose health is <= 0."""
+        for troop in self.troops:
+            if troop.getHealth() <= 0:
+                self.removeTroop(troop)
