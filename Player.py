@@ -15,6 +15,10 @@ class Player(object):
         self.tokens = spendableTokens
         self.moves  = moves
     
+    def __str__(self):
+        return '<Player Object name = "%s" army = "%s" tokens = %i moves = %i>' % \
+                (self.name, self.army,self.tokens,self.moves)
+    
     def getName (self):
         """Returns string."""
         return self.name

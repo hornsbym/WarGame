@@ -16,6 +16,12 @@ class Board(object):
 
         self.makeBoard()
 
+    def getWidth(self):
+        return self.width
+    
+    def getHeight(self):
+        return self.height
+
     def makeBoard(self):
         """Populates the board with squares."""
         board = []

@@ -6,12 +6,13 @@ from Board import Board
 from TroopButton import TroopButton
 from CommandButton import CommandButton
 from Troop import Troop
+from Player import Player
 
 # Boilerplate pygame stuff:
 pg.init()
 clock = pg.time.Clock()
 displayWidth = 600
-displayHeight = 500
+displayHeight = 550
 display = pg.display.set_mode((displayWidth,displayHeight))
 display.fill((255,255,255))
 
@@ -64,12 +65,12 @@ def setupStage():
 
 def placementStage(board):
     """Executes the placement stage of the game"""
-    # Creates a new board in the middle of the screen.
-    # b = Board(9,12,(displayWidth//2,displayHeight//2))    
-    b = board
+    b  = board
+    p1 = Player("Player 1",None,b.getWidth()*3,5)
+    p2 = Player("Player 2",None,b.getWidth()*3,5)
 
     startButton = CommandButton("start",(displayWidth-70, displayHeight-30), (0,0,0))
-    addButton = CommandButton("add", (displayWidth-75, 175), (150,0,150))
+    addButton   = CommandButton("add", (displayWidth-75, 175), (150,0,150))
 
     rb = TroopButton(("rifleman",1,3,10,1,100,(1,1)), (15,75))
     kb = TroopButton(("knight",1,1,10,2,100,(1,1)), (15,125))
@@ -79,6 +80,8 @@ def placementStage(board):
     newTroop = None
     command  = None
     square   = None
+
+    currentPlayer = p1
 
     loop = True
     while (loop == True):
@@ -126,9 +129,19 @@ def placementStage(board):
 
         if command == "add":
             if newTroop != None and square != None:
-                b.setSquareValue(square,newTroop)
+                if square[1] <= 2:
+                    if currentPlayer == p1:
+                        b.setSquareValue(square,newTroop)
+                        currentPlayer = p2
+                        newTroop = None
+                if square[1] >= b.getHeight()-4:
+                    if currentPlayer == p2:
+                        b.setSquareValue(square,newTroop)
+                        currentPlayer = p1
+                        newTroop = None
                 square = None
-                newTroop = None
+
+        displayText(str(currentPlayer.getName()),(displayWidth//2,0))
 
         displayText("New: "+str(newTroop), (0,displayHeight-50))
         displayText(str(command), (displayWidth*.9,displayHeight-50))       
