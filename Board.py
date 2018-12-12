@@ -15,6 +15,9 @@ class Board(object):
         self.squares = []
 
         self.makeBoard()
+    
+    def getCoords(self):
+        return self.centerCoords
 
     def getWidth(self):
         return self.width
@@ -117,8 +120,12 @@ class Board(object):
                 attackerRange = (self.height-1) - troopCoords[1]  # of board.
             for y in range(attackerY,attackerY+orientation[1]*(attackerRange+1),orientation[1]):
                 if y != attackerY:
-                    if self.squares[attackerX][y].getTroop() != None:
+                    # Makes sure the square being attacked isn't empty or on the same team.
+                    if self.squares[attackerX][y].getTroop() != None and self.squares[attackerX][y].getTroop().getTeam() != troop.getTeam():
                         self.squares[attackerX][y].getTroop().takeDamage(attackerStrength)
+                        break
+                    # Stops attack if it hits a teammate
+                    if self.squares[attackerX][y].getTroop() != None and self.squares[attackerX][y].getTroop().getTeam() == troop.getTeam():
                         break
 
         # Attacks left or right
@@ -127,8 +134,12 @@ class Board(object):
                 attackerRange = (self.width-1) - troopCoords[0]  # side of board.
             for x in range(attackerX,attackerX+orientation[0]*(attackerRange+1),orientation[0]):
                 if x != attackerX:
-                    if self.squares[x][attackerY].getTroop() != None:
+                    # Makes sure the square being attacked isn't empty or on the same team.
+                    if self.squares[x][attackerY].getTroop() != None and self.squares[x][attackerY].getTroop().getTeam() != troop.getTeam():
                         self.squares[x][attackerY].getTroop().takeDamage(attackerStrength)
+                        break
+                    # Stops attack if it hits a teammate
+                    if self.squares[x][attackerY].getTroop() != None and self.squares[x][attackerY].getTroop().getTeam() == troop.getTeam():
                         break
     
     def move(self, troop, targetCoords):

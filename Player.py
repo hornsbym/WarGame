@@ -36,7 +36,15 @@ class Player(object):
     def getPieces (self):
         """Returns integer."""
         return self.getPieces
+
+    def getMoves(self):
+        """Returns integer."""
+        return self.moves
      
+    def resetMoves(self):
+        """Resets the player's elibible moves back to the maximum."""
+        self.moves = self.MOVES_PER_TURN
+
     def spendTokens (self, spentTokens):
         """Accepts integer.
            Subtracts that from the number of available tokens."""
