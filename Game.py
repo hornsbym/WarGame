@@ -25,8 +25,6 @@ def displayText(string, tup=(0,0)):
     text = font.render(string, True, (0,0,0))
     display.blit(text, tup)
 
-
-
 def setupStage():
     """Determines dimensions of the game board, players' names, and eventually the player's army.
        Return a tuple containing (Board, Player1, Player2)."""
@@ -227,9 +225,6 @@ def placementStage(gameInfo):
             else:
                 currentPlayer = p1
             switchPlayer = False
-                    
-
-
 
         displayText(str(currentPlayer.getName())+" - "+str(currentPlayer.getTokens()),(displayWidth//2,0))
 
@@ -357,7 +352,7 @@ def battleStage(gameInfo):
         p2.killTroops()
 
         # Display game data. Testing purposes only.
-        displayText(str(currentPlayer.getName()),(displayWidth//2,0))
+        displayText(str(currentPlayer.getName())+" - "+str(currentPlayer.getMoves())+ " moves left",(displayWidth//2,0))
 
         displayText(str(pg.mouse.get_pos()), (0,0))
         displayText(str(square), (displayWidth*.9,0))
