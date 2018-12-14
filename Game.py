@@ -226,7 +226,7 @@ def placementStage(gameInfo):
                 currentPlayer = p1
             switchPlayer = False
 
-        displayText(str(currentPlayer.getName())+" - "+str(currentPlayer.getTokens()),(displayWidth//2,0))
+        displayText(str(currentPlayer.getName())+" - "+str(currentPlayer.getTokens()) + " tokens left",(displayWidth//2,0))
 
         displayText("New: "+str(newTroop), (0,displayHeight-50))
         displayText(str(command), (displayWidth*.9,displayHeight-80))       
