@@ -2,18 +2,17 @@ import pygame as pg
 
 class Player(object):
     """Holds information relevant for each player in the game."""
-    def __init__(self, name, armyType, spendableTokens, moves):
+    def __init__(self, name, armyType, spendableTokens):
         """name            = Str
            civilization    = Str
            spendableTokens = Int; how many tokens you have to make upgrades.
            moveablePieces  = Int; how many moves you can make in one turn."""
-        self.MOVES_PER_TURN = moves
-        self.TOKENS_PER_TURN = spendableTokens
+        self.MOVES_PER_TURN = 1
         
         self.name   = name
         self.army   = armyType
         self.tokens = spendableTokens
-        self.moves  = moves
+        self.moves  = self.MOVES_PER_TURN
 
         self.troops = []
     
@@ -40,6 +39,16 @@ class Player(object):
     def getMoves(self):
         """Returns integer."""
         return self.moves
+
+    def getTroops(self):
+        """Returns list object."""
+        return self.troops
+
+    def setMoves(self,moves):
+        """Accepts an int.
+           Sets the number of moves a player will have per turn."""
+        self.MOVES_PER_TURN = moves
+        self.moves = moves
      
     def resetMoves(self):
         """Resets the player's elibible moves back to the maximum."""
@@ -72,3 +81,8 @@ class Player(object):
         for troop in self.troops:
             if troop.getHealth() <= 0:
                 self.removeTroop(troop)
+    
+    def restTroops(self):
+        """Iterates through player's troops and resets the troops' stamina."""
+        for troop in self.troops:
+            troop.resetStamina()

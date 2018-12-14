@@ -63,7 +63,6 @@ class Board(object):
         for x in range(len(self.squares)):
             for y in range(len(self.squares[x])):
                 if self.squares[x][y].isClicked(coords) == True:
-                    print(self.squares[x][y].getX(), self.squares[x][y].getY())
                     return (self.squares[x][y].getX(), self.squares[x][y].getY())
 
     def getSquareValue(self, tup):
@@ -168,6 +167,9 @@ class Board(object):
 
                 for y in range(0,dist,orientation[1]):
                     if self.getSquareValue((current[0],current[1]  + y + orientation[1])) == None:
+                        troop.incrementSquaresMoved()    # Allows for troops with higher speed to move several times 
+                                                         # before spending a move.
+
                         self.setSquareValue((current[0],current[1] + y + orientation[1]),troop)
                         self.setSquareValue((current[0],current[1] + y), None)
                     else:
@@ -183,6 +185,9 @@ class Board(object):
 
                 for x in range(0, dist, orientation[0]):
                     if self.getSquareValue((current[0]  + x + orientation[0],current[1])) == None:
+                        troop.incrementSquaresMoved()    # Allows for troops with higher speed to move several times 
+                                                         # before spending a move.
+
                         self.setSquareValue((current[0] + x + orientation[0],current[1]),troop)
                         self.setSquareValue((current[0] + x, current[1]), None)
                     else:
