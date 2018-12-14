@@ -237,8 +237,17 @@ def placementStage(gameInfo):
 
         displayText(str(currentPlayer.getName())+" - "+str(currentPlayer.getTokens()) + " tokens left",(displayWidth//2,0))
 
-        displayText("New: "+str(newTroop), (0,displayHeight-50))
-        displayText(str(command), (displayWidth*.9,displayHeight-80))       
+        displayText(str(command), (b.getCoords()[0]-(b.getWidth()*32//2),b.getCoords()[1]-(b.getHeight()*32//2)-30))
+
+        displayText("    New Troop", (0,displayHeight - 210))
+        if newTroop != None:
+            displayText("Type: "+newTroop.getName(), (0,displayHeight-180))
+            displayText("Level: "+str(newTroop.getLevel()), (0,displayHeight-150))
+            displayText("Range: "+str(newTroop.getRange()), (0,displayHeight-120))
+            displayText("Attack: "+str(newTroop.getAttack())+" ("+str(newTroop.getCooldownCounter())+")", (0,displayHeight-90))
+            displayText("Speed: "+str(newTroop.getSpeed()), (0,displayHeight-60))
+            displayText("Health: "+str(newTroop.getHealth()), (0,displayHeight-30))
+
         displayText(str(square), (displayWidth*.9,0))
         displayText(str(square), (displayWidth*.9,0))
 
@@ -261,10 +270,10 @@ def battleStage(gameInfo):
     p1.setMoves(len(p1.getTroops()))
     p2.setMoves(len(p2.getTroops()))
 
-    attackButton = CommandButton("attack", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 2*displayHeight//7), (0,50,200))
-    moveButton = CommandButton("move", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 3*displayHeight//7), (50,150,0))
-    rotateButton = CommandButton("rotate", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 4*displayHeight//7), (200,100,0))
-    passButton = CommandButton("pass", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 6*displayHeight//7), (200,50,250))
+    attackButton = CommandButton("attack", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 2*displayHeight//8), (0,50,200))
+    moveButton = CommandButton("move", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 3*displayHeight//8), (50,150,0))
+    rotateButton = CommandButton("rotate", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 4*displayHeight//8), (200,100,0))
+    passButton = CommandButton("pass", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 5*displayHeight//8), (200,50,250))
 
     # Interface variables
     square = None
@@ -322,15 +331,23 @@ def battleStage(gameInfo):
                 if b.getSquareValue(square).getTeam() != currentPlayer.getName():
                     previewTroop = b.getSquareValue(square)
 
+
         if command == "pass":
             switchPlayer = True
             command = None
+
 
         if command == "attack":
             if selectedTroop != None and square != None and selectedTroop.getTeam() == currentPlayer.getName() and selectedTroop.getCooldownCounter() == 0:
                 b.attack(selectedTroop)
                 currentPlayer.decrementMoves()
                 selectedTroop.setCooldownCounter()
+
+                b.killTroops()    # Remove troops from board.
+
+                p1.killTroops()   # Remove troops from players' records.
+                p2.killTroops()
+
                 square = None
 
 
@@ -371,20 +388,15 @@ def battleStage(gameInfo):
                 currentPlayer = p1
             switchPlayer = False
 
-                
-        b.killTroops()    # Remove troops from board.
-
-        p1.killTroops()   # Remove troops from players' records.
-        p2.killTroops()
-
         # Display game data. Testing purposes only.
         displayText(str(currentPlayer.getName())+" - "+str(currentPlayer.getMoves())+ " moves left",(displayWidth//2,0))
+
+        displayText(str(command), (b.getCoords()[0]-(b.getWidth()*32//2),b.getCoords()[1]-(b.getHeight()*32//2)-30))
 
         displayText(str(pg.mouse.get_pos()), (0,0))
         displayText(str(square), (displayWidth*.9,0))
 
         displayText("    Selected Troop", (0,displayHeight - 210))
-
         if selectedTroop != None:
             displayText("Type: "+selectedTroop.getName(), (0,displayHeight-180))
             displayText("Level: "+str(selectedTroop.getLevel()), (0,displayHeight-150))
@@ -393,17 +405,15 @@ def battleStage(gameInfo):
             displayText("Speed: "+str(selectedTroop.getSpeed()), (0,displayHeight-60))
             displayText("Health: "+str(selectedTroop.getHealth()), (0,displayHeight-30))
 
-        displayText("    Troop Preview", (displayWidth-200,displayHeight-210))
+        displayText("    Troop Preview", (displayWidth-150,displayHeight-210))
         if previewTroop != None:
-            displayText("Type: "+previewTroop.getName(), (displayWidth-200,displayHeight-180))
-            displayText("Level: "+str(previewTroop.getLevel()), (displayWidth-200,displayHeight-150))
-            displayText("Range: "+str(previewTroop.getRange()), (displayWidth-200,displayHeight-120))
-            displayText("Attack: "+str(previewTroop.getAttack())+" ("+str(previewTroop.getCooldownCounter())+")", (displayWidth-200,displayHeight-90))
-            displayText("Speed: "+str(previewTroop.getSpeed()), (displayWidth-200,displayHeight-60))
-            displayText("Health: "+str(previewTroop.getHealth()), (displayWidth-200,displayHeight-30))
+            displayText("Type: "+previewTroop.getName(), (displayWidth-150,displayHeight-180))
+            displayText("Level: "+str(previewTroop.getLevel()), (displayWidth-150,displayHeight-150))
+            displayText("Range: "+str(previewTroop.getRange()), (displayWidth-150,displayHeight-120))
+            displayText("Attack: "+str(previewTroop.getAttack())+" ("+str(previewTroop.getCooldownCounter())+")", (displayWidth-150,displayHeight-90))
+            displayText("Speed: "+str(previewTroop.getSpeed()), (displayWidth-150,displayHeight-60))
+            displayText("Health: "+str(previewTroop.getHealth()), (displayWidth-150,displayHeight-30))
 
-
-        displayText(str(command), (displayWidth*.9,displayHeight-60))
 
         pg.display.update()
         clock.tick(20)

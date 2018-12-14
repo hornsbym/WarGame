@@ -119,13 +119,17 @@ class Board(object):
                 attackerRange = (self.height-1) - troopCoords[1]  # of board.
             for y in range(attackerY,attackerY+orientation[1]*(attackerRange+1),orientation[1]):
                 if y != attackerY:
+                    attackedTroop = self.squares[attackerX][y].getTroop()
                     # Makes sure the square being attacked isn't empty or on the same team.
-                    if self.squares[attackerX][y].getTroop() != None and self.squares[attackerX][y].getTroop().getTeam() != troop.getTeam():
-                        self.squares[attackerX][y].getTroop().takeDamage(attackerStrength)
-                        break
-                    # Stops attack if it hits a teammate
-                    if self.squares[attackerX][y].getTroop() != None and self.squares[attackerX][y].getTroop().getTeam() == troop.getTeam():
-                        break
+                    if attackedTroop != None: 
+                        if attackedTroop.getTeam() != troop.getTeam():
+                            attackedTroop.takeDamage(attackerStrength)
+                            break
+                        if attackedTroop.getTeam() == troop.getTeam():
+                            if attackedTroop.getName() == "shield":
+                                pass
+                            else: 
+                                break    # Stops attack if it hits a non-shield teammate
 
         # Attacks left or right
         if orientation == (-1,1) or orientation == (1,-1):
