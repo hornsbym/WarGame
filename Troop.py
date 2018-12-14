@@ -8,7 +8,8 @@ class Troop(object):
            speed = info[4], int
           health = info[5], int
      (xDirection = info[6], int,
-      yDirection = info[6], int)"""
+      yDirection = info[6], int)
+        cooldown = info[7], int"""
         self.name = info[0]
         self.level = info[1]
         self.range = info[2]
@@ -16,8 +17,10 @@ class Troop(object):
         self.speed = info[4]
         self.health = info[5]
         self.orientation = info[6]
-
-        self.squaresMoved = 0
+        self.cooldown = info[7]     # Number of turns a piece must wait after it 
+                                    # attacks to attack again
+        self.squaresMoved    = 0
+        self.cooldownCounter = 0
 
         self.team = None
     
@@ -57,6 +60,10 @@ class Troop(object):
            Returns a tuple object (xDirection, yDirection)"""
         return self.orientation
     
+    def getCooldownCounter(self):
+        """Returns the object's cooldown timer."""
+        return self.cooldownCounter
+    
     def resetStamina(self):
         """Returns the Troop's squares moved variable to 0."""
         self.squaresMoved = 0
@@ -77,10 +84,8 @@ class Troop(object):
             return False
     
     def incrementLevel(self):
-        """Raises the level of the Troop by one.
-           Also handles upgrading the troop."""
+        """Raises the level of the Troop by one."""
         self.level += 1
-        self.upgradeStats()
     
     def setOrientation(self, tup):
         """Accepts a tuple of form (xDirection, yDirection).
@@ -101,13 +106,24 @@ class Troop(object):
         """Increases certain troop values upon upgrade based on what kind
            of troop it is"""
         if self.getName() == "rifleman":
-            self.range += (self.level*1)-1
-            self.attack += round(self.level*.2)
+            self.range += self.level-1
+            self.attack += self.level*8
 
         if self.getName() == "knight":
-            self.attack += round(self.level*.3)
-            self.speed += (self.level*1)-1
+            self.attack += self.level*3
+            self.speed += self.level-1
 
         if self.getName() == "shield":
             self.health += (self.level*25)
-            self.attack += round(self.level*.5)
+            self.attack += self.level*10
+
+    def setCooldownCounter(self):
+        """Sets the cooldown counter equal to the number of turns a 
+           piece must wait to attack again."""
+        self.cooldownCounter = self.cooldown
+    
+    def decrementCooldownCounter(self):
+        """Decreases Troop's cooldown counter by 1.
+           Doesn't let the cooldown counter surpass 0."""
+        if self.cooldownCounter != 0:
+            self.cooldownCounter -= 1

@@ -86,3 +86,16 @@ class Player(object):
         """Iterates through player's troops and resets the troops' stamina."""
         for troop in self.troops:
             troop.resetStamina()
+    
+    def upgradeTroops(self):
+        """Iterates through the player's hand and changes each Troop's stats
+           based on its level."""
+        for troop in self.troops:
+            troop.upgradeStats()
+    
+    def decrementCooldowns(self):
+        """Iterates through the player's hand and decrements each troop's
+           cooldown."""
+        for troop in self.troops:
+            troop.decrementCooldownCounter()
+    

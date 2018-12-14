@@ -32,14 +32,13 @@ def setupStage():
     nameInput1 = pygame_textinput.TextInput("Player 1")
     nameInput2 = pygame_textinput.TextInput("Player 2")
     
-    oneBySeven      = CommandButton("1x7",(0, displayHeight//2), (0,0,0))
-    fiveByEight     = CommandButton("5x8",(displayWidth*.2-35, displayHeight//2), (0,0,0))
-    sixByNine       = CommandButton("6x9",(displayWidth*.4-35, displayHeight//2), (0,0,0))
-    nineByTwelve    = CommandButton("9x12",(displayWidth*.6-35, displayHeight//2), (0,0,0))
-    elevenByFifteen = CommandButton("11x15",(displayWidth*.8-35, displayHeight//2), (0,0,0))
+    oneByNine      = CommandButton("1x9",(displayWidth*.2-35, displayHeight//2), (0,0,0))
+    fiveByNine       = CommandButton("5x9",(displayWidth*.4-35, displayHeight//2), (0,0,0))
+    sevenByTwelve    = CommandButton("7x12",(displayWidth*.6-35, displayHeight//2), (0,0,0))
+    nineByFifteen = CommandButton("9x15",(displayWidth*.8-35, displayHeight//2), (0,0,0))
 
     change1 = CommandButton("PLAYER 1",(10,50), (100,100,100))
-    change2 = CommandButton("PLAYER 2",(displayWidth-100, 50), (100,100,100))
+    change2 = CommandButton("PLAYER 2",(displayWidth-115, 50), (100,100,100))
 
     b  = None
 
@@ -74,20 +73,17 @@ def setupStage():
                     selectedInputBox = nameInput2
 
                 # Creates a new board in the middle of the screen.
-                if oneBySeven.isClicked(coords) == True:
+                if oneByNine.isClicked(coords) == True:
                     b = Board(1,7,(displayWidth//2,displayHeight//2))
                     loop = False
-                if fiveByEight.isClicked(coords) == True:
-                    b = Board(5,7,(displayWidth//2,displayHeight//2))
+                if fiveByNine.isClicked(coords) == True:
+                    b = Board(5,9,(displayWidth//2,displayHeight//2))
                     loop = False
-                if sixByNine.isClicked(coords) == True:
-                    b = Board(6,9,(displayWidth//2,displayHeight//2))
+                if sevenByTwelve.isClicked(coords) == True:
+                    b = Board(7,12,(displayWidth//2,displayHeight//2))
                     loop = False
-                if nineByTwelve.isClicked(coords) == True:
-                    b = Board(9,12,(displayWidth//2,displayHeight//2))
-                    loop = False
-                if elevenByFifteen.isClicked(coords) == True:       
-                    b = Board(11,15,(displayWidth//2,displayHeight//2)) 
+                if nineByFifteen.isClicked(coords) == True:       
+                    b = Board(9,15,(displayWidth//2,displayHeight//2)) 
                     loop = False
 
         display.fill((255,255,255))
@@ -95,12 +91,12 @@ def setupStage():
         change1.showButton(display)
         change2.showButton(display)
 
-        oneBySeven.showButton(display)
-        fiveByEight.showButton(display)
-        sixByNine.showButton(display)
-        nineByTwelve.showButton(display)
-        elevenByFifteen.showButton(display)
+        oneByNine.showButton(display)
+        fiveByNine.showButton(display)
+        sevenByTwelve.showButton(display)
+        nineByFifteen.showButton(display)
 
+        # Only updates the appropriate textbox
         if selectedInputBox  != None:
             selectedInputBox.update(events)
 
@@ -124,17 +120,20 @@ def placementStage(gameInfo):
     p2 = gameInfo[2]
 
     startButton   = CommandButton("start",(displayWidth-70, displayHeight-30), (0,0,0))
-    addButton     = CommandButton("add", (displayWidth-75, 175), (150,0,150))
-    upgradeButton = CommandButton("upgrade",(displayWidth-75, 225), (200,150,0))
 
-    rb = TroopButton(("rifleman",1,3,50,1,100,(1,1)), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100,displayHeight//5))
-    kb = TroopButton(("knight",1,1,30,2,120,(1,1)), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100,2*displayHeight//5))
-    sb = TroopButton(("shield",1,1,10,1,200,(1,1)), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100,3*displayHeight//5))
-    tb = TroopButton(('target',1,0,0,0,100,(1,1)), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100,4*displayHeight//5))
+    addButton     = CommandButton("add", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 2*displayHeight//6), (150,0,150))
+    upgradeButton = CommandButton("upgrade",(b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 3*displayHeight//6), (200,150,0))
+    switchButton  = CommandButton("switch",(b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 4*displayHeight//6), (0,0,0))
+
+    rb = TroopButton(("rifleman",1,3,50,1,100,(1,1),2), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100,2*displayHeight//6))
+    kb = TroopButton(("knight",1,1,30,2,120,(1,1),1), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100,3*displayHeight//6))
+    sb = TroopButton(("shield",1,1,10,1,200,(1,1),1), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100,4*displayHeight//6))
 
     newTroop = None
     command  = None
     square   = None
+
+    canSwitch = False
     switchPlayer   = False
 
     currentPlayer = p1
@@ -149,7 +148,7 @@ def placementStage(gameInfo):
             
             if event.type == pg.MOUSEBUTTONDOWN:
                 coords = pg.mouse.get_pos()               # Uncomment for finished game...
-                if startButton.isClicked(coords) == True: # and p1.getTokens() == 0 and p2.getTokens() == 0:
+                if startButton.isClicked(coords) == True and p1.getTokens() == 0 and p2.getTokens() == 0:
                     loop = False
                 if b.isClicked(coords) == True:
                     square = b.getSquareCoords(coords)
@@ -164,13 +163,13 @@ def placementStage(gameInfo):
                     newTroop = Troop(sb.getValue())
                 if kb.isClicked(coords) == True:
                     newTroop = Troop(kb.getValue())
-                if tb.isClicked(coords) == True:
-                    newTroop = Troop(tb.getValue())
                 
                 if addButton.isClicked(coords) == True:
                     command = addButton.getValue()
                 if upgradeButton.isClicked(coords) == True:
                     command = upgradeButton.getValue()
+                if switchButton.isClicked(coords) == True:
+                    command = switchButton.getValue()
         
         # Clear previous screen, so it can be updated again.
         display.fill((255,255,255))
@@ -180,17 +179,25 @@ def placementStage(gameInfo):
         rb.showButton(display)
         kb.showButton(display)
         sb.showButton(display)
-        tb.showButton(display)
 
         addButton.showButton(display)
         upgradeButton.showButton(display)
+        switchButton.showButton(display)
 
         # Uncomment for finished game
-        # if p1.getTokens() == 0 and p2.getTokens() == 0:
-        #     startButton.showButton(display)
+        if p1.getTokens() == 0 and p2.getTokens() == 0:
+            startButton.showButton(display)
 
-        startButton.showButton(display)
+        # Uncomment for testing
+        # startButton.showButton(display)
 
+        if currentPlayer.getTokens() == 0:
+            command = "switch"
+
+        if command == "switch":
+            if canSwitch == True:
+                switchPlayer = True
+                canSwitch = False
 
         if command == "add":
             if newTroop != None and square != None:
@@ -199,14 +206,14 @@ def placementStage(gameInfo):
                         b.setSquareValue(square,newTroop)   # Add troop to board
                         p1.addTroop(newTroop)               # Add troop to player's list
                         p1.spendTokens(1)
-                        switchPlayer = True
+                        canSwitch = True
                         newTroop = None
                 if square[1] >= b.getHeight()-3:
                     if currentPlayer == p2 and b.getSquareValue(square) == None and p1.getTokens() >= 0:
                         b.setSquareValue(square,newTroop)   # Add troop to board
                         p2.addTroop(newTroop)               # Add troop to player's list
                         p2.spendTokens(1)
-                        switchPlayer = True
+                        canSwitch = True
                         newTroop = None
                 square = None
 
@@ -215,8 +222,9 @@ def placementStage(gameInfo):
                 troop = b.getSquareValue(square)
                 if troop != None and troop.getTeam() == currentPlayer.getName():
                     troop.incrementLevel()
+                    currentPlayer.spendTokens(1)
                     square = None
-                    switchPlayer = True
+                    canSwitch = True
 
         # Switches active players
         if switchPlayer == True:
@@ -225,6 +233,7 @@ def placementStage(gameInfo):
             else:
                 currentPlayer = p1
             switchPlayer = False
+            command = None
 
         displayText(str(currentPlayer.getName())+" - "+str(currentPlayer.getTokens()) + " tokens left",(displayWidth//2,0))
 
@@ -236,8 +245,11 @@ def placementStage(gameInfo):
         pg.display.update()
         clock.tick(20)
     
-    return (b,p1,p2)
+    # Changes all troops stats based on their levels
+    p1.upgradeTroops()
+    p2.upgradeTroops()
 
+    return (b,p1,p2)
 
 def battleStage(gameInfo):
     """Accepts a tuple containing the Board and Player objects in the game.
@@ -249,13 +261,15 @@ def battleStage(gameInfo):
     p1.setMoves(len(p1.getTroops()))
     p2.setMoves(len(p2.getTroops()))
 
-    attackButton = CommandButton("attack", (displayWidth-75, 75), (0,50,200))
-    moveButton = CommandButton("move", (displayWidth-75, 125), (50,150,0))
-    rotateButton = CommandButton("rotate", (displayWidth-75, 175), (200,100,0))
+    attackButton = CommandButton("attack", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 2*displayHeight//7), (0,50,200))
+    moveButton = CommandButton("move", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 3*displayHeight//7), (50,150,0))
+    rotateButton = CommandButton("rotate", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 4*displayHeight//7), (200,100,0))
+    passButton = CommandButton("pass", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 6*displayHeight//7), (200,50,250))
 
     # Interface variables
     square = None
     selectedTroop = None
+    previewTroop = None
     command = None
 
     switchPlayer = False
@@ -276,6 +290,7 @@ def battleStage(gameInfo):
                 else:
                     square = None
                     selectedTroop = None
+                    previewTroop  = None
 
                 if attackButton.isClicked(coords) == True:
                     command = attackButton.getValue()
@@ -283,6 +298,8 @@ def battleStage(gameInfo):
                     command = moveButton.getValue()
                 if rotateButton.isClicked(coords) == True:
                     command = rotateButton.getValue()
+                if passButton.isClicked(coords) == True:
+                    command = passButton.getValue()
 
         # Clear previous screen, so it can be updated again.
         display.fill((255,255,255))
@@ -290,6 +307,7 @@ def battleStage(gameInfo):
         attackButton.showButton(display)
         moveButton.showButton(display)
         rotateButton.showButton(display)
+        passButton.showButton(display)
 
         b.showBoard(display)
         
@@ -301,12 +319,18 @@ def battleStage(gameInfo):
             if b.getSquareValue(square) != None:
                 if b.getSquareValue(square).getTeam() == currentPlayer.getName():
                     selectedTroop = b.getSquareValue(square)
+                if b.getSquareValue(square).getTeam() != currentPlayer.getName():
+                    previewTroop = b.getSquareValue(square)
 
+        if command == "pass":
+            switchPlayer = True
+            command = None
 
         if command == "attack":
-            if selectedTroop != None and square != None and selectedTroop.getTeam() == currentPlayer.getName():
+            if selectedTroop != None and square != None and selectedTroop.getTeam() == currentPlayer.getName() and selectedTroop.getCooldownCounter() == 0:
                 b.attack(selectedTroop)
                 currentPlayer.decrementMoves()
+                selectedTroop.setCooldownCounter()
                 square = None
 
 
@@ -340,8 +364,10 @@ def battleStage(gameInfo):
         # Switches active player
         if switchPlayer == True:
             if currentPlayer == p1:
+                currentPlayer.decrementCooldowns()
                 currentPlayer = p2
             else:
+                currentPlayer.decrementCooldowns()
                 currentPlayer = p1
             switchPlayer = False
 
@@ -357,7 +383,26 @@ def battleStage(gameInfo):
         displayText(str(pg.mouse.get_pos()), (0,0))
         displayText(str(square), (displayWidth*.9,0))
 
-        displayText("Select: "+str(selectedTroop), (0,displayHeight-30))
+        displayText("    Selected Troop", (0,displayHeight - 210))
+
+        if selectedTroop != None:
+            displayText("Type: "+selectedTroop.getName(), (0,displayHeight-180))
+            displayText("Level: "+str(selectedTroop.getLevel()), (0,displayHeight-150))
+            displayText("Range: "+str(selectedTroop.getRange()), (0,displayHeight-120))
+            displayText("Attack: "+str(selectedTroop.getAttack())+" ("+str(selectedTroop.getCooldownCounter())+")", (0,displayHeight-90))
+            displayText("Speed: "+str(selectedTroop.getSpeed()), (0,displayHeight-60))
+            displayText("Health: "+str(selectedTroop.getHealth()), (0,displayHeight-30))
+
+        displayText("    Troop Preview", (displayWidth-200,displayHeight-210))
+        if previewTroop != None:
+            displayText("Type: "+previewTroop.getName(), (displayWidth-200,displayHeight-180))
+            displayText("Level: "+str(previewTroop.getLevel()), (displayWidth-200,displayHeight-150))
+            displayText("Range: "+str(previewTroop.getRange()), (displayWidth-200,displayHeight-120))
+            displayText("Attack: "+str(previewTroop.getAttack())+" ("+str(previewTroop.getCooldownCounter())+")", (displayWidth-200,displayHeight-90))
+            displayText("Speed: "+str(previewTroop.getSpeed()), (displayWidth-200,displayHeight-60))
+            displayText("Health: "+str(previewTroop.getHealth()), (displayWidth-200,displayHeight-30))
+
+
         displayText(str(command), (displayWidth*.9,displayHeight-60))
 
         pg.display.update()

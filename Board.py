@@ -167,9 +167,7 @@ class Board(object):
 
                 for y in range(0,dist,orientation[1]):
                     if self.getSquareValue((current[0],current[1]  + y + orientation[1])) == None:
-                        troop.incrementSquaresMoved()    # Allows for troops with higher speed to move several times 
-                                                         # before spending a move.
-
+                        troop.incrementSquaresMoved()
                         self.setSquareValue((current[0],current[1] + y + orientation[1]),troop)
                         self.setSquareValue((current[0],current[1] + y), None)
                     else:
@@ -185,9 +183,7 @@ class Board(object):
 
                 for x in range(0, dist, orientation[0]):
                     if self.getSquareValue((current[0]  + x + orientation[0],current[1])) == None:
-                        troop.incrementSquaresMoved()    # Allows for troops with higher speed to move several times 
-                                                         # before spending a move.
-
+                        troop.incrementSquaresMoved()
                         self.setSquareValue((current[0] + x + orientation[0],current[1]),troop)
                         self.setSquareValue((current[0] + x, current[1]), None)
                     else:
@@ -221,6 +217,3 @@ class Board(object):
                 selectedTroop.setOrientation((1,-1))
             if square[0] < currentSquare.getX():
                 selectedTroop.setOrientation((-1,1))
-
-        
-    
