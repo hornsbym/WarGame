@@ -111,20 +111,75 @@ class Troop(object):
            Subtracts that int from self.health."""
         self.health -= dmg
     
-    def upgradeStats(self):
-        """Increases certain troop values upon upgrade based on what kind
-           of troop it is"""
+    def previewUpgrade(self,stat,tokens):
+        """Accepts a string specifying which stat is being upgraded.
+           Accepts an integer specifying how many tokens are being spent.
+           Returns int."""
         if self.getName() == "rifleman":
-            self.range += self.level-1
-            self.attack += self.level*8
+            if stat == "r":
+                return self.range + tokens
+            if stat == "a":
+                return self.attack + tokens*8
+            if stat == "s":
+                return round(self.speed + tokens*.49)
+            if stat == "h":
+                return self.health + tokens*12
 
         if self.getName() == "knight":
-            self.attack += self.level*3
-            self.speed += self.level-1
+            if stat == "r":
+                return round(self.range + tokens*.49)
+            if stat == "a":
+                return self.attack + tokens*5
+            if stat == "s":
+                return self.speed + tokens
+            if stat == "h":
+                return self.health + tokens*20
 
         if self.getName() == "shield":
-            self.health += (self.level*25)
-            self.attack += self.level*10
+            if stat == "r":
+                return round(self.range + tokens*.24)
+            if stat == "a":
+                return self.attack + tokens*12
+            if stat == "s":
+                return round(self.speed + tokens*.49)
+            if stat == "h":
+                return self.health + tokens*25
+    
+    def upgradeStats(self, stat, tokens):
+        """Accepts a string specifying the stat to be upgraded.
+           Accepts a token specifying how many tokens to spend on that stat.
+           Increases certain troop values upon upgrade based on what kind
+           of troop it is"""
+        self.level += tokens
+        if self.getName() == "rifleman":
+            if stat == "r":
+                self.range += tokens
+            if stat == "a":
+                self.attack += tokens*8
+            if stat == "s":
+                self.speed += round(tokens*.49)
+            if stat == "h":
+                self.health += tokens*12
+
+        if self.getName() == "knight":
+            if stat == "r":
+                self.range += round(tokens*.49)
+            if stat == "a":
+                self.attack += tokens*5
+            if stat == "s":
+                self.speed += tokens
+            if stat == "h":
+                self.health += tokens*20
+
+        if self.getName() == "shield":
+            if stat == "r":
+                self.range += round(tokens*.24)
+            if stat == "a":
+                self.attack += tokens*12
+            if stat == "s":
+                self.speed += round(tokens*.49)
+            if stat == "h":
+                self.health += tokens*25
 
     def setCooldownCounter(self):
         """Sets the cooldown counter equal to the number of turns a 

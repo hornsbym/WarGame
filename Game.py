@@ -12,7 +12,7 @@ from Player import Player
 # Boilerplate pygame stuff:
 pg.init()
 clock = pg.time.Clock()
-displayWidth = 650
+displayWidth = 800
 displayHeight = 600
 display = pg.display.set_mode((displayWidth,displayHeight))
 display.fill((255,255,255))
@@ -24,6 +24,114 @@ def displayText(string, tup=(0,0)):
     font = pg.font.SysFont(None, 25)
     text = font.render(string, True, (0,0,0))
     display.blit(text, tup)
+
+def upgrade(troop, tokens):
+    """Accepts a troop object.
+       Accepts an integer representing spendable tokens.
+       Accepts a tuple of coordinates where the player has clicked.
+       Displays the troop's stats and allows the user to see what
+       happens when they add upgrade points to certain attributes.
+       Upgrades the troop when user presses "apply".
+       Returns integer representing how many tokens were spent."""
+    STARTING_TOKENS = tokens
+    tokens = tokens
+
+    # Create add/subtract button
+    rPlus  = CommandButton("+",(25, 140), (0,225,75))
+    rMinus = CommandButton(" -",(10, 140), (225,0,75))
+    aPlus  = CommandButton("+",(25, 180), (0,225,75))
+    aMinus = CommandButton(" -",(10, 180), (225,0,75))
+    sPlus  = CommandButton("+",(25, 220), (0,225,75))
+    sMinus = CommandButton(" -",(10, 220), (225,0,75))
+    hPlus  = CommandButton("+",(25, 260), (0,225,75))
+    hMinus = CommandButton(" -",(10, 260), (225,0,75))
+
+    apply  = CommandButton("Apply",(100,300),(0,0,0))
+    cancel = CommandButton("Cancel",(10,300), (255, 75,75))
+
+    # Keep track of upgrades
+    r = 0
+    a = 0
+    s = 0
+    h = 0
+
+    coords = None 
+
+    loop = True
+    while (loop == True):
+        # Gets all the events from the game window. A.k.a., do stuff here.
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+                quit()
+            
+            if event.type == pg.MOUSEBUTTONDOWN:
+                coords = pg.mouse.get_pos()
+                if cancel.isClicked(coords) == True:
+                    loop = False
+                if apply.isClicked(coords) == True:
+                    pass
+
+                # Adds/subtracts tokens
+                if rPlus.isClicked(coords) == True and tokens > 0:
+                    tokens -= 1
+                    r += 1
+                if rMinus.isClicked(coords) == True and r > 0:
+                    tokens += 1
+                    r -= 1
+                if aPlus.isClicked(coords) == True and tokens > 0:
+                    tokens -= 1
+                    a += 1
+                if aMinus.isClicked(coords) == True and a > 0:
+                    tokens += 1
+                    a -= 1
+                if sPlus.isClicked(coords) == True and tokens > 0:
+                    tokens -= 1
+                    s += 1
+                if sMinus.isClicked(coords) == True and s > 0:
+                    tokens += 1
+                    s -= 1
+                if hPlus.isClicked(coords) == True and tokens > 0:
+                    tokens -= 1
+                    h += 1
+                if hMinus.isClicked(coords) == True and h > 0:
+                    tokens += 1
+                    h -= 1
+                
+                if apply.isClicked(coords) == True:
+                    troop.upgradeStats("r",r)
+                    troop.upgradeStats("a",a)
+                    troop.upgradeStats("s",s)
+                    troop.upgradeStats("h",h)
+                    loop = False
+            
+        display.fill((255,255,255))
+
+        displayText(troop.getName()+" - "+str(tokens)+" tokens",(15,85))
+
+        # Create text labels
+        displayText("Range: "+str(troop.previewUpgrade("r",r)),(50,140))
+        displayText("Attack: "+str(troop.previewUpgrade("a",a)),(50,180))
+        displayText("Speed: "+str(troop.previewUpgrade("s",s)),(50,220))
+        displayText("Health: "+str(troop.previewUpgrade("h",h)),(50,260))
+
+        # Show add/subtract buttons
+        rPlus.showButton(display)
+        rMinus.showButton(display)
+        aPlus.showButton(display)
+        aMinus.showButton(display)
+        sPlus.showButton(display)
+        sMinus.showButton(display)
+        hPlus.showButton(display)
+        hMinus.showButton(display)    
+
+        apply.showButton(display)
+        cancel.showButton(display)
+
+        pg.display.update()
+        clock.tick(20)
+
+    return abs(STARTING_TOKENS - tokens)
 
 def setupStage():
     """Determines dimensions of the game board, players' names, and eventually the player's army.
@@ -223,11 +331,15 @@ def placementStage(gameInfo):
         if command == "upgrade":
             if square != None:
                 troop = b.getSquareValue(square)
-                if troop != None and troop.getTeam() == currentPlayer:
-                    troop.incrementLevel()
-                    currentPlayer.spendTokens(1)
-                    square = None
-                    canSwitch = True
+                if troop != None:
+                    if troop.getTeam() == currentPlayer and troop.getLevel() <= 5:
+                        if currentPlayer.getTokens() >= 5:
+                            u = upgrade(troop,5)
+                        if currentPlayer.getTokens() <= 5:
+                            u = upgrade(troop,currentPlayer.getTokens())
+                        currentPlayer.spendTokens(u)
+                        square = None 
+                        canSwitch = True
 
         # Switches active players
         if switchPlayer == True:
@@ -256,10 +368,6 @@ def placementStage(gameInfo):
 
         pg.display.update()
         clock.tick(20)
-    
-    # Changes all troops stats based on their levels
-    p1.upgradeTroops()
-    p2.upgradeTroops()
 
     return (b,p1,p2)
 
@@ -399,7 +507,16 @@ def battleStage(gameInfo):
         displayText(str(pg.mouse.get_pos()), (0,0))
         displayText(str(square), (displayWidth*.9,0))
 
-        displayText("    Selected Troop", (0,displayHeight - 210))
+        displayText("    Enemy Troop Stats", (0,displayHeight-440))
+        if previewTroop != None:
+            displayText("Type: "+previewTroop.getName(), (0,displayHeight-410))
+            displayText("Level: "+str(previewTroop.getLevel()), (0,displayHeight-390))
+            displayText("Range: "+str(previewTroop.getRange()), (0,displayHeight-360))
+            displayText("Attack: "+str(previewTroop.getAttack())+" ("+str(previewTroop.getCooldownCounter())+")", (0,displayHeight-330))
+            displayText("Speed: "+str(previewTroop.getSpeed()), (0,displayHeight-300))
+            displayText("Health: "+str(previewTroop.getHealth()), (0,displayHeight-270))
+
+        displayText("    Your Stats", (0,displayHeight - 210))
         if selectedTroop != None:
             displayText("Type: "+selectedTroop.getName(), (0,displayHeight-180))
             displayText("Level: "+str(selectedTroop.getLevel()), (0,displayHeight-150))
@@ -407,15 +524,6 @@ def battleStage(gameInfo):
             displayText("Attack: "+str(selectedTroop.getAttack())+" ("+str(selectedTroop.getCooldownCounter())+")", (0,displayHeight-90))
             displayText("Speed: "+str(selectedTroop.getSpeed()), (0,displayHeight-60))
             displayText("Health: "+str(selectedTroop.getHealth()), (0,displayHeight-30))
-
-        displayText("    Troop Preview", (displayWidth-150,displayHeight-210))
-        if previewTroop != None:
-            displayText("Type: "+previewTroop.getName(), (displayWidth-150,displayHeight-180))
-            displayText("Level: "+str(previewTroop.getLevel()), (displayWidth-150,displayHeight-150))
-            displayText("Range: "+str(previewTroop.getRange()), (displayWidth-150,displayHeight-120))
-            displayText("Attack: "+str(previewTroop.getAttack())+" ("+str(previewTroop.getCooldownCounter())+")", (displayWidth-150,displayHeight-90))
-            displayText("Speed: "+str(previewTroop.getSpeed()), (displayWidth-150,displayHeight-60))
-            displayText("Health: "+str(previewTroop.getHealth()), (displayWidth-150,displayHeight-30))
 
 
         pg.display.update()
