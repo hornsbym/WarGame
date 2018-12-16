@@ -16,6 +16,7 @@ class TroopButton(object):
         """Accepts a pygame Display object.
            Displays the button on the provided surface"""
         img = pg.image.load('./_sprites/'+self.value[0]+'.png')
+        img = pg.transform.rotate(img,180)
         display.blit(img, self.coords)
 
     def isClicked(self, coords):

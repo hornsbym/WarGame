@@ -2,19 +2,23 @@ import pygame as pg
 
 class Player(object):
     """Holds information relevant for each player in the game."""
-    def __init__(self, name, armyType, spendableTokens):
+    def __init__(self, name, color, armyType, spendableTokens):
         """name            = Str
+           color           = Str
            civilization    = Str
            spendableTokens = Int; how many tokens you have to make upgrades.
            moveablePieces  = Int; how many moves you can make in one turn."""
         self.MOVES_PER_TURN = 1
         
         self.name   = name
+        self.color  = color
         self.army   = armyType
         self.tokens = spendableTokens
         self.moves  = self.MOVES_PER_TURN
 
         self.troops = []
+
+        self.color  = color
     
     def __str__(self):
         return '<Player Object name = "%s" army = "%s" tokens = %i moves = %i>' % \
@@ -43,6 +47,10 @@ class Player(object):
     def getTroops(self):
         """Returns list object."""
         return self.troops
+    
+    def getColor(self):
+        """Returns string."""
+        return self.color
 
     def setMoves(self,moves):
         """Accepts an int.
@@ -67,7 +75,7 @@ class Player(object):
         """Accepts a Troop object.
            Adds Troop Object to the player's list of troops.
            Also sets that Troop's team to the player's name."""
-        troop.setTeam(self.name)
+        troop.setTeam(self)
         self.troops.append(troop)
     
     def removeTroop(self,troop):

@@ -18,6 +18,7 @@ class Square(object):
         self.coords = coords
         self.icon = "square"
         self.troop = None
+        self.color = ""
 
     def getX(self):
         """Returns the square's x-value."""
@@ -34,7 +35,12 @@ class Square(object):
     def setIcon(self):
         """Accepts a string.
            Sets that string as the square's icon attribute."""
-        self.icon = self.troop.getName()
+        self.icon = self.troop.getColor()+self.troop.getName()
+
+    def setColor(self,color):
+        """Accepts a string.
+           This string represents the color of the occupying team."""
+        self.color = color
     
     def setTroop(self, troop):
         """Accepts a Troop object.

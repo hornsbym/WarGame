@@ -23,6 +23,7 @@ class Troop(object):
         self.cooldownCounter = 0
 
         self.team = None
+        self.color = ""
     
     def __str__(self):
         return "<Troop Object name='%s', level=%i, health =%i, team='%s'>" % (self.name,self.level,self.health,self.team)
@@ -52,13 +53,21 @@ class Troop(object):
         return self.health
     
     def getTeam(self):
-        """Returns the troop's team."""
+        """Returns the troop's team (Player object)."""
         return self.team
 
     def getOrientation(self):
         """Returns the object's orientation.
            Returns a tuple object (xDirection, yDirection)"""
         return self.orientation
+    
+    def getColor(self):
+        """Returns the object's color (string)."""
+        return self.color
+
+    def setColor(self):
+        """Sets the troop's color equal to the containing Player object's color."""
+        self.color = self.team.getColor()
     
     def getCooldownCounter(self):
         """Returns the object's cooldown timer."""

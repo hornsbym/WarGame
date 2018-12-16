@@ -106,8 +106,8 @@ def setupStage():
         pg.display.update()
         clock.tick(60)
     
-    p1 = Player(nameInput1.get_text(),None,b.getWidth()*3)
-    p2 = Player(nameInput2.get_text(),None,b.getWidth()*3)
+    p1 = Player(nameInput1.get_text(),"blue",None,b.getWidth()*3)
+    p2 = Player(nameInput2.get_text(),"red",None,b.getWidth()*3)
 
     return (b,p1,p2)
 
@@ -203,16 +203,19 @@ def placementStage(gameInfo):
             if newTroop != None and square != None:
                 if square[1] <= 2:
                     if currentPlayer == p1 and b.getSquareValue(square) == None and p2.getTokens() >= 1:
-                        b.setSquareValue(square,newTroop)   # Add troop to board
                         p1.addTroop(newTroop)               # Add troop to player's list
                         p1.spendTokens(1)
+                        newTroop.setColor()
+                        b.setSquareValue(square,newTroop)   # Add troop to board
                         canSwitch = True
                         newTroop = None
                 if square[1] >= b.getHeight()-3:
                     if currentPlayer == p2 and b.getSquareValue(square) == None and p1.getTokens() >= 0:
-                        b.setSquareValue(square,newTroop)   # Add troop to board
                         p2.addTroop(newTroop)               # Add troop to player's list
                         p2.spendTokens(1)
+                        newTroop.setColor()
+                        b.setSquareValue(square,newTroop)   # Add troop to board
+                        b.setTroopOrientation(newTroop,(0,0)) # Rotates square to face opponents
                         canSwitch = True
                         newTroop = None
                 square = None
@@ -220,7 +223,7 @@ def placementStage(gameInfo):
         if command == "upgrade":
             if square != None:
                 troop = b.getSquareValue(square)
-                if troop != None and troop.getTeam() == currentPlayer.getName():
+                if troop != None and troop.getTeam() == currentPlayer:
                     troop.incrementLevel()
                     currentPlayer.spendTokens(1)
                     square = None
@@ -326,9 +329,9 @@ def battleStage(gameInfo):
 
         if square != None:
             if b.getSquareValue(square) != None:
-                if b.getSquareValue(square).getTeam() == currentPlayer.getName():
+                if b.getSquareValue(square).getTeam() == currentPlayer:
                     selectedTroop = b.getSquareValue(square)
-                if b.getSquareValue(square).getTeam() != currentPlayer.getName():
+                if b.getSquareValue(square).getTeam() != currentPlayer:
                     previewTroop = b.getSquareValue(square)
 
 
@@ -338,7 +341,7 @@ def battleStage(gameInfo):
 
 
         if command == "attack":
-            if selectedTroop != None and square != None and selectedTroop.getTeam() == currentPlayer.getName() and selectedTroop.getCooldownCounter() == 0:
+            if selectedTroop != None and square != None and selectedTroop.getTeam() == currentPlayer and selectedTroop.getCooldownCounter() == 0:
                 b.attack(selectedTroop)
                 currentPlayer.decrementMoves()
                 selectedTroop.setCooldownCounter()
