@@ -26,7 +26,7 @@ class Troop(object):
         self.color = ""
     
     def __str__(self):
-        return "<Troop Object name='%s', level=%i, health =%i, team='%s'>" % (self.name,self.level,self.health,self.team)
+        return "<Troop Object name='%s', level=%i, team='%s'>" % (self.name,self.level,self.team.getName())
 
     def getName(self):
         """Returns the troop's classification."""

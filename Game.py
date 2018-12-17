@@ -238,6 +238,7 @@ def placementStage(gameInfo):
     sb = TroopButton(("shield",1,1,10,1,200,(1,1),1), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100,4*displayHeight//6))
 
     newTroop = None
+    previewTroop = None
     command  = None
     square   = None
 
@@ -302,6 +303,9 @@ def placementStage(gameInfo):
         if currentPlayer.getTokens() == 0:
             command = "switch"
 
+        if square != None:
+            previewTroop =b.getSquareValue(square)
+
         if command == "switch":
             if canSwitch == True:
                 switchPlayer = True
@@ -323,7 +327,7 @@ def placementStage(gameInfo):
                         p2.spendTokens(1)
                         newTroop.setColor()
                         b.setSquareValue(square,newTroop)   # Add troop to board
-                        b.setTroopOrientation(newTroop,(0,0)) # Rotates square to face opponents
+                        b.setTroopOrientation(newTroop,(square[0],0)) # Rotates square to face opponents
                         canSwitch = True
                         newTroop = None
                 square = None
@@ -334,9 +338,12 @@ def placementStage(gameInfo):
                 if troop != None:
                     if troop.getTeam() == currentPlayer and troop.getLevel() <= 5:
                         if currentPlayer.getTokens() >= 5:
-                            u = upgrade(troop,5)
-                        if currentPlayer.getTokens() <= 5:
-                            u = upgrade(troop,currentPlayer.getTokens())
+                            u = upgrade(troop,5-troop.getLevel())
+                        if currentPlayer.getTokens() < 5:
+                            if abs(5-troop.getLevel()) < currentPlayer.getTokens():
+                                u = upgrade(troop, abs(5-troop.getLevel()))
+                            if abs(5-troop.getLevel()) >= currentPlayer.getTokens():
+                                u = upgrade(troop,currentPlayer.getTokens())
                         currentPlayer.spendTokens(u)
                         square = None 
                         canSwitch = True
@@ -349,6 +356,8 @@ def placementStage(gameInfo):
                 currentPlayer = p1
             switchPlayer = False
             command = None
+            
+        displayText(str(previewTroop), (0, 30))
 
         displayText(str(currentPlayer.getName())+" - "+str(currentPlayer.getTokens()) + " tokens left",(displayWidth//2,0))
 
@@ -491,6 +500,12 @@ def battleStage(gameInfo):
 
         # Switches active player
         if switchPlayer == True:
+            currentPlayer.resetMoves()
+            currentPlayer.restTroops()
+
+            selectedTroop = None
+            square = None
+            command = None
             if currentPlayer == p1:
                 currentPlayer.decrementCooldowns()
                 currentPlayer = p2
