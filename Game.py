@@ -69,6 +69,7 @@ def upgrade(troop, tokens):
                 coords = pg.mouse.get_pos()
                 if cancel.isClicked(coords) == True:
                     loop = False
+                    return 0
                 if apply.isClicked(coords) == True:
                     pass
 
@@ -233,9 +234,11 @@ def placementStage(gameInfo):
     upgradeButton = CommandButton("upgrade",(b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 3*displayHeight//6), (200,150,0))
     switchButton  = CommandButton("switch",(b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 4*displayHeight//6), (0,0,0))
 
-    rb = TroopButton(("rifleman",1,3,50,1,100,(1,1),2), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100,2*displayHeight//6))
-    kb = TroopButton(("knight",1,1,30,2,120,(1,1),1), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100,3*displayHeight//6))
-    sb = TroopButton(("shield",1,1,10,1,200,(1,1),1), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100,4*displayHeight//6))
+    tb = TroopButton(("troop",1,1,25,1,100,(1,1),1,1), (b.getCoords()[0] - (b.getWidth()//2 * 32)-150, 2*displayHeight//6))
+    rb = TroopButton(("rifleman",1,3,50,1,80,(1,1),2,2), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100, 2*displayHeight//6))
+    hb = TroopButton(("healer",1,1,-30,1,70,(1,1),2,2), (b.getCoords()[0] - (b.getWidth()//2 * 32)-150, 3*displayHeight//6))    
+    kb = TroopButton(("knight",1,1,30,2,120,(1,1),1,2), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100, 3*displayHeight//6))
+    sb = TroopButton(("shield",1,1,10,1,175,(1,1),1,2), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100, 4*displayHeight//6))
 
     newTroop = None
     previewTroop = None
@@ -266,12 +269,16 @@ def placementStage(gameInfo):
                     newTroop = None
 
                 # Checks the troop placement buttons
+                if tb.isClicked(coords) == True:
+                    newTroop = Troop(tb.getValue())
                 if rb.isClicked(coords) == True:
                     newTroop = Troop(rb.getValue())
                 if sb.isClicked(coords) == True:
                     newTroop = Troop(sb.getValue())
                 if kb.isClicked(coords) == True:
                     newTroop = Troop(kb.getValue())
+                if hb.isClicked(coords) == True:
+                    newTroop = Troop(hb.getValue())
                 
                 if addButton.isClicked(coords) == True:
                     command = addButton.getValue()
@@ -285,9 +292,11 @@ def placementStage(gameInfo):
 
         b.showBoard(display)
 
+        tb.showButton(display)
         rb.showButton(display)
         kb.showButton(display)
         sb.showButton(display)
+        hb.showButton(display)
 
         addButton.showButton(display)
         upgradeButton.showButton(display)
@@ -490,12 +499,6 @@ def battleStage(gameInfo):
 
 
         if currentPlayer.getMoves() <= 0:
-            currentPlayer.resetMoves()
-            currentPlayer.restTroops()
-
-            selectedTroop = None
-            square = None
-            command = None
             switchPlayer = True
 
         # Switches active player

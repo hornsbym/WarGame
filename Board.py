@@ -120,14 +120,19 @@ class Board(object):
             for y in range(attackerY,attackerY+orientation[1]*(attackerRange+1),orientation[1]):
                 if y != attackerY:
                     attackedTroop = self.squares[attackerX][y].getTroop()
-                    # Makes sure the square being attacked isn't empty or on the same team.
-                    if attackedTroop != None: 
-                        if attackedTroop.getTeam() != troop.getTeam():
-                            attackedTroop.takeDamage(attackerStrength)
-                            break
-                        if attackedTroop.getTeam() == troop.getTeam():
-                            if attackedTroop.getName() == "shield":
+                    if attackedTroop != None:   # Makes sure the square being attacked isn't empty... 
+                        if attackedTroop.getTeam() != troop.getTeam():    # ...or on the same team.
+                            if troop.getName() == 'healer':     # Doesn't let healers heal opponents
                                 pass
+                            else:
+                                attackedTroop.takeDamage(attackerStrength)
+                                break
+                        if attackedTroop.getTeam() == troop.getTeam():
+                            if attackedTroop.getName() == "shield":    # Allows teammates to attack
+                                pass                                   # over friendly shield-carriers
+                            if troop.getName() == 'healer':    # Heals teammates
+                                attackedTroop.takeDamage(attackerStrength)
+                                break
                             else: 
                                 break    # Stops attack if it hits a non-shield teammate
 

@@ -18,7 +18,8 @@ class Troop(object):
         self.health = info[5]
         self.orientation = info[6]
         self.cooldown = info[7]     # Number of turns a piece must wait after it 
-                                    # attacks to attack again
+        self.cost = info[8]         # attacks to attack again
+        
         self.squaresMoved    = 0
         self.cooldownCounter = 0
 
@@ -115,6 +116,16 @@ class Troop(object):
         """Accepts a string specifying which stat is being upgraded.
            Accepts an integer specifying how many tokens are being spent.
            Returns int."""
+        if self.getName() == "troop":
+            if stat == "r":
+                return round(self.range + tokens*.49)
+            if stat == "a":
+                return self.attack + tokens*10
+            if stat == "s":
+                return self.speed + tokens
+            if stat == "h":
+                return self.health + tokens*15
+
         if self.getName() == "rifleman":
             if stat == "r":
                 return self.range + tokens
@@ -144,6 +155,16 @@ class Troop(object):
                 return round(self.speed + tokens*.49)
             if stat == "h":
                 return self.health + tokens*25
+
+        if self.getName() == "healer":
+            if stat == "r":
+                return round(self.range + tokens*.13)
+            if stat == "a":
+                return self.attack - tokens*10
+            if stat == "s":
+                return self.speed + tokens
+            if stat == "h":
+                return self.health + tokens*8
     
     def upgradeStats(self, stat, tokens):
         """Accepts a string specifying the stat to be upgraded.
@@ -151,6 +172,16 @@ class Troop(object):
            Increases certain troop values upon upgrade based on what kind
            of troop it is"""
         self.level += tokens
+        if self.getName() == "troop":
+            if stat == "r":
+                self.range += round(tokens*.49)
+            if stat == "a":
+                self.attack += tokens*10
+            if stat == "s":
+                self.speed += tokens
+            if stat == "h":
+                self.health += tokens*15
+
         if self.getName() == "rifleman":
             if stat == "r":
                 self.range += tokens
@@ -180,6 +211,16 @@ class Troop(object):
                 self.speed += round(tokens*.49)
             if stat == "h":
                 self.health += tokens*25
+        
+        if self.getName() == "healer":
+            if stat == "r":
+                self.range += round(tokens*.13)
+            if stat == "a":
+                self.attack -= tokens*10
+            if stat == "s":
+                self.speed += tokens
+            if stat == "h":
+                self.health += tokens*8
 
     def setCooldownCounter(self):
         """Sets the cooldown counter equal to the number of turns a 
