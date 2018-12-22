@@ -10,6 +10,8 @@ class Troop(object):
      (xDirection = info[6], int,
       yDirection = info[6], int)
         cooldown = info[7], int"""
+        self.MAX_HEALTH = info[5]
+
         self.name = info[0]
         self.level = info[1]
         self.range = info[2]
@@ -52,6 +54,10 @@ class Troop(object):
     def getHealth(self):
         """Returns the troop's health."""
         return self.health
+    
+    def getMaxHealth(self):
+        """Returns an integer for the starting health of the troop."""
+        return self.MAX_HEALTH
     
     def getTeam(self):
         """Returns the troop's team (Player object)."""
@@ -180,6 +186,7 @@ class Troop(object):
             if stat == "s":
                 self.speed += tokens
             if stat == "h":
+                self.MAX_HEALTH += tokens*15
                 self.health += tokens*15
 
         if self.getName() == "rifleman":
@@ -190,6 +197,7 @@ class Troop(object):
             if stat == "s":
                 self.speed += round(tokens*.49)
             if stat == "h":
+                self.MAX_HEALTH += tokens*12
                 self.health += tokens*12
 
         if self.getName() == "knight":
@@ -200,6 +208,7 @@ class Troop(object):
             if stat == "s":
                 self.speed += tokens
             if stat == "h":
+                self.MAX_HEALTH += tokens*20
                 self.health += tokens*20
 
         if self.getName() == "shield":
@@ -210,6 +219,7 @@ class Troop(object):
             if stat == "s":
                 self.speed += round(tokens*.49)
             if stat == "h":
+                self.MAX_HEALTH += tokens*25
                 self.health += tokens*25
         
         if self.getName() == "healer":
@@ -220,6 +230,7 @@ class Troop(object):
             if stat == "s":
                 self.speed += tokens
             if stat == "h":
+                self.MAX_HEALTH += tokens*8
                 self.health += tokens*8
 
     def setCooldownCounter(self):
