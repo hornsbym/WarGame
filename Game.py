@@ -31,35 +31,94 @@ def displayText(string, tup=(0,0),fontSize = 25,fontColor=(0,0,0)):
     text = font.render(string, True, fontColor)
     display.blit(text, tup)
 
-def drawHealthbar(currentHealth,maxHealth, coords):
-    """Accepts an integer representing the remaining health.
+def drawHealthbar(namePlate, currentHealth, maxHealth, coords, selected=False):
+    """Accepts a string for the name and level of the troop.
+       Accepts an integer representing the remaining health.
        Accepts an integer represending the total health pool.
-       Accepts a tuple of form (x,y) for where the healthbar should be drawn."""
+       Accepts a tuple of form (x,y) for where the healthbar should be drawn.
+       Accepts an optional boolean for whether the troop being represented is a selected troop."""
     x = coords[0]
-    y = coords[1]
+    y = coords[1]   
+    fontColor = (0,0,0)
+    if selected == True:
+        fontColor = (150,0,150)
+        pg.draw.rect(display, (150,0,150), (x-3,y-15,maxHealth+6,37), 2) # Outlines selected troop
     pg.draw.rect(display, (200,0,0), (x,y,maxHealth,5))   # Draws the red base for the healthbar
     pg.draw.rect(display,(0,200,0),(x,y,currentHealth,5)) # Draws the green portion of the healthbar
-    displayText(str(currentHealth)+" / "+str(maxHealth), (x,y+6),17) #Shows numbers
+    displayText(namePlate, (x,y-11),17,fontColor)
+    displayText(str(currentHealth)+" / "+str(maxHealth), (x,y+6),17,fontColor) #Shows numbers
 
-def drawPlayerHealthbars(player, coords, selectedTroop):
+def drawPlayerHealthbars(player, side, selectedTroop):
     """Accepts a Player object.
-       Accepts a tuple of form (x,y) specifying where the upper-left corner should be drawn.
+       Accepts a string of either "RIGHT" or "LEFT" specifying which side the troops should be located on.
+       Accepts a Troop object specifying which troop is selected.
        Gets that player's Troops and displays all of their healthbars."""
     troops = player.getTroops()
-    x = coords[0]
-    y = coords[1]
-    for troop in troops:
-        name = troop.getName()
-        name = name[0].upper() + name[1:]
-        level = str(troop.getLevel())
 
-        if troop == selectedTroop:
-            displayText("Lvl. "+level+" "+name,(x,y-11),17,(150,0,255))
-        else:
-            displayText("Lvl. "+level+" "+name,(x,y-11),17)
+    if side == "LEFT":
+        longest = 0
+        x = 5
+        y = 50
+        for troop in troops:
+            name = troop.getName()
+            name = name[0].upper() + name[1:]
+            level = str(troop.getLevel())
 
-        drawHealthbar(troop.getHealth(),troop.getMaxHealth(),(x,y))
-        y += 45
+            # Doesn't let the list of troops get beyond 75% of the screen height.
+            if y > displayHeight*.75:    
+                for troop in troops:
+                    if troop.getMaxHealth() > longest:
+                        longest = troop.getMaxHealth()
+                x += longest+5
+                y = 50
+
+            # Changes selected troop name to purple and outlines
+            if troop == selectedTroop:
+                drawHealthbar("Lvl. "+level+" "+name,troop.getHealth(),troop.getMaxHealth(),(x,y),True)
+            else:
+                drawHealthbar("Lvl. "+level+" "+name,troop.getHealth(),troop.getMaxHealth(),(x,y))
+            y += 45
+
+    if side == "RIGHT":
+        # Finds the longest healthbar
+        longest = 0
+        for troop in troops:
+            if troop.getMaxHealth() > longest:
+                longest = troop.getMaxHealth()
+
+        x = displayWidth-longest-5
+        y = 50
+        for troop in troops:
+            name = troop.getName()
+            name = name[0].upper() + name[1:]
+            level = str(troop.getLevel())
+
+            # Doesn't let the list of troops get beyond 75% of the screen height.
+            if y > displayHeight*.75:    
+                x -= longest-5
+                y = 50
+            
+            # Changes selected troop name to purple and outlines
+            if troop == selectedTroop:
+                drawHealthbar("Lvl. "+level+" "+name,troop.getHealth(),troop.getMaxHealth(),(x,y),True)
+            else:
+                drawHealthbar("Lvl. "+level+" "+name,troop.getHealth(),troop.getMaxHealth(),(x,y))
+            y += 45
+
+def displayTroopCard(troop, side):
+    """Accepts a Troop object.
+       Accepts a string of either "LEFT" or "RIGHT"."""
+    if side == "LEFT":
+        x = 5
+        y = displayHeight * .76
+        pg.draw.rect(display,(0,0,0), (x,y,displayWidth*.25, displayHeight*.23),2) # Draws wireframe
+        displayText(troop.getName() + " - Level "+ str(troop.getLevel()), (x+10,y+5),25)
+        displayText(str(troop.getHealth())+" health", (x+5,y+25), 20)
+        displayText(str(troop.getAttack())+" attack", (x+5,y+45), 20)
+        displayText(str(troop.getRange())+" attack range", (x+5,y+65), 20)
+        displayText(str(troop.getSpeed())+" speed", (x+5,y+85), 20)
+
+
 
 def upgrade(troop, tokens):
     """Accepts a troop object.
@@ -476,6 +535,7 @@ def battleStage(gameInfo):
                     command = passButton.getValue()
 
         # Clear previous screen, so it can be updated again.
+        
         display.fill((255,255,255))
 
         attackButton.showButton(display)
@@ -485,10 +545,16 @@ def battleStage(gameInfo):
 
         b.showBoard(display)
 
-        drawPlayerHealthbars(currentPlayer, (b.getCoords()[0]+b.getWidth()*32+150,b.getCoords()[1]-b.getHeight()*32),selectedTroop)
+        if currentPlayer == p1:
+            drawPlayerHealthbars(currentPlayer,  "LEFT", selectedTroop)
+        if currentPlayer == p2:
+            drawPlayerHealthbars(currentPlayer,  "RIGHT", selectedTroop)
         
 
             ### GAME LOGIC ###
+
+        if selectedTroop != None:
+            displayTroopCard(selectedTroop,"LEFT")
 
 
         if square != None:
@@ -498,7 +564,7 @@ def battleStage(gameInfo):
 
                 if b.getSquareValue(square).getTeam() != currentPlayer:
                     previewTroop = b.getSquareValue(square)
-
+            
 
         if command == "pass":
             switchPlayer = True
@@ -527,15 +593,16 @@ def battleStage(gameInfo):
                     if selectedTroop.canMove() == False:
                         currentPlayer.decrementMoves()
                     square = None
+            
                 if square == (ownSquare.getX(),ownSquare.getY()):
                     square = None
-        
+            
 
         if command == "rotate":
             if selectedTroop != None and square != None:
                 b.setTroopOrientation(selectedTroop,square)
                 square = None
-
+        
 
         if currentPlayer.getMoves() <= 0:
             switchPlayer = True
@@ -555,6 +622,7 @@ def battleStage(gameInfo):
                 currentPlayer.decrementCooldowns()
                 currentPlayer = p1
             switchPlayer = False
+    
 
         # Display game data. Testing purposes only.
         displayText(str(currentPlayer.getName())+" - "+str(currentPlayer.getMoves())+ " moves left",(displayWidth//2,0))
@@ -564,23 +632,23 @@ def battleStage(gameInfo):
         displayText(str(pg.mouse.get_pos()), (0,0))
         displayText(str(square), (displayWidth*.9,0))
 
-        displayText("    Enemy Troop Stats", (0,displayHeight-440))
-        if previewTroop != None:
-            displayText("Type: "+previewTroop.getName(), (0,displayHeight-410), 20)
-            displayText("Level: "+str(previewTroop.getLevel()), (0,displayHeight-390), 20)
-            displayText("Range: "+str(previewTroop.getRange()), (0,displayHeight-360), 20)
-            displayText("Attack: "+str(previewTroop.getAttack())+" ("+str(previewTroop.getCooldownCounter())+")", (0,displayHeight-330), 20)
-            displayText("Speed: "+str(previewTroop.getSpeed()), (0,displayHeight-300), 20)
-            displayText("Health: "+str(previewTroop.getHealth()), (0,displayHeight-270), 20)
+        # displayText("    Enemy Troop Stats", (0,displayHeight-440))
+        # if previewTroop != None:
+        #     displayText("Type: "+previewTroop.getName(), (0,displayHeight-410), 20)
+        #     displayText("Level: "+str(previewTroop.getLevel()), (0,displayHeight-390), 20)
+        #     displayText("Range: "+str(previewTroop.getRange()), (0,displayHeight-360), 20)
+        #     displayText("Attack: "+str(previewTroop.getAttack())+" ("+str(previewTroop.getCooldownCounter())+")", (0,displayHeight-330), 20)
+        #     displayText("Speed: "+str(previewTroop.getSpeed()), (0,displayHeight-300), 20)
+        #     displayText("Health: "+str(previewTroop.getHealth()), (0,displayHeight-270), 20)
 
-        displayText("    Your Stats", (0,displayHeight - 210))
-        if selectedTroop != None:
-            displayText("Type: "+selectedTroop.getName(), (0,displayHeight-130), 20)
-            displayText("Level: "+str(selectedTroop.getLevel()), (0,displayHeight-100), 20)
-            displayText("Range: "+str(selectedTroop.getRange()), (0,displayHeight-80), 20)
-            displayText("Attack: "+str(selectedTroop.getAttack())+" ("+str(selectedTroop.getCooldownCounter())+")", (0,displayHeight-60), 20)
-            displayText("Speed: "+str(selectedTroop.getSpeed()), (0,displayHeight-40), 20)
-            displayText("Health: "+str(selectedTroop.getHealth()), (0,displayHeight-20), 20)
+        # displayText("    Your Stats", (0,displayHeight-150))
+        # if selectedTroop != None:
+        #     displayText("Type: "+selectedTroop.getName(), (0,displayHeight-120), 20)
+        #     displayText("Level: "+str(selectedTroop.getLevel()), (0,displayHeight-100), 20)
+        #     displayText("Range: "+str(selectedTroop.getRange()), (0,displayHeight-80), 20)
+        #     displayText("Attack: "+str(selectedTroop.getAttack())+" ("+str(selectedTroop.getCooldownCounter())+")", (0,displayHeight-60), 20)
+        #     displayText("Speed: "+str(selectedTroop.getSpeed()), (0,displayHeight-40), 20)
+        #     displayText("Health: "+str(selectedTroop.getHealth()), (0,displayHeight-20), 20)
 
 
         pg.display.update()
