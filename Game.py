@@ -135,7 +135,6 @@ def canUpgrade(player,troop):
     else: 
         return True
 
-
 def upgrade(troop, tokens):
     """Accepts a troop object.
        Accepts an integer representing spendable tokens.
@@ -445,7 +444,7 @@ def placementStage(gameInfo):
                 if square[1] >= b.getHeight()-3:
                     if currentPlayer == p2 and b.getSquareValue(square) == None and p1.getTokens() >= 0 and canUpgrade(currentPlayer,newTroop) == True:
                         p2.addTroop(newTroop)               # Add troop to player's list
-                        p2.spendTokens(newTroop)
+                        p2.spendTokens(newTroop.getCost())
                         newTroop.setColor()
                         b.setSquareValue(square,newTroop)   # Add troop to board
                         b.setTroopOrientation(newTroop,(square[0],0)) # Rotates square to face opponents
