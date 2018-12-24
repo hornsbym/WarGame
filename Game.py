@@ -12,7 +12,7 @@ from Player import Player
 
 # Get the screen dimensions here
 monitor = get_monitors()[0]
-width  = monitor.width
+width  = monitor.width-25
 height = monitor.height-75
 
 # Boilerplate pygame stuff:
@@ -56,7 +56,11 @@ def drawPlayerHealthbars(player, side, selectedTroop):
     troops = player.getTroops()
 
     if side == "LEFT":
+        # Finds the longest healthbar
         longest = 0
+        for troop in troops:
+            if troop.getMaxHealth() > longest:
+                longest = troop.getMaxHealth()
         x = 5
         y = 50
         for troop in troops:
@@ -66,9 +70,6 @@ def drawPlayerHealthbars(player, side, selectedTroop):
 
             # Doesn't let the list of troops get beyond 75% of the screen height.
             if y > displayHeight*.75:    
-                for troop in troops:
-                    if troop.getMaxHealth() > longest:
-                        longest = troop.getMaxHealth()
                 x += longest+5
                 y = 50
 
@@ -86,7 +87,7 @@ def drawPlayerHealthbars(player, side, selectedTroop):
             if troop.getMaxHealth() > longest:
                 longest = troop.getMaxHealth()
 
-        x = displayWidth-longest-5
+        x = displayWidth-(longest+5)
         y = 50
         for troop in troops:
             name = troop.getName()
@@ -95,7 +96,7 @@ def drawPlayerHealthbars(player, side, selectedTroop):
 
             # Doesn't let the list of troops get beyond 75% of the screen height.
             if y > displayHeight*.75:    
-                x -= longest-5
+                x -= (longest+5)
                 y = 50
             
             # Changes selected troop name to purple and outlines
@@ -111,13 +112,28 @@ def displayTroopCard(troop, side):
     if side == "LEFT":
         x = 5
         y = displayHeight * .76
-        pg.draw.rect(display,(0,0,0), (x,y,displayWidth*.25, displayHeight*.23),2) # Draws wireframe
-        displayText(troop.getName() + " - Level "+ str(troop.getLevel()), (x+10,y+5),25)
-        displayText(str(troop.getHealth())+" health", (x+5,y+25), 20)
-        displayText(str(troop.getAttack())+" attack", (x+5,y+45), 20)
-        displayText(str(troop.getRange())+" attack range", (x+5,y+65), 20)
-        displayText(str(troop.getSpeed())+" speed", (x+5,y+85), 20)
+    if side == "RIGHT":
+        x = displayWidth *.75 - 5
+        y = displayHeight * .76
+    spacing = (displayHeight - y) * .2
 
+    pg.draw.rect(display,(0,0,0), (x,y,displayWidth*.25, displayHeight*.23),2) # Draws wireframe
+    displayText(troop.getName() + " - Level "+ str(troop.getLevel()), (x+10,y+5),25)
+    displayText(str(troop.getHealth())+" health", (x+5,y+spacing), 20)
+    displayText(str(troop.getAttack())+" attack", (x+5,y+(2 * spacing)), 20)
+    displayText(str(troop.getRange())+" attack range", (x+5,y+(3 * spacing)), 20)
+    displayText(str(troop.getSpeed())+" speed", (x+5,y+(4 * spacing)), 20)
+
+def canUpgrade(player,troop):
+    """Accepts a Player object.
+       Accepts a Troop object.
+       Checks to see if the player object has enough tokens to purchase a given troop. """
+    tokens = player.getTokens()
+    cost   = troop.getCost()
+    if cost > tokens:
+        return False
+    else: 
+        return True
 
 
 def upgrade(troop, tokens):
@@ -418,17 +434,18 @@ def placementStage(gameInfo):
         if command == "add":
             if newTroop != None and square != None:
                 if square[1] <= 2:
-                    if currentPlayer == p1 and b.getSquareValue(square) == None and p2.getTokens() >= 1:
+                    print(canUpgrade(currentPlayer,newTroop))
+                    if currentPlayer == p1 and b.getSquareValue(square) == None and p2.getTokens() >= 1 and canUpgrade(currentPlayer,newTroop) == True:
                         p1.addTroop(newTroop)               # Add troop to player's list
-                        p1.spendTokens(1)
+                        p1.spendTokens(newTroop.getCost())
                         newTroop.setColor()
                         b.setSquareValue(square,newTroop)   # Add troop to board
                         canSwitch = True
                         newTroop = None
                 if square[1] >= b.getHeight()-3:
-                    if currentPlayer == p2 and b.getSquareValue(square) == None and p1.getTokens() >= 0:
+                    if currentPlayer == p2 and b.getSquareValue(square) == None and p1.getTokens() >= 0 and canUpgrade(currentPlayer,newTroop) == True:
                         p2.addTroop(newTroop)               # Add troop to player's list
-                        p2.spendTokens(1)
+                        p2.spendTokens(newTroop)
                         newTroop.setColor()
                         b.setSquareValue(square,newTroop)   # Add troop to board
                         b.setTroopOrientation(newTroop,(square[0],0)) # Rotates square to face opponents
@@ -442,7 +459,8 @@ def placementStage(gameInfo):
                 if troop != None:
                     if troop.getTeam() == currentPlayer and troop.getLevel() <= 5:
                         if currentPlayer.getTokens() >= 5:
-                            u = upgrade(troop,5-troop.getLevel())
+                            if canUpgrade(currentPlayer,troop) == True:   ###
+                                u = upgrade(troop,5-troop.getLevel())     ###
                         if currentPlayer.getTokens() < 5:
                             if abs(5-troop.getLevel()) < currentPlayer.getTokens():
                                 u = upgrade(troop, abs(5-troop.getLevel()))
@@ -554,7 +572,10 @@ def battleStage(gameInfo):
             ### GAME LOGIC ###
 
         if selectedTroop != None:
-            displayTroopCard(selectedTroop,"LEFT")
+            if currentPlayer == p1:
+                displayTroopCard(selectedTroop,"LEFT")
+            if currentPlayer == p2:
+                displayTroopCard(selectedTroop,"RIGHT")
 
 
         if square != None:
@@ -657,5 +678,6 @@ def battleStage(gameInfo):
 emptyBoard = setupStage()
 startingBoard = placementStage(emptyBoard)
 battleStage(startingBoard)
+
 pg.quit()
 quit()

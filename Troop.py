@@ -9,7 +9,8 @@ class Troop(object):
           health = info[5], int
      (xDirection = info[6], int,
       yDirection = info[6], int)
-        cooldown = info[7], int"""
+        cooldown = info[7], int
+            cost = info[8], int"""
         self.MAX_HEALTH = info[5]
 
         self.name = info[0]
@@ -71,6 +72,10 @@ class Troop(object):
     def getColor(self):
         """Returns the object's color (string)."""
         return self.color
+    
+    def getCost(self):
+        """Returns the troop's cosst (integer)."""
+        return self.cost
 
     def setColor(self):
         """Sets the troop's color equal to the containing Player object's color."""
