@@ -239,9 +239,3 @@ class Board(object):
                 selectedTroop.setOrientation((1,-1))
             if square[0] < currentSquare.getX():
                 selectedTroop.setOrientation((-1,1))
-
-    # def setSquareColor(self, coords, color):
-    #     """Accepts a square's relative coordinates Tuple.
-    #        Accepts a string for the square's desired color.
-    #        Finds the square at that location, and sets the squares color accordingly."""
-    #     self.squares[coords[0]][coords[1]].setColor(color)
