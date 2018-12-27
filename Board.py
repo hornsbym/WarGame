@@ -5,13 +5,15 @@ class Board(object):
     """Represents the playing surface for the game.
        Holds and represents an array of squares."""
 
-    def __init__(self, width, height, centerCoords):
+    def __init__(self, width, height, centerCoords, layout):
         """ width = Integer specifying how many squares wide the game board should be. 
            height = Integer specifying how many squares tall the board should be.
-           coords = Tuple specifying the center coordinates of the display."""
+           coords = Tuple specifying the center coordinates of the display.
+           layout = 2D list of square types."""
         self.width = width
         self.height = height
         self.centerCoords = centerCoords
+        self.layout = layout
         self.squares = []
 
         self.makeBoard()
@@ -35,7 +37,7 @@ class Board(object):
         for x in range(self.width):
             row = []
             for y in range(self.height):
-                row.append(Square(x,y,(self.centerCoords[0]-xOffset,self.centerCoords[1]-yOffset)))
+                row.append(Square(x,y,(self.centerCoords[0]-xOffset,self.centerCoords[1]-yOffset), self.layout[x][y]))
 
             board.append(row)
 
@@ -47,6 +49,15 @@ class Board(object):
         for x in range(len(self.squares)):
             for y in range(len(self.squares[x])):
                 self.squares[x][y].showSquare(display)
+    
+    def normalizeBoard(self):
+        """Removes 'bluesquare' and 'redsquare' squares from the board."""
+        for x in range(len(self.squares)):
+            for y in range(len(self.squares[x])):
+                if self.squares[x][y].getType() == 'redsquare' or self.squares[x][y].getType() == 'bluesquare':
+                    self.squares[x][y].setType("square")
+                    if self.squares[x][y].getTroop() == None:
+                        self.squares[x][y].setTroop(None)
 
     def findTroopSquare(self, troop):
         """Accepts a Troop object.
@@ -67,14 +78,17 @@ class Board(object):
 
     def getSquareValue(self, tup):
         """Accepts a tuple of form (x,y).
-           Iterates through the squares and returns the Troop Object of the
-           square at that location."""
+           Returns the Troop Object of the square at that location."""
         squareX = tup[0]
         squareY = tup[1]
-        for x in range(len(self.squares)):
-            for y in range(len(self.squares[x])):
-                if self.squares[x][y].getX() == squareX and self.squares[x][y].getY() == squareY:
-                    return self.squares[x][y].getTroop()
+        return self.squares[squareX][squareY].getTroop()
+
+    def getSquareType(self, tup):
+        """Accepts a tuple of form (x,y).
+           Returns the Troop Object of the square at that location."""
+        squareX = tup[0]
+        squareY = tup[1]
+        return self.squares[squareX][squareY].getType()
     
     def setSquareValue(self, pos, troop):
         """Accepts a tuple of a square's x-position and y-position.
@@ -175,7 +189,7 @@ class Board(object):
                 dist *= orientation[1]
 
                 for y in range(0,dist,orientation[1]):
-                    if self.getSquareValue((current[0],current[1]  + y + orientation[1])) == None:
+                    if self.getSquareValue((current[0],current[1]  + y + orientation[1])) == None and self.getSquareType((current[0],current[1]  + y + orientation[1])) == 'square':
                         troop.incrementSquaresMoved()
                         self.setSquareValue((current[0],current[1] + y + orientation[1]),troop)
                         self.setSquareValue((current[0],current[1] + y), None)
@@ -191,7 +205,7 @@ class Board(object):
                 dist *= orientation[0]
 
                 for x in range(0, dist, orientation[0]):
-                    if self.getSquareValue((current[0]  + x + orientation[0],current[1])) == None:
+                    if self.getSquareValue((current[0]  + x + orientation[0],current[1])) == None and self.getSquareType((current[0]  + x + orientation[0],current[1])) == 'square':
                         troop.incrementSquaresMoved()
                         self.setSquareValue((current[0] + x + orientation[0],current[1]),troop)
                         self.setSquareValue((current[0] + x, current[1]), None)

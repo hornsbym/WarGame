@@ -6,17 +6,19 @@ from Troop import Troop
 class Square(object):
     """Contains information about a single square on the game board."""
 
-    def __init__(self, x, y, coords):
+    def __init__(self, x, y, coords, squareType):
         """     x = Integer for the square's horizontal position 
                     (relative to the other squares on the board.)
                 y = Integer for the square's vertical position 
                     (relative to the other squares on the board.)
            coords = Tuple containing the starting position for the 
-                    board as a whole, not individual squares."""
+                    board as a whole, not individual squares.
+       squareType = String saying what classification the square should be"""
+        self.TYPE = squareType
         self.x = x
         self.y = y
         self.coords = coords
-        self.icon = "square"
+        self.icon = self.TYPE
         self.troop = None
         self.color = ""
 
@@ -31,6 +33,15 @@ class Square(object):
     def getTroop(self):
         """Returns the square's troop object."""
         return self.troop
+    
+    def getType(self):
+        """Returns the square's type."""
+        return self.TYPE
+
+    def setType(self, t):
+        """Accepts a string.
+           Sets the square's type to that string"""
+        self.TYPE = t
     
     def setIcon(self):
         """Accepts a string.
