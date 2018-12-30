@@ -133,6 +133,9 @@ class Board(object):
                 attackerRange = (self.height-1) - troopCoords[1]                            # of board.
             for y in range(attackerY,attackerY+orientation[1]*(attackerRange+1),orientation[1]):
                 if y != attackerY:
+                    # Doesn't let players shoot through walls...
+                    if self.getSquareType((attackerX,y)) == 'wall':    
+                        break   
                     attackedTroop = self.squares[attackerX][y].getTroop()
                     if attackedTroop != None:   # Makes sure the square being attacked isn't empty... 
                         if attackedTroop.getTeam() != troop.getTeam():    # ...or on the same team.
@@ -155,6 +158,9 @@ class Board(object):
             if orientation == (1,-1) and attackerRange + troopCoords[0] > self.width-1:     # Prevents attacking beyond right    
                 attackerRange = (self.width-1) - troopCoords[0]                             # side of board.
             for x in range(attackerX,attackerX+orientation[0]*(attackerRange+1),orientation[0]):
+                # Doesn't let players shoot through walls...
+                if self.getSquareType((x,attackerY)) == 'wall':    
+                    break  
                 if x != attackerX:
                     # Makes sure the square being attacked isn't empty or on the same team.
                     if self.squares[x][attackerY].getTroop() != None and self.squares[x][attackerY].getTroop().getTeam() != troop.getTeam():

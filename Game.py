@@ -633,6 +633,7 @@ def battleStage(gameInfo):
                     b.move(selectedTroop,square)
                     if selectedTroop.canMove() == False:
                         currentPlayer.decrementMoves()
+                        selectedTroop.resetStamina()
                     square = None
             
                 if square == (ownSquare.getX(),ownSquare.getY()):
