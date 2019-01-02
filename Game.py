@@ -65,7 +65,7 @@ def drawPlayerHealthbars(player, side, selectedTroop):
             if troop.getMaxHealth() > longest:
                 longest = troop.getMaxHealth()
         x = 5
-        y = 50
+        y = 65
 
         displayText(player.getName(),(x,y-35), 30)
         for troop in troops:
@@ -93,7 +93,7 @@ def drawPlayerHealthbars(player, side, selectedTroop):
                 longest = troop.getMaxHealth()
 
         x = displayWidth-(longest+5)
-        y = 50
+        y = 65
 
         displayText(player.getName(),(x,y-35), 30)
         for troop in troops:
@@ -120,13 +120,13 @@ def displayTroopCard(troop, side):
         x = 5
         y = displayHeight * .76
     if side == "RIGHT":
-        x = displayWidth *.75 - 5
+        x = displayWidth *.78 - 5
         y = displayHeight * .76
     spacing = (displayHeight - y) * .2
 
     troopName = troop.getName()[0].upper()+troop.getName()[1:]
 
-    pg.draw.rect(display,(0,0,0), (x,y,displayWidth*.25, displayHeight*.23),2) # Draws wireframe
+    pg.draw.rect(display,(0,0,0), (x,y,displayWidth*.22, displayHeight*.23),2) # Draws wireframe
     displayText(troopName + " - Level "+ str(troop.getLevel()) + " (" + str(troop.getCooldownCounter()) + ")", (x+10,y+5),25)
     displayText(str(troop.getHealth())+" health", (x+5,y+spacing), 20)
     displayText(str(troop.getAttack())+" attack", (x+5,y+(2 * spacing)), 20)
@@ -508,7 +508,7 @@ def placementStage(gameInfo):
         displayText(str(square), (displayWidth*.9,0))
 
         pg.display.update()
-        clock.tick(20)
+        clock.tick(30)
 
     return (b,p1,p2)
 
@@ -537,6 +537,19 @@ def battleStage(gameInfo):
     switchPlayer = False
 
     currentPlayer = p1
+
+    info_panel = pg.Rect(0,0,displayWidth,25)
+
+    panel_one_top = pg.Rect(0,25,displayWidth//4,(displayHeight*.76)-25)
+    panel_one_bottom = pg.Rect(0,displayHeight*.76,displayWidth//4,displayHeight*.24)
+
+    panel_two = pg.Rect(displayWidth//4,25,2*(displayWidth//4),displayHeight-25)
+
+    panel_three_top = pg.Rect(3*(displayWidth//4),25,(displayWidth/4),displayHeight*.76-25)
+    panel_three_bottom = pg.Rect(3*(displayWidth//4),displayHeight*.76,(displayWidth/4),displayHeight*.24)
+
+    update_panels = [ info_panel, panel_one_top, panel_one_bottom, panel_two , panel_three_top, panel_three_bottom ]
+
 
     while True:
         # Gets all the events from the game window. A.k.a., do stuff here.
@@ -567,6 +580,13 @@ def battleStage(gameInfo):
         
         display.fill((255,255,255))
 
+        pg.draw.rect(display, (0,0,200), info_panel, 1)
+        pg.draw.rect(display, (0,0,200), panel_one_top, 1)
+        pg.draw.rect(display, (0,0,200), panel_one_bottom, 1)
+        pg.draw.rect(display, (0,0,200), panel_two, 1)
+        pg.draw.rect(display, (0,0,200), panel_three_top, 1)
+        pg.draw.rect(display, (0,0,200), panel_three_bottom, 1)
+
         attackButton.showButton(display)
         moveButton.showButton(display)
         rotateButton.showButton(display)
@@ -582,21 +602,23 @@ def battleStage(gameInfo):
             drawPlayerHealthbars(currentPlayer,  "RIGHT", selectedTroop)
             drawPlayerHealthbars(p1,  "LEFT", selectedTroop)
 
-        
 
             ### GAME LOGIC ###
+
 
         if selectedTroop != None:
             if currentPlayer == p1:
                 displayTroopCard(selectedTroop,"LEFT")
             if currentPlayer == p2:
                 displayTroopCard(selectedTroop,"RIGHT")
-        
+                
+
         if previewTroop != None:
             if currentPlayer == p1:
                 displayTroopCard(previewTroop, "RIGHT")
             if currentPlayer == p2:
                 displayTroopCard(previewTroop, "LEFT")
+
 
         if square != None:
             if b.getSquareValue(square) != None:
@@ -635,7 +657,6 @@ def battleStage(gameInfo):
                         currentPlayer.decrementMoves()
                         selectedTroop.resetStamina()
                     square = None
-            
                 if square == (ownSquare.getX(),ownSquare.getY()):
                     square = None
             
@@ -649,6 +670,7 @@ def battleStage(gameInfo):
         if currentPlayer.getMoves() <= 0:
             switchPlayer = True
 
+
         # Switches active player
         if switchPlayer == True:
             currentPlayer.resetMoves()
@@ -657,25 +679,46 @@ def battleStage(gameInfo):
             selectedTroop = None
             square = None
             command = None
+
             if currentPlayer == p1:
                 currentPlayer.decrementCooldowns()
                 currentPlayer = p2
             else:
                 currentPlayer.decrementCooldowns()
                 currentPlayer = p1
+
             switchPlayer = False
-    
 
         # Display game data. Testing purposes only.
-        displayText(str(currentPlayer.getName())+" - "+str(currentPlayer.getMoves())+ " moves left",(displayWidth//2,0))
+        displayText(str(currentPlayer.getName())+" - "+str(currentPlayer.getMoves())+ " moves left",(displayWidth*.66,0))
 
-        displayText(str(command), (b.getCoords()[0]-(b.getWidth()*32//2),b.getCoords()[1]-(b.getHeight()*32//2)-30))
+        displayText(str(command), (displayWidth*.33,0))
 
         displayText(str(pg.mouse.get_pos()), (0,0))
         displayText(str(square), (displayWidth*.9,0))
 
-        pg.display.update()
-        clock.tick(20)
+        update_list = ""
+        if info_panel in update_panels:
+            update_list += "info panel, "
+        if  panel_two in update_panels:
+            update_list += "center panel, "
+        if panel_one_bottom in update_panels:
+            update_list += "left bottom, "
+        if  panel_one_top in update_panels:
+            update_list += "left top, "
+        if panel_three_bottom in update_panels:
+            update_list += "right bottom, "
+        if panel_three_top in update_panels:
+            update_list += "right top, "
+
+        if update_list != "":
+            print("UPDATE LIST:",update_list)
+
+
+        pg.display.update(update_panels)
+
+
+        clock.tick(30)
 
 emptyBoard = setupStage()
 startingBoard = placementStage(emptyBoard)

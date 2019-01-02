@@ -69,7 +69,7 @@ class Square(object):
         """Accepts a pygame Display object as an argument.
            Shows the square in that display.
            Handles rotations."""
-        img = pg.image.load("./_sprites/"+self.icon+".png")
+        img = pg.image.load("./_sprites/"+self.icon+".png").convert()
 
         # Handles rotations
         if self.getTroop() != None:
