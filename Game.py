@@ -15,8 +15,8 @@ import _maps.test_map as test
 
 # Get the screen dimensions here
 monitor = get_monitors()[0]
-width  = monitor.width-25
-height = monitor.height-75
+width  = monitor.width-50
+height = monitor.height-200
 
 # Boilerplate pygame stuff:
 pg.init()
@@ -536,6 +536,13 @@ def battleStage(gameInfo):
 
     switchPlayer = False
 
+    info_update      = True
+    p1_top_update    = True
+    p1_bottom_update = True
+    p2_update        = True
+    p3_top_update    = True
+    p3_bottom_update = True
+
     currentPlayer = p1
 
     info_panel = pg.Rect(0,0,displayWidth,25)
@@ -548,9 +555,9 @@ def battleStage(gameInfo):
     panel_three_top = pg.Rect(3*(displayWidth//4),25,(displayWidth/4),displayHeight*.76-25)
     panel_three_bottom = pg.Rect(3*(displayWidth//4),displayHeight*.76,(displayWidth/4),displayHeight*.24)
 
-    update_panels = [ info_panel, panel_one_top, panel_one_bottom, panel_two , panel_three_top, panel_three_bottom ]
-
-
+    timer_start = time.time()
+    timer_end   = None
+    pass_number = 0
     while True:
         # Gets all the events from the game window. A.k.a., do stuff here.
         for event in pg.event.get():
@@ -569,12 +576,15 @@ def battleStage(gameInfo):
 
                 if attackButton.isClicked(coords) == True:
                     command = attackButton.getValue()
-                if moveButton.isClicked(coords) == True:
+                elif moveButton.isClicked(coords) == True:
                     command = moveButton.getValue()
-                if rotateButton.isClicked(coords) == True:
+                elif rotateButton.isClicked(coords) == True:
                     command = rotateButton.getValue()
-                if passButton.isClicked(coords) == True:
+                elif passButton.isClicked(coords) == True:
                     command = passButton.getValue()
+                else:
+                    if b.isClicked(coords) == False:
+                        command = None
 
         # Clear previous screen, so it can be updated again.
         
@@ -653,16 +663,18 @@ def battleStage(gameInfo):
                 ownSquare = b.findTroopSquare(selectedTroop)
                 if square != (ownSquare.getX(),ownSquare.getY()):
                     b.move(selectedTroop,square)
+                    p2_update = True
                     if selectedTroop.canMove() == False:
                         currentPlayer.decrementMoves()
                         selectedTroop.resetStamina()
                     square = None
                 if square == (ownSquare.getX(),ownSquare.getY()):
                     square = None
-            
+
 
         if command == "rotate":
             if selectedTroop != None and square != None:
+                p2_update = True
                 b.setTroopOrientation(selectedTroop,square)
                 square = None
         
@@ -697,27 +709,36 @@ def battleStage(gameInfo):
         displayText(str(pg.mouse.get_pos()), (0,0))
         displayText(str(square), (displayWidth*.9,0))
 
-        update_list = ""
-        if info_panel in update_panels:
-            update_list += "info panel, "
-        if  panel_two in update_panels:
-            update_list += "center panel, "
-        if panel_one_bottom in update_panels:
-            update_list += "left bottom, "
-        if  panel_one_top in update_panels:
-            update_list += "left top, "
-        if panel_three_bottom in update_panels:
-            update_list += "right bottom, "
-        if panel_three_top in update_panels:
-            update_list += "right top, "
-
-        if update_list != "":
-            print("UPDATE LIST:",update_list)
-
+        update_panels = []
+        if info_update == True:
+            update_panels.append(info_panel)
+        if p1_bottom_update == True:
+            update_panels.append(panel_one_bottom)
+        if p1_top_update == True:
+            update_panels.append(panel_one_top)
+        if p2_update == True:
+            update_panels.append(panel_two)
+        if p3_bottom_update == True:
+            update_panels.append(panel_three_bottom)
+        if p3_top_update == True:
+            update_panels.append(panel_three_top)
 
         pg.display.update(update_panels)
 
+        # if pass_number % 30 == 0:
+        #     p1_top_update    = False
+        #     p1_bottom_update = False
+        #     p2_update        = False
+        #     p3_top_update    = False
+        #     p3_bottom_update = False
 
+        if pass_number == 60:
+            timer_end = time.time()
+            print()
+            print("TIME:", timer_end - timer_start)
+            print()
+
+        pass_number += 1
         clock.tick(30)
 
 emptyBoard = setupStage()

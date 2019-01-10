@@ -31,13 +31,37 @@ class Board(object):
         """Populates the board with squares."""
         board = []
 
+        ## Load images here so each square doesn't have to.
+        images = {
+            "barricade":pg.image.load("./_sprites/barricade.png").convert(),
+            "bluehealer":pg.image.load("./_sprites/bluehealer.png").convert(),
+            "blueknight":pg.image.load("./_sprites/blueknight.png").convert(),
+            "bluerifleman":pg.image.load("./_sprites/bluerifleman.png").convert(),
+            "blueshield":pg.image.load("./_sprites/blueshield.png").convert(),
+            "bluesquare":pg.image.load("./_sprites/bluesquare.png").convert(),
+            "bluetroop":pg.image.load("./_sprites/bluetroop.png").convert(),
+            "healer":pg.image.load("./_sprites/healer.png").convert(),
+            "knight":pg.image.load("./_sprites/knight.png").convert(),
+            "redhealer":pg.image.load("./_sprites/redhealer.png").convert(),
+            "redknight":pg.image.load("./_sprites/redknight.png").convert(),
+            "redrifleman":pg.image.load("./_sprites/redrifleman.png").convert(),
+            "redshield":pg.image.load("./_sprites/redshield.png").convert(),
+            "redsquare":pg.image.load("./_sprites/redsquare.png").convert(),
+            "redtroop":pg.image.load("./_sprites/redtroop.png").convert(),
+            "rifleman":pg.image.load("./_sprites/rifleman.png").convert(),
+            "shield":pg.image.load("./_sprites/shield.png").convert(),
+            "square":pg.image.load("./_sprites/square.png").convert(),
+            "troop":pg.image.load("./_sprites/troop.png").convert(),
+            "wall":pg.image.load("./_sprites/wall.png").convert(),
+        }
+        
         xOffset = round(self.width * 32//2)
         yOffset = round(self.height * 32//2)
 
         for x in range(self.width):
             row = []
             for y in range(self.height):
-                row.append(Square(x,y,(self.centerCoords[0]-xOffset,self.centerCoords[1]-yOffset), self.layout[x][y]))
+                row.append(Square(x,y,(self.centerCoords[0]-xOffset,self.centerCoords[1]-yOffset), self.layout[x][y], images))
 
             board.append(row)
 

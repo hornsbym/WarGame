@@ -6,14 +6,15 @@ from Troop import Troop
 class Square(object):
     """Contains information about a single square on the game board."""
 
-    def __init__(self, x, y, coords, squareType):
+    def __init__(self, x, y, coords, squareType, images):
         """     x = Integer for the square's horizontal position 
                     (relative to the other squares on the board.)
                 y = Integer for the square's vertical position 
                     (relative to the other squares on the board.)
            coords = Tuple containing the starting position for the 
                     board as a whole, not individual squares.
-       squareType = String saying what classification the square should be"""
+       squareType = String saying what classification the square should be.
+           images = Dictionary holding pre-rendered images."""
         self.TYPE = squareType
         self.x = x
         self.y = y
@@ -21,6 +22,10 @@ class Square(object):
         self.icon = self.TYPE
         self.troop = None
         self.color = ""
+        self.images = images
+
+        self.image = None
+        # self.setImage()
 
     def getX(self):
         """Returns the square's x-value."""
@@ -45,7 +50,8 @@ class Square(object):
     
     def setIcon(self):
         """Accepts a string.
-           Sets that string as the square's icon attribute."""
+           Sets that string as the square's icon attribute.
+           Also sets the image."""
         self.icon = self.troop.getColor()+self.troop.getName()
 
     def setColor(self,color):
@@ -69,7 +75,7 @@ class Square(object):
         """Accepts a pygame Display object as an argument.
            Shows the square in that display.
            Handles rotations."""
-        img = pg.image.load("./_sprites/"+self.icon+".png").convert()
+        img = self.images[self.icon]
 
         # Handles rotations
         if self.getTroop() != None:
