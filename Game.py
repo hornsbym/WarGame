@@ -260,6 +260,9 @@ def upgrade(troop, tokens):
 
     return abs(STARTING_TOKENS - tokens)
 
+
+### -------| Game Loops |------- ###
+
 def setupStage():
     """Determines dimensions of the game board, players' names, and eventually the player's army.
        Return a tuple containing (Board, Player1, Player2)."""
@@ -412,6 +415,31 @@ def placementStage(gameInfo):
                     command = upgradeButton.getValue()
                 if switchButton.isClicked(coords) == True:
                     command = switchButton.getValue()
+            
+            # Allows users the option to choose troops and actions via keystrokes.
+            if event.type == pg.KEYDOWN:
+                key = pg.key.get_pressed()
+                
+                # Troops
+                if key[pg.K_a]:
+                    newTroop = Troop(tb.getValue())
+                if key[pg.K_r]:
+                    newTroop = Troop(rb.getValue())
+                if key[pg.K_w]:
+                    newTroop = Troop(sb.getValue())
+                if key[pg.K_e]:
+                    newTroop = Troop(kb.getValue())
+                if key[pg.K_q]:
+                    newTroop = Troop(hb.getValue())
+
+                # Actions
+                if key[pg.K_1]:
+                    command = addButton.getValue()
+                if key[pg.K_2]:
+                    command = upgradeButton.getValue()
+                if key[pg.K_0]:
+                    command = switchButton.getValue()
+
         
         # Clear previous screen, so it can be updated again.
         display.fill((255,255,255))
@@ -728,9 +756,7 @@ def battleStage(gameInfo):
 
         pg.display.update(update_panels)
 
-
-
-        if pass_number % 60 == 0:
+        if pass_number % 30 == 0:
             timer_end = time.time()
             print("TIME:", timer_end - timer_start)
 
