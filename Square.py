@@ -25,7 +25,6 @@ class Square(object):
         self.images = images
 
         self.image = None
-        # self.setImage()
 
     def getX(self):
         """Returns the square's x-value."""

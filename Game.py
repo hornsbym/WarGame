@@ -12,6 +12,7 @@ from Player import Player
 
 import _maps.basic_map as basic
 import _maps.test_map as test
+import _maps.big_map as big
 
 # Get the screen dimensions here
 monitor = get_monitors()[0]
@@ -266,10 +267,9 @@ def setupStage():
     nameInput1 = pygame_textinput.TextInput("Player 1")
     nameInput2 = pygame_textinput.TextInput("Player 2")
     
-    # oneByNine     = CommandButton("1x9",(displayWidth*.2-35, displayHeight//2), (0,0,0))
-    testMap       = CommandButton("TEST",(displayWidth*.4-35, displayHeight//2), (0,0,0))
-    baseMap       = CommandButton("BASE",(displayWidth*.6-35, displayHeight//2), (0,0,0))
-    # nineByFifteen = CommandButton("9x15",(displayWidth*.8-35, displayHeight//2), (0,0,0))
+    testMap       = CommandButton("TEST",(displayWidth*.25-35, displayHeight//2), (0,0,0))
+    baseMap       = CommandButton("BASIC",(displayWidth*.5-35, displayHeight//2), (0,0,0))
+    bigMap        = CommandButton("BIG",(displayWidth*.75-35, displayHeight//2), (0,0,0))
 
     change1 = CommandButton("PLAYER 1",(10,50), (100,100,100))
     change2 = CommandButton("PLAYER 2",(displayWidth-115, 50), (100,100,100))
@@ -308,9 +308,6 @@ def setupStage():
                     selectedInputBox = nameInput2
 
                 # Creates a new board in the middle of the screen.
-                # if oneByNine.isClicked(coords) == True:
-                #     b = Board(1,7,(displayWidth//2,displayHeight//2))
-                #     loop = False
                 if testMap.isClicked(coords) == True:
                     m = test
                     b = Board(m.dimensions[0], m.dimensions[1],(displayWidth//2,displayHeight//2),m.MAP)
@@ -319,19 +316,20 @@ def setupStage():
                     m = basic
                     b = Board(m.dimensions[0], m.dimensions[1],(displayWidth//2,displayHeight//2),m.MAP)
                     loop = False
-                # if nineByFifteen.isClicked(coords) == True:       
-                #     b = Board(9,15,(displayWidth//2,displayHeight//2)) 
-                #     loop = False
+                if bigMap.isClicked(coords) == True:
+                    m = big
+                    b = Board(m.dimensions[0], m.dimensions[1],(displayWidth//2,displayHeight//2),m.MAP)
+                    loop = False
+
 
         display.fill((255,255,255))
 
         change1.showButton(display)
         change2.showButton(display)
 
-        # oneByNine.showButton(display)
         testMap.showButton(display)
         baseMap.showButton(display)
-        # nineByFifteen.showButton(display)
+        bigMap.showButton(display)
 
         # Only updates the appropriate textbox
         if selectedInputBox  != None:
