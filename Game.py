@@ -1,14 +1,14 @@
 import pygame as pg
-import pygame_textinput
 import time
 from screeninfo import get_monitors
 
-from Square import Square
-from Board import Board
-from TroopButton import TroopButton
-from CommandButton import CommandButton
-from Troop import Troop
-from Player import Player
+import _modules.pygame_textinput as pygame_textinput
+from _modules.Square import Square
+from _modules.Board import Board
+from _modules.TroopButton import TroopButton
+from _modules.CommandButton import CommandButton
+from _modules.Player import Player
+from _modules.Troop import Troop
 
 import _maps.basic_map as basic
 import _maps.test_map as test
@@ -756,9 +756,10 @@ def battleStage(gameInfo):
 
         pg.display.update(update_panels)
 
-        if pass_number % 30 == 0:
-            timer_end = time.time()
-            print("TIME:", timer_end - timer_start)
+        # Keep for testing rendering speed
+        # if pass_number % 30 == 0:
+        #     timer_end = time.time()
+        #     print("TIME:", timer_end - timer_start)
 
         pass_number += 1
         clock.tick(30)

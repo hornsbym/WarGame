@@ -7,10 +7,14 @@ r = "redsquare"
 
 MAP = \
 [
-    [ b , s , s , s , w , s , r ],
-    [ b , s , x , s , s , s , r ],
+    [ w , w , w , b , b , w , w , w ],
+    [ w , w , w , s , s , w , w , w ],
+    [ b , s , s , s , s , w , s , r ],
+    [ b , s , x , s , s , s , s , r ],
+    [ w , w , w , s , s , w , w , w ],
+    [ w , w , w , r , r , w , w , w ],
 ]
 
-dimensions = (2,7)
+dimensions = (6,8)
 
-tokens = 4
+tokens = 5
