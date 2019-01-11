@@ -26,11 +26,17 @@ displayHeight = height
 display = pg.display.set_mode((displayWidth,displayHeight),pg.RESIZABLE)
 display.fill((255,255,255))
 
-def displayText(string, tup=(0,0),fontSize = 25,fontColor=(0,0,0)):
+# Define fonts here so that they don't have to be defined in displayText function.
+DEFAULT_FONT   = pg.font.SysFont(None, 25)
+NAMEPLATE_FONT = pg.font.SysFont(None, 17)
+BIG_FONT       = pg.font.SysFont(None, 30)
+TROOPCARD_FONT = pg.font.SysFont(None, 20)
+
+def displayText(string, tup=(0,0),font=DEFAULT_FONT, fontColor=(0,0,0)):
     """Accepts a string and a tuple of x and y coordinates.
        X coordinate should be the first value in the tuple.
        Displays the string in at the designated coordinates."""
-    font = pg.font.SysFont(None, fontSize)
+    font = font
     text = font.render(string, True, fontColor)
     display.blit(text, tup)
 
@@ -48,8 +54,8 @@ def drawHealthbar(namePlate, currentHealth, maxHealth, coords, selected=False):
         pg.draw.rect(display, (150,0,150), (x-3,y-15,maxHealth+6,37), 2) # Outlines selected troop
     pg.draw.rect(display, (200,0,0), (x,y,maxHealth,5))   # Draws the red base for the healthbar
     pg.draw.rect(display,(0,200,0),(x,y,currentHealth,5)) # Draws the green portion of the healthbar
-    displayText(namePlate, (x,y-11),17,fontColor)
-    displayText(str(currentHealth)+" / "+str(maxHealth), (x,y+6),17,fontColor) #Shows numbers
+    displayText(namePlate, (x,y-11),NAMEPLATE_FONT,fontColor)
+    displayText(str(currentHealth)+" / "+str(maxHealth), (x,y+6),NAMEPLATE_FONT,fontColor) #Shows numbers
 
 def drawPlayerHealthbars(player, side, selectedTroop):
     """Accepts a Player object.
@@ -67,7 +73,7 @@ def drawPlayerHealthbars(player, side, selectedTroop):
         x = 5
         y = 65
 
-        displayText(player.getName(),(x,y-35), 30)
+        displayText(player.getName(),(x,y-35), BIG_FONT)
         for troop in troops:
             name = troop.getName()
             name = name[0].upper() + name[1:]
@@ -95,7 +101,7 @@ def drawPlayerHealthbars(player, side, selectedTroop):
         x = displayWidth-(longest+5)
         y = 65
 
-        displayText(player.getName(),(x,y-35), 30)
+        displayText(player.getName(),(x,y-35), BIG_FONT)
         for troop in troops:
             name = troop.getName()
             name = name[0].upper() + name[1:]
@@ -127,11 +133,11 @@ def displayTroopCard(troop, side):
     troopName = troop.getName()[0].upper()+troop.getName()[1:]
 
     pg.draw.rect(display,(0,0,0), (x,y,displayWidth*.22, displayHeight*.23),2) # Draws wireframe
-    displayText(troopName + " - Level "+ str(troop.getLevel()) + " (" + str(troop.getCooldownCounter()) + ")", (x+10,y+5),25)
-    displayText(str(troop.getHealth())+" health", (x+5,y+spacing), 20)
-    displayText(str(troop.getAttack())+" attack", (x+5,y+(2 * spacing)), 20)
-    displayText(str(troop.getRange())+" attack range", (x+5,y+(3 * spacing)), 20)
-    displayText(str(troop.getSpeed())+" speed", (x+5,y+(4 * spacing)), 20)
+    displayText(troopName + " - Level "+ str(troop.getLevel()) + " (" + str(troop.getCooldownCounter()) + ")", (x+10,y+5))
+    displayText(str(troop.getHealth())+" health", (x+5,y+spacing), TROOPCARD_FONT)
+    displayText(str(troop.getAttack())+" attack", (x+5,y+(2 * spacing)), TROOPCARD_FONT)
+    displayText(str(troop.getRange())+" attack range", (x+5,y+(3 * spacing)), TROOPCARD_FONT)
+    displayText(str(troop.getSpeed())+" speed", (x+5,y+(4 * spacing)), TROOPCARD_FONT)
 
 def canUpgrade(player,troop):
     """Accepts a Player object.
@@ -536,6 +542,7 @@ def battleStage(gameInfo):
 
     switchPlayer = False
 
+    # Keeps track of which panels should be updated
     info_update      = True
     p1_top_update    = True
     p1_bottom_update = True
@@ -547,11 +554,10 @@ def battleStage(gameInfo):
 
     info_panel = pg.Rect(0,0,displayWidth,25)
 
+    # Creates update panels
     panel_one_top = pg.Rect(0,25,displayWidth//4,(displayHeight*.76)-25)
     panel_one_bottom = pg.Rect(0,displayHeight*.76,displayWidth//4,displayHeight*.24)
-
     panel_two = pg.Rect(displayWidth//4,25,2*(displayWidth//4),displayHeight-25)
-
     panel_three_top = pg.Rect(3*(displayWidth//4),25,(displayWidth/4),displayHeight*.76-25)
     panel_three_bottom = pg.Rect(3*(displayWidth//4),displayHeight*.76,(displayWidth/4),displayHeight*.24)
 
@@ -590,13 +596,6 @@ def battleStage(gameInfo):
         
         display.fill((255,255,255))
 
-        pg.draw.rect(display, (0,0,200), info_panel, 1)
-        pg.draw.rect(display, (0,0,200), panel_one_top, 1)
-        pg.draw.rect(display, (0,0,200), panel_one_bottom, 1)
-        pg.draw.rect(display, (0,0,200), panel_two, 1)
-        pg.draw.rect(display, (0,0,200), panel_three_top, 1)
-        pg.draw.rect(display, (0,0,200), panel_three_bottom, 1)
-
         attackButton.showButton(display)
         moveButton.showButton(display)
         rotateButton.showButton(display)
@@ -604,13 +603,8 @@ def battleStage(gameInfo):
 
         b.showBoard(display)
 
-        if currentPlayer == p1:
-            drawPlayerHealthbars(currentPlayer,  "LEFT", selectedTroop)
-            drawPlayerHealthbars(p2,  "RIGHT", selectedTroop)
-
-        if currentPlayer == p2:
-            drawPlayerHealthbars(currentPlayer,  "RIGHT", selectedTroop)
-            drawPlayerHealthbars(p1,  "LEFT", selectedTroop)
+        drawPlayerHealthbars(p1,  "LEFT", selectedTroop)
+        drawPlayerHealthbars(p2,  "RIGHT", selectedTroop)
 
 
             ### GAME LOGIC ###
@@ -619,22 +613,25 @@ def battleStage(gameInfo):
         if selectedTroop != None:
             if currentPlayer == p1:
                 displayTroopCard(selectedTroop,"LEFT")
+                p1_bottom_update = True
             if currentPlayer == p2:
                 displayTroopCard(selectedTroop,"RIGHT")
+                p3_bottom_update = True
                 
 
         if previewTroop != None:
             if currentPlayer == p1:
                 displayTroopCard(previewTroop, "RIGHT")
+                p3_bottom_update = True
             if currentPlayer == p2:
                 displayTroopCard(previewTroop, "LEFT")
+                p1_bottom_update = True
 
 
         if square != None:
             if b.getSquareValue(square) != None:
                 if b.getSquareValue(square).getTeam() == currentPlayer:
                     selectedTroop = b.getSquareValue(square)
-
                 if b.getSquareValue(square).getTeam() != currentPlayer:
                     previewTroop = b.getSquareValue(square)
                 
@@ -655,6 +652,8 @@ def battleStage(gameInfo):
                 p1.killTroops()   # Remove troops from players' records.
                 p2.killTroops()
 
+                p1_top_update =True 
+                p3_top_update = True
                 square = None
 
 
@@ -701,7 +700,7 @@ def battleStage(gameInfo):
 
             switchPlayer = False
 
-        # Display game data. Testing purposes only.
+        # Display game data. Testing purposes only. info_panel data.
         displayText(str(currentPlayer.getName())+" - "+str(currentPlayer.getMoves())+ " moves left",(displayWidth*.66,0))
 
         displayText(str(command), (displayWidth*.33,0))
@@ -712,31 +711,30 @@ def battleStage(gameInfo):
         update_panels = []
         if info_update == True:
             update_panels.append(info_panel)
+            # pg.draw.rect(display, (0,0,200), info_panel, 2)    # For testing only...
         if p1_bottom_update == True:
             update_panels.append(panel_one_bottom)
+            # pg.draw.rect(display, (0,0,200), panel_one_bottom, 2)
         if p1_top_update == True:
             update_panels.append(panel_one_top)
+            # pg.draw.rect(display, (0,0,200), panel_one_top, 2)
         if p2_update == True:
             update_panels.append(panel_two)
+            # pg.draw.rect(display, (0,0,200), panel_two, 2)
         if p3_bottom_update == True:
             update_panels.append(panel_three_bottom)
+            # pg.draw.rect(display, (0,0,200), panel_three_bottom, 2)
         if p3_top_update == True:
             update_panels.append(panel_three_top)
+            # pg.draw.rect(display, (0,0,200), panel_three_top, 2)
 
         pg.display.update(update_panels)
 
-        # if pass_number % 30 == 0:
-        #     p1_top_update    = False
-        #     p1_bottom_update = False
-        #     p2_update        = False
-        #     p3_top_update    = False
-        #     p3_bottom_update = False
 
-        if pass_number == 60:
+
+        if pass_number % 60 == 0:
             timer_end = time.time()
-            print()
             print("TIME:", timer_end - timer_start)
-            print()
 
         pass_number += 1
         clock.tick(30)
