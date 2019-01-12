@@ -1,23 +1,22 @@
-from PodSixNet.Server import Server
-from PodSixNet.Channel import Channel
-from time import sleep
+import socket 
+import threading
+from Game import Game
 
-class ClientChannel(Channel):
+class GameServer(object):
+    def __init__(self):
 
-	def Network(self, data):
-		print(data)
-	
-	def Network_myaction(self, data):
-		print("myaction:", data)
+        self.HOST = "127.0.0.1"
+        self.PORT = 5000
 
-class MyServer(Server):
-	
-	channelClass = ClientChannel
-	
-	def Connected(self, channel, addr):
-		print('new connection:', channel)
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.bind((self.HOST,self.PORT))
 
-myserver = MyServer()
-while True:
-	myserver.Pump()
-	sleep(0.0001)
+        self.play()
+
+        self.socket.close()
+
+    def play(self):
+        print("UDP Server started at", self.PORT)
+        g = Game()
+
+        

@@ -2,6 +2,8 @@ import pygame as pg
 import time
 from screeninfo import get_monitors
 
+# from server import GameServer
+
 import _modules.pygame_textinput as pygame_textinput
 from _modules.Square import Square
 from _modules.Board import Board
@@ -37,6 +39,7 @@ class Game(object):
         self.BIG_FONT       = pg.font.SysFont(None, 30)
         self.TROOPCARD_FONT = pg.font.SysFont(None, 20)
 
+        self.lobbyStage()
         emptyBoard = self.setupStage()
         startingBoard = self.placementStage(emptyBoard)
         self.battleStage(startingBoard)
@@ -277,6 +280,38 @@ class Game(object):
     ### -------| Game Loops Below |------- ###
 
 
+    
+    def lobbyStage(self):
+        """Waits for two players to join."""
+        dots    = ""
+        counter = 0
+
+        loop = True
+        while (loop == True):
+            # Gets all the events from the game window. A.k.a., do stuff here.
+
+            events = pg.event.get()
+
+            for event in events:
+                if event.type == pg.QUIT:
+                    pg.quit()
+                    quit()
+            
+            self.display.fill((255,255,255))
+
+            
+            if counter % 30 == 0:
+                dots += "."
+            
+            if len(dots) > 3:
+                dots = ""
+
+            self.displayText("Waiting"+dots,(self.displayWidth//2,self.displayHeight//2))
+
+            counter += 1
+
+            pg.display.update()
+            self.clock.tick(30)
 
     def setupStage(self):
         """Determines dimensions of the game board, players' names, and eventually the player's army.
