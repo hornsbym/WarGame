@@ -14,23 +14,24 @@ import _maps.basic_map as basic
 import _maps.test_map as test
 import _maps.big_map as big
 
-# Get the screen dimensions here
-monitor = get_monitors()[0]
-width  = monitor.width-50
-height = monitor.height-200
-
-# Boilerplate pygame stuff:
-pg.init()
-clock = pg.time.Clock()
-displayWidth = width
-displayHeight = height
-display = pg.display.set_mode((displayWidth,displayHeight),pg.RESIZABLE)
-display.fill((255,255,255))
-
 class Game(object):
-
+    """Class containing ALL pertinent Game information.
+       Contains the board and the players, and displays information to the self.display."""
     def __init__(self):
-    # Define fonts here so that they don't have to be defined in displayText function.
+        # Get the screen dimensions here
+        monitor = get_monitors()[0]
+        width  = monitor.width-50
+        height = monitor.height-200
+
+        # Boilerplate pygame stuff:
+        pg.init()
+        self.clock = pg.time.Clock()
+        self.displayWidth = width
+        self.displayHeight = height
+        self.display = pg.display.set_mode((self.displayWidth,self.displayHeight))
+        self.display.fill((255,255,255))
+
+        # Define fonts here so that they don't have to be defined in displayText function.
         self.DEFAULT_FONT   = pg.font.SysFont(None, 25)
         self.NAMEPLATE_FONT = pg.font.SysFont(None, 17)
         self.BIG_FONT       = pg.font.SysFont(None, 30)
@@ -50,7 +51,7 @@ class Game(object):
         if font == None:
             font = self.DEFAULT_FONT
         text = font.render(string, True, fontColor)
-        display.blit(text, tup)
+        self.display.blit(text, tup)
 
     def drawHealthbar(self, namePlate, currentHealth, maxHealth, coords, selected=False):
         """Accepts a string for the name and level of the troop.
@@ -63,9 +64,9 @@ class Game(object):
         fontColor = (0,0,0)
         if selected == True:
             fontColor = (150,0,150)
-            pg.draw.rect(display, (150,0,150), (x-3,y-15,maxHealth+6,37), 2) # Outlines selected troop
-        pg.draw.rect(display, (200,0,0), (x,y,maxHealth,5))   # Draws the red base for the healthbar
-        pg.draw.rect(display,(0,200,0),(x,y,currentHealth,5)) # Draws the green portion of the healthbar
+            pg.draw.rect(self.display, (150,0,150), (x-3,y-15,maxHealth+6,37), 2) # Outlines selected troop
+        pg.draw.rect(self.display, (200,0,0), (x,y,maxHealth,5))   # Draws the red base for the healthbar
+        pg.draw.rect(self.display,(0,200,0),(x,y,currentHealth,5)) # Draws the green portion of the healthbar
         self.displayText(namePlate, (x,y-11),self.NAMEPLATE_FONT,fontColor)
         self.displayText(str(currentHealth)+" / "+str(maxHealth), (x,y+6),self.NAMEPLATE_FONT,fontColor) #Shows numbers
 
@@ -92,7 +93,7 @@ class Game(object):
                 level = str(troop.getLevel())
 
                 # Doesn't let the list of troops get beyond 75% of the screen height.
-                if y > displayHeight*.75:    
+                if y > self.displayHeight*.75:    
                     x += longest+5
                     y = 50
 
@@ -110,7 +111,7 @@ class Game(object):
                 if troop.getMaxHealth() > longest:
                     longest = troop.getMaxHealth()
 
-            x = displayWidth-(longest+5)
+            x = self.displayWidth-(longest+5)
             y = 65
 
             self.displayText(player.getName(),(x,y-35), self.BIG_FONT)
@@ -120,7 +121,7 @@ class Game(object):
                 level = str(troop.getLevel())
 
                 # Doesn't let the list of troops get beyond 75% of the screen height.
-                if y > displayHeight*.75:    
+                if y > self.displayHeight*.75:    
                     x -= (longest+5)
                     y = 50
                 
@@ -136,15 +137,15 @@ class Game(object):
         Accepts a string of either "LEFT" or "RIGHT"."""
         if side == "LEFT":
             x = 5
-            y = displayHeight * .76
+            y = self.displayHeight * .76
         if side == "RIGHT":
-            x = displayWidth *.78 - 5
-            y = displayHeight * .76
-        spacing = (displayHeight - y) * .2
+            x = self.displayWidth *.78 - 5
+            y = self.displayHeight * .76
+        spacing = (self.displayHeight - y) * .2
 
         troopName = troop.getName()[0].upper()+troop.getName()[1:]
 
-        pg.draw.rect(display,(0,0,0), (x,y,displayWidth*.22, displayHeight*.23),2) # Draws wireframe
+        pg.draw.rect(self.display,(0,0,0), (x,y,self.displayWidth*.22, self.displayHeight*.23),2) # Draws wireframe
         self.displayText(troopName + " - Level "+ str(troop.getLevel()) + " (" + str(troop.getCooldownCounter()) + ")", (x+10,y+5))
         self.displayText(str(troop.getHealth())+" health", (x+5,y+spacing), self.TROOPCARD_FONT)
         self.displayText(str(troop.getAttack())+" attack", (x+5,y+(2 * spacing)), self.TROOPCARD_FONT)
@@ -243,7 +244,7 @@ class Game(object):
                         troop.upgradeStats("h",h)
                         loop = False
                 
-            display.fill((255,255,255))
+            self.display.fill((255,255,255))
 
             self.displayText(troop.getName()+" - "+str(tokens)+" tokens",(15,85))
 
@@ -254,25 +255,28 @@ class Game(object):
             self.displayText("Health: "+str(troop.previewUpgrade("h",h)),(50,260))
 
             # Show add/subtract buttons
-            rPlus.showButton(display)
-            rMinus.showButton(display)
-            aPlus.showButton(display)
-            aMinus.showButton(display)
-            sPlus.showButton(display)
-            sMinus.showButton(display)
-            hPlus.showButton(display)
-            hMinus.showButton(display)    
+            rPlus.showButton(self.display)
+            rMinus.showButton(self.display)
+            aPlus.showButton(self.display)
+            aMinus.showButton(self.display)
+            sPlus.showButton(self.display)
+            sMinus.showButton(self.display)
+            hPlus.showButton(self.display)
+            hMinus.showButton(self.display)    
 
-            apply.showButton(display)
-            cancel.showButton(display)
+            apply.showButton(self.display)
+            cancel.showButton(self.display)
 
             pg.display.update()
-            clock.tick(20)
+            self.clock.tick(20)
 
         return abs(STARTING_TOKENS - tokens)
 
 
-    ### -------| Game Loops |------- ###
+
+    ### -------| Game Loops Below |------- ###
+
+
 
     def setupStage(self):
         """Determines dimensions of the game board, players' names, and eventually the player's army.
@@ -281,12 +285,12 @@ class Game(object):
         nameInput1 = pygame_textinput.TextInput("Player 1")
         nameInput2 = pygame_textinput.TextInput("Player 2")
         
-        testMap       = CommandButton("TEST",(displayWidth*.25-35, displayHeight//2), (0,0,0))
-        baseMap       = CommandButton("BASIC",(displayWidth*.5-35, displayHeight//2), (0,0,0))
-        bigMap        = CommandButton("BIG",(displayWidth*.75-35, displayHeight//2), (0,0,0))
+        testMap       = CommandButton("TEST",(self.displayWidth*.25-35, self.displayHeight//2), (0,0,0))
+        baseMap       = CommandButton("BASIC",(self.displayWidth*.5-35, self.displayHeight//2), (0,0,0))
+        bigMap        = CommandButton("BIG",(self.displayWidth*.75-35, self.displayHeight//2), (0,0,0))
 
         change1 = CommandButton("PLAYER 1",(10,50), (100,100,100))
-        change2 = CommandButton("PLAYER 2",(displayWidth-115, 50), (100,100,100))
+        change2 = CommandButton("PLAYER 2",(self.displayWidth-115, 50), (100,100,100))
 
         b  = None
         m  = None
@@ -324,36 +328,36 @@ class Game(object):
                     # Creates a new board in the middle of the screen.
                     if testMap.isClicked(coords) == True:
                         m = test
-                        b = Board(m.dimensions[0], m.dimensions[1],(displayWidth//2,displayHeight//2),m.MAP)
+                        b = Board(m.dimensions[0], m.dimensions[1],(self.displayWidth//2,self.displayHeight//2),m.MAP)
                         loop = False
                     if baseMap.isClicked(coords) == True:
                         m = basic
-                        b = Board(m.dimensions[0], m.dimensions[1],(displayWidth//2,displayHeight//2),m.MAP)
+                        b = Board(m.dimensions[0], m.dimensions[1],(self.displayWidth//2,self.displayHeight//2),m.MAP)
                         loop = False
                     if bigMap.isClicked(coords) == True:
                         m = big
-                        b = Board(m.dimensions[0], m.dimensions[1],(displayWidth//2,displayHeight//2),m.MAP)
+                        b = Board(m.dimensions[0], m.dimensions[1],(self.displayWidth//2,self.displayHeight//2),m.MAP)
                         loop = False
 
 
-            display.fill((255,255,255))
+            self.display.fill((255,255,255))
 
-            change1.showButton(display)
-            change2.showButton(display)
+            change1.showButton(self.display)
+            change2.showButton(self.display)
 
-            testMap.showButton(display)
-            baseMap.showButton(display)
-            bigMap.showButton(display)
+            testMap.showButton(self.display)
+            baseMap.showButton(self.display)
+            bigMap.showButton(self.display)
 
             # Only updates the appropriate textbox
             if selectedInputBox  != None:
                 selectedInputBox.update(events)
 
-            display.blit(nameInput1.get_surface(), (10,10))
-            display.blit(nameInput2.get_surface(), (displayWidth - nameInput2.get_surface().get_width() - 10,10))
+            self.display.blit(nameInput1.get_surface(), (10,10))
+            self.display.blit(nameInput2.get_surface(), (self.displayWidth - nameInput2.get_surface().get_width() - 10,10))
 
             pg.display.update()
-            clock.tick(60)
+            self.clock.tick(60)
         
         p1 = Player(nameInput1.get_text(),"blue",None,m.tokens)
         p2 = Player(nameInput2.get_text(),"red",None,m.tokens)
@@ -368,17 +372,17 @@ class Game(object):
         p1 = gameInfo[1]
         p2 = gameInfo[2]
 
-        startButton   = CommandButton("start",(displayWidth-70, displayHeight-30), (0,0,0))
+        startButton   = CommandButton("start",(self.displayWidth-70, self.displayHeight-30), (0,0,0))
 
-        addButton     = CommandButton("add", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 2*displayHeight//6), (150,0,150))
-        upgradeButton = CommandButton("upgrade",(b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 3*displayHeight//6), (200,150,0))
-        switchButton  = CommandButton("switch",(b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 4*displayHeight//6), (0,0,0))
+        addButton     = CommandButton("add", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 2*self.displayHeight//6), (150,0,150))
+        upgradeButton = CommandButton("upgrade",(b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 3*self.displayHeight//6), (200,150,0))
+        switchButton  = CommandButton("switch",(b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 4*self.displayHeight//6), (0,0,0))
 
-        tb = TroopButton(("troop",1,1,25,1,100,(1,1),1,1), (b.getCoords()[0] - (b.getWidth()//2 * 32)-150, 2*displayHeight//6))
-        rb = TroopButton(("rifleman",1,3,50,1,80,(1,1),2,2), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100, 2*displayHeight//6))
-        hb = TroopButton(("healer",1,1,-30,1,70,(1,1),2,2), (b.getCoords()[0] - (b.getWidth()//2 * 32)-150, 3*displayHeight//6))    
-        kb = TroopButton(("knight",1,1,30,2,120,(1,1),1,2), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100, 3*displayHeight//6))
-        sb = TroopButton(("shield",1,1,10,1,175,(1,1),1,2), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100, 4*displayHeight//6))
+        tb = TroopButton(("troop",1,1,25,1,100,(1,1),1,1), (b.getCoords()[0] - (b.getWidth()//2 * 32)-150, 2*self.displayHeight//6))
+        rb = TroopButton(("rifleman",1,3,50,1,80,(1,1),2,2), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100, 2*self.displayHeight//6))
+        hb = TroopButton(("healer",1,1,-30,1,70,(1,1),2,2), (b.getCoords()[0] - (b.getWidth()//2 * 32)-150, 3*self.displayHeight//6))    
+        kb = TroopButton(("knight",1,1,30,2,120,(1,1),1,2), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100, 3*self.displayHeight//6))
+        sb = TroopButton(("shield",1,1,10,1,175,(1,1),1,2), (b.getCoords()[0] - (b.getWidth()//2 * 32)-100, 4*self.displayHeight//6))
 
         newTroop = None
         previewTroop = None
@@ -453,26 +457,26 @@ class Game(object):
 
             
             # Clear previous screen, so it can be updated again.
-            display.fill((255,255,255))
+            self.display.fill((255,255,255))
 
-            b.showBoard(display)
+            b.showBoard(self.display)
 
-            tb.showButton(display)
-            rb.showButton(display)
-            kb.showButton(display)
-            sb.showButton(display)
-            hb.showButton(display)
+            tb.showButton(self.display)
+            rb.showButton(self.display)
+            kb.showButton(self.display)
+            sb.showButton(self.display)
+            hb.showButton(self.display)
 
-            addButton.showButton(display)
-            upgradeButton.showButton(display)
-            switchButton.showButton(display)
+            addButton.showButton(self.display)
+            upgradeButton.showButton(self.display)
+            switchButton.showButton(self.display)
 
             # Uncomment for finished game
             if p1.getTokens() == 0 and p2.getTokens() == 0:
-                startButton.showButton(display)
+                startButton.showButton(self.display)
 
             # Uncomment for testing
-            # startButton.showButton(display)
+            # startButton.showButton(self.display)
 
             if currentPlayer.getTokens() == 0:
                 command = "switch"
@@ -534,24 +538,24 @@ class Game(object):
                 
             self.displayText(str(previewTroop), (0, 30))
 
-            self.displayText(str(currentPlayer.getName())+" - "+str(currentPlayer.getTokens()) + " tokens left",(displayWidth//2,0))
+            self.displayText(str(currentPlayer.getName())+" - "+str(currentPlayer.getTokens()) + " tokens left",(self.displayWidth//2,0))
 
             self.displayText(str(command), (b.getCoords()[0]-(b.getWidth()*32//2),b.getCoords()[1]-(b.getHeight()*32//2)-30))
 
-            self.displayText("    New Troop", (0,displayHeight - 210))
+            self.displayText("    New Troop", (0,self.displayHeight - 210))
             if newTroop != None:
-                self.displayText("Type: "+newTroop.getName(), (0,displayHeight-180))
-                self.displayText("Level: "+str(newTroop.getLevel()), (0,displayHeight-150))
-                self.displayText("Range: "+str(newTroop.getRange()), (0,displayHeight-120))
-                self.displayText("Attack: "+str(newTroop.getAttack())+" ("+str(newTroop.getCooldownCounter())+")", (0,displayHeight-90))
-                self.displayText("Speed: "+str(newTroop.getSpeed()), (0,displayHeight-60))
-                self.displayText("Health: "+str(newTroop.getHealth()), (0,displayHeight-30))
+                self.displayText("Type: "+newTroop.getName(), (0,self.displayHeight-180))
+                self.displayText("Level: "+str(newTroop.getLevel()), (0,self.displayHeight-150))
+                self.displayText("Range: "+str(newTroop.getRange()), (0,self.displayHeight-120))
+                self.displayText("Attack: "+str(newTroop.getAttack())+" ("+str(newTroop.getCooldownCounter())+")", (0,self.displayHeight-90))
+                self.displayText("Speed: "+str(newTroop.getSpeed()), (0,self.displayHeight-60))
+                self.displayText("Health: "+str(newTroop.getHealth()), (0,self.displayHeight-30))
 
-            self.displayText(str(square), (displayWidth*.9,0))
-            self.displayText(str(square), (displayWidth*.9,0))
+            self.displayText(str(square), (self.displayWidth*.9,0))
+            self.displayText(str(square), (self.displayWidth*.9,0))
 
             pg.display.update()
-            clock.tick(30)
+            self.clock.tick(30)
 
         return (b,p1,p2)
 
@@ -566,10 +570,10 @@ class Game(object):
         p1.setMoves(len(p1.getTroops()))
         p2.setMoves(len(p2.getTroops()))
 
-        attackButton = CommandButton("attack", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 2*displayHeight//8), (0,50,200))
-        moveButton = CommandButton("move", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 3*displayHeight//8), (50,150,0))
-        rotateButton = CommandButton("rotate", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 4*displayHeight//8), (200,100,0))
-        passButton = CommandButton("pass", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 5*displayHeight//8), (200,50,250))
+        attackButton = CommandButton("attack", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 2*self.displayHeight//8), (0,50,200))
+        moveButton = CommandButton("move", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 3*self.displayHeight//8), (50,150,0))
+        rotateButton = CommandButton("rotate", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 4*self.displayHeight//8), (200,100,0))
+        passButton = CommandButton("pass", (b.getCoords()[0] + ((b.getWidth()* 32)/2) + 32, 5*self.displayHeight//8), (200,50,250))
 
         # Interface variables
         square = None
@@ -589,14 +593,14 @@ class Game(object):
 
         currentPlayer = p1
 
-        info_panel = pg.Rect(0,0,displayWidth,25)
+        info_panel = pg.Rect(0,0,self.displayWidth,25)
 
         # Creates update panels
-        panel_one_top = pg.Rect(0,25,displayWidth//4,(displayHeight*.76)-25)
-        panel_one_bottom = pg.Rect(0,displayHeight*.76,displayWidth//4,displayHeight*.24)
-        panel_two = pg.Rect(displayWidth//4,25,2*(displayWidth//4),displayHeight-25)
-        panel_three_top = pg.Rect(3*(displayWidth//4),25,(displayWidth/4),displayHeight*.76-25)
-        panel_three_bottom = pg.Rect(3*(displayWidth//4),displayHeight*.76,(displayWidth/4),displayHeight*.24)
+        panel_one_top = pg.Rect(0,25,self.displayWidth//4,(self.displayHeight*.76)-25)
+        panel_one_bottom = pg.Rect(0,self.displayHeight*.76,self.displayWidth//4,self.displayHeight*.24)
+        panel_two = pg.Rect(self.displayWidth//4,25,2*(self.displayWidth//4),self.displayHeight-25)
+        panel_three_top = pg.Rect(3*(self.displayWidth//4),25,(self.displayWidth/4),self.displayHeight*.76-25)
+        panel_three_bottom = pg.Rect(3*(self.displayWidth//4),self.displayHeight*.76,(self.displayWidth/4),self.displayHeight*.24)
 
         timer_start = time.time()
         timer_end   = None
@@ -631,14 +635,14 @@ class Game(object):
 
             # Clear previous screen, so it can be updated again.
             
-            display.fill((255,255,255))
+            self.display.fill((255,255,255))
 
-            attackButton.showButton(display)
-            moveButton.showButton(display)
-            rotateButton.showButton(display)
-            passButton.showButton(display)
+            attackButton.showButton(self.display)
+            moveButton.showButton(self.display)
+            rotateButton.showButton(self.display)
+            passButton.showButton(self.display)
 
-            b.showBoard(display)
+            b.showBoard(self.display)
 
             self.drawPlayerHealthbars(p1,  "LEFT", selectedTroop)
             self.drawPlayerHealthbars(p2,  "RIGHT", selectedTroop)
@@ -737,33 +741,33 @@ class Game(object):
 
                 switchPlayer = False
 
-            # Display game data. Testing purposes only. info_panel data.
-            self.displayText(str(currentPlayer.getName())+" - "+str(currentPlayer.getMoves())+ " moves left",(displayWidth*.66,0))
+            # self.Display game data. Testing purposes only. info_panel data.
+            self.displayText(str(currentPlayer.getName())+" - "+str(currentPlayer.getMoves())+ " moves left",(self.displayWidth*.66,0))
 
-            self.displayText(str(command), (displayWidth*.33,0))
+            self.displayText(str(command), (self.displayWidth*.33,0))
 
             self.displayText(str(pg.mouse.get_pos()), (0,0))
-            self.displayText(str(square), (displayWidth*.9,0))
+            self.displayText(str(square), (self.displayWidth*.9,0))
 
             update_panels = []
             if info_update == True:
                 update_panels.append(info_panel)
-                # pg.draw.rect(display, (0,0,200), info_panel, 2)    # For testing only...
+                # pg.draw.rect(self.display, (0,0,200), info_panel, 2)    # For testing only...
             if p1_bottom_update == True:
                 update_panels.append(panel_one_bottom)
-                # pg.draw.rect(display, (0,0,200), panel_one_bottom, 2)
+                # pg.draw.rect(self.display, (0,0,200), panel_one_bottom, 2)
             if p1_top_update == True:
                 update_panels.append(panel_one_top)
-                # pg.draw.rect(display, (0,0,200), panel_one_top, 2)
+                # pg.draw.rect(self.display, (0,0,200), panel_one_top, 2)
             if p2_update == True:
                 update_panels.append(panel_two)
-                # pg.draw.rect(display, (0,0,200), panel_two, 2)
+                # pg.draw.rect(self.display, (0,0,200), panel_two, 2)
             if p3_bottom_update == True:
                 update_panels.append(panel_three_bottom)
-                # pg.draw.rect(display, (0,0,200), panel_three_bottom, 2)
+                # pg.draw.rect(self.display, (0,0,200), panel_three_bottom, 2)
             if p3_top_update == True:
                 update_panels.append(panel_three_top)
-                # pg.draw.rect(display, (0,0,200), panel_three_top, 2)
+                # pg.draw.rect(self.display, (0,0,200), panel_three_top, 2)
 
             pg.display.update(update_panels)
 
@@ -773,7 +777,7 @@ class Game(object):
                 print("TIME:", timer_end - timer_start)
 
             pass_number += 1
-            clock.tick(30)
+            self.clock.tick(30)
 
 Game()
 
