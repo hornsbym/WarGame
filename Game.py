@@ -2,8 +2,6 @@ import pygame as pg
 import time
 from screeninfo import get_monitors
 
-# from server import GameServer
-
 import _modules.pygame_textinput as pygame_textinput
 from _modules.Square import Square
 from _modules.Board import Board
@@ -814,5 +812,5 @@ class Game(object):
             pass_number += 1
             self.clock.tick(30)
 
-Game()
+# Game()
 
