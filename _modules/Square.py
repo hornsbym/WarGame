@@ -1,7 +1,5 @@
 import pygame as pg
-from Troop import Troop
-
-# squareImg = pg.image.load("./_sprites/square.jpg")
+from _modules.Troop import Troop
 
 class Square(object):
     """Contains information about a single square on the game board."""

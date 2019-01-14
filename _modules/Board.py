@@ -1,5 +1,5 @@
 import pygame as pg
-from Square import Square
+from _modules.Square import Square
 
 class Board(object):
     """Represents the playing surface for the game.
@@ -171,7 +171,7 @@ class Board(object):
                         if attackedTroop.getTeam() == troop.getTeam():
                             if attackedTroop.getName() == "shield":    # Allows teammates to attack
                                 pass                                   # over friendly shield-carriers
-                            if troop.getName() == 'healer':    # Heals teammates
+                            elif troop.getName() == 'healer':    # Heals teammates
                                 attackedTroop.takeDamage(attackerStrength)
                                 break
                             else: 
@@ -182,17 +182,27 @@ class Board(object):
             if orientation == (1,-1) and attackerRange + troopCoords[0] > self.width-1:     # Prevents attacking beyond right    
                 attackerRange = (self.width-1) - troopCoords[0]                             # side of board.
             for x in range(attackerX,attackerX+orientation[0]*(attackerRange+1),orientation[0]):
-                # Doesn't let players shoot through walls...
-                if self.getSquareType((x,attackerY)) == 'wall':    
-                    break  
                 if x != attackerX:
-                    # Makes sure the square being attacked isn't empty or on the same team.
-                    if self.squares[x][attackerY].getTroop() != None and self.squares[x][attackerY].getTroop().getTeam() != troop.getTeam():
-                        self.squares[x][attackerY].getTroop().takeDamage(attackerStrength)
-                        break
-                    # Stops attack if it hits a teammate
-                    if self.squares[x][attackerY].getTroop() != None and self.squares[x][attackerY].getTroop().getTeam() == troop.getTeam():
-                        break
+                    # Doesn't let players shoot through walls...
+                    if self.getSquareType((x,attackerY)) == 'wall':    
+                        break  
+                    attackedTroop = self.squares[x][attackerY].getTroop()
+                    if attackedTroop != None:    # Makes sure the square being attacked isn't empty... 
+                        if attackedTroop.getTeam() != troop.getTeam():    # ...or on the same team.
+                            if troop.getName() == 'healer':     # Doesn't let healers heal opponents
+                                pass
+                            else:
+                                attackedTroop.takeDamage(attackerStrength)
+                                break
+                        if attackedTroop.getTeam() == troop.getTeam():
+                            if attackedTroop.getName() == "shield":    # Allows teammates to attack
+                                pass                                   # over friendly shield-carriers
+                            elif troop.getName() == 'healer':    # Heals teammates
+                                attackedTroop.takeDamage(attackerStrength)
+                                break
+                            else: 
+                                break    # Stops attack if it hits a non-shield teammate
+
     
     def move(self, troop, targetCoords):
         """Accepts a troop object.
