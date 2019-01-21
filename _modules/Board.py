@@ -5,18 +5,19 @@ class Board(object):
     """Represents the playing surface for the game.
        Holds and represents an array of squares."""
 
-    def __init__(self, width, height, centerCoords, layout):
+    def __init__(self, width, height, layout):
         """ width = Integer specifying how many squares wide the game board should be. 
            height = Integer specifying how many squares tall the board should be.
            coords = Tuple specifying the center coordinates of the display.
            layout = 2D list of square types."""
         self.width = width
         self.height = height
-        self.centerCoords = centerCoords
         self.layout = layout
         self.squares = []
+        self.centerCoords = None
 
-        self.makeBoard()
+
+        # self.makeBoard()
     
     def getCoords(self):
         return self.centerCoords
@@ -27,8 +28,11 @@ class Board(object):
     def getHeight(self):
         return self.height
 
-    def makeBoard(self):
-        """Populates the board with squares."""
+    def makeBoard(self, centerCoords):
+        """Accepts a tuple for where the center of the board should be drawn.
+           Populates the board with squares.
+           Returns nothing."""
+        self.centerCoords = centerCoords
         board = []
 
         ## Load images here so each square doesn't have to.
@@ -61,7 +65,7 @@ class Board(object):
         for x in range(self.width):
             row = []
             for y in range(self.height):
-                row.append(Square(x,y,(self.centerCoords[0]-xOffset,self.centerCoords[1]-yOffset), self.layout[x][y], images))
+                row.append(Square(x,y,(centerCoords[0]-xOffset,centerCoords[1]-yOffset), self.layout[x][y], images))
 
             board.append(row)
 

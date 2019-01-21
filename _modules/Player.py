@@ -2,13 +2,15 @@ import pygame as pg
 
 class Player(object):
     """Holds information relevant for each player in the game."""
-    def __init__(self, name, color, armyType, spendableTokens):
+    def __init__(self, name, color, armyType, spendableTokens, address):
         """name            = Str
            color           = Str
            civilization    = Str
            spendableTokens = Int; how many tokens you have to make upgrades.
-           moveablePieces  = Int; how many moves you can make in one turn."""
+           moveablePieces  = Int; how many moves you can make in one turn.
+           address         = Tup; (IP address, port)"""
         self.MOVES_PER_TURN = 1
+        self.ADDRESS = address
         
         self.name   = name
         self.color  = color
@@ -51,6 +53,10 @@ class Player(object):
     def getColor(self):
         """Returns string."""
         return self.color
+    
+    def getAddress(self):
+        """Returns tuple."""
+        return self.ADDRESS
 
     def setMoves(self,moves):
         """Accepts an int.

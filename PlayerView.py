@@ -35,6 +35,7 @@ class PlayerView(object):
         Communicates with a game server to change the state of the game.
         Updates the screen to reflect changes to the game state."""
     def __init__(self):
+        # Pygame info
         initialData = initializePygame()
         self.display = initialData[0]
         self.clock = initialData[1]
@@ -69,10 +70,15 @@ class PlayerView(object):
                 break
             except:
                 self.PORT += 1
+        
+        # Relevent game info
+        self.playerObject = None
+        self.board = None
 
         # Enters a lobby while waiting on another player
         self.lobbyStage()
         self.setupStage()
+        self.placementStage()
 
         pg.quit()
         quit()
@@ -185,11 +191,19 @@ class PlayerView(object):
         self.displayText(str(troop.getRange())+" attack range", (x+5,y+(3 * spacing)), self.TROOPCARD_FONT)
         self.displayText(str(troop.getSpeed())+" speed", (x+5,y+(4 * spacing)), self.TROOPCARD_FONT)
 
-
+    def canUpgrade(self, player ,troop):
+        """Accepts a Player object.
+        Accepts a Troop object.
+        Checks to see if the player object has enough tokens to purchase a given troop. """
+        player = self.playerObject
+        tokens = player.getTokens()
+        cost   = troop.getCost()
+        if cost > tokens:
+            return False
+        else: 
+            return True
 
     ### -----| Update screen during main game loops below |----- ###
-    
-
 
     def lobbyStage(self):
         """Waits for two players to join."""
@@ -220,9 +234,11 @@ class PlayerView(object):
                     if closeButton.isClicked(coords):
                         command = closeButton.getValue() 
                     if startButton.isClicked(coords):
-                        wait = False    # Moves on to the next stage of the game
+                        command = startButton.getValue()    # Moves on to the next stage of the game
 
             self.display.fill((255,255,255))
+
+            self.displayText("Lobby Stage",(0, self.displayHeight-40))
             
             if counter % 30 == 0:
                 dots += "."
@@ -232,7 +248,7 @@ class PlayerView(object):
             self.displayText(str(self.PORT),(0,0))    # Displays the port in the window
 
             # Packages data to send to the server here as a python dictionary
-            outboundData = { "command":command }
+            outboundData = { "command": command }
 
             # Try to communicate with server here:
             try:          
@@ -249,6 +265,8 @@ class PlayerView(object):
 
                 # Allows users to interact with the server via buttons.
                 try:
+                    if gameState['start'] == True:
+                        break
                     if gameState['ready'] == True:
                         startButton.showButton(self.display)
                     if gameState['opponentPort'] != None:
@@ -257,7 +275,6 @@ class PlayerView(object):
                     pass
                 pingButton.showButton(self.display)
                 closeButton.showButton(self.display)
-
 
             # Keeps user in the waiting screen if they can't connect to server
             except:
@@ -273,12 +290,214 @@ class PlayerView(object):
             self.clock.tick(30)
 
     def setupStage(self):
-        self.display.fill((255,255,255))
+        """Determines dimensions of the game board, players' names, and eventually the player's army.
+        Return a tuple containing (Board, Player1, Player2)."""
+        print("---- Initiating setup stage...")
+        nameInput = pygame_textinput.TextInput("Player "+ str(self.PORT))
 
-        while (loop = True):
-            outboundData = { 'command': 'fetch' }
+        name = nameInput.get_text()
+        mapVote = None
+
+        redButton     = CommandButton(("RED"), (3*self.displayWidth//7, self.displayHeight//5), (200, 50, 50))
+        blueButton    = CommandButton(("BLUE"), (4*self.displayWidth//7, self.displayHeight//5), (50, 50, 200))
+
+        testMap       = CommandButton("TEST",(2*self.displayWidth//5,self.displayHeight//2), (0,0,0))
+        baseMap       = CommandButton("BASIC",(3*self.displayWidth//5, self.displayHeight//2), (0,0,0))
+        bigMap        = CommandButton("BIG",(4*self.displayWidth//5, self.displayHeight//2), (0,0,0))
+
+        changeNameButton = CommandButton("Change name",(self.displayWidth//2,35), (100,100,100))
+        submitButton = CommandButton("SUBMIT", (self.displayWidth//2,self.displayHeight-40), (200,100,100))
         
+        command = None
+        while True:
 
+            events = pg.event.get()
+            for event in events:
+                if event.type == pg.QUIT:
+                    pg.quit()
+                    quit()
 
+                if event.type == pg.MOUSEBUTTONDOWN:
+                    coords = pg.mouse.get_pos()
 
+                    if changeNameButton.isClicked(coords):
+                        name = nameInput.get_text()
+                    if submitButton.isClicked(coords):
+                        if mapVote != None:     # Only lets you submit once you've voted
+                            command = submitButton.getValue()
+                    
+                    if testMap.isClicked(coords):
+                        mapVote = testMap.getValue()
+                    if bigMap.isClicked(coords):
+                        mapVote = bigMap.getValue()
+                    if baseMap.isClicked(coords):
+                        mapVote = baseMap.getValue()
+                    
+
+            self.display.fill((255,255,255))
+
+            self.displayText("Setup Stage", (0, self.displayHeight-40))
+
+            self.displayText("Name: "+name,(0,0))
+            self.displayText("Map: "+str(mapVote), (0,30))
+
+            redButton.showButton(self.display)
+            blueButton.showButton(self.display)
+
+            testMap.showButton(self.display)
+            baseMap.showButton(self.display)
+            bigMap.showButton(self.display)
+
+            nameInput.update(events)
+            self.display.blit(nameInput.get_surface(), (self.displayWidth//2,0))
+            changeNameButton.showButton(self.display)
+
+            submitButton.showButton(self.display)
+
+            outboundData = { 
+                'command': command,
+                'mapVote': mapVote,
+                'playerName': name
+                }
+            # Try to communicate with server here:
+            try:          
+                outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
+                self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
+
+                inData = self.socket.recvfrom(1024)      # Gets back data. Will be a Pickle object.
+                inData = inData[0]                       # (<data>, <address>)
+                gameState = pickle.loads(inData)         # Turn Pickle back into dictionary.
+
+                if gameState['ready'] == True:
+                    self.board = gameState['board']
+                    self.board.makeBoard((self.displayWidth//2, self.displayHeight//2))
+                    self.playerObject = gameState['player']
+                    break       # Advances to next stage of the game.
+            except:
+                self.displayText('Not connected', (self.displayWidth//2, self.displayHeight//2))
+
+            command = None
+
+            pg.display.update()
+            self.clock.tick(30)
+
+    def placementStage(self):
+        """Allows the player to place pieces on the game board."""
+        print("--- Entering placement stage.")
+
+        # Static game widgets for player to interact with
+        startButton   = CommandButton("start",(self.displayWidth-70, self.displayHeight-30), (0,0,0))
+
+        addButton     = CommandButton("add", (self.board.getCoords()[0] + ((self.board.getWidth()* 32)/2) + 32, 2*self.displayHeight//6), (150,0,150))
+        upgradeButton = CommandButton("upgrade",(self.board.getCoords()[0] + ((self.board.getWidth()* 32)/2) + 32, 3*self.displayHeight//6), (200,150,0))
+        switchButton  = CommandButton("switch",(self.board.getCoords()[0] + ((self.board.getWidth()* 32)/2) + 32, 4*self.displayHeight//6), (0,0,0))
+
+        tb = TroopButton(("troop",1,1,25,1,100,(1,1),1,1), (self.board.getCoords()[0] - (self.board.getWidth()//2 * 32)-150, 2*self.displayHeight//6))
+        rb = TroopButton(("rifleman",1,3,50,1,80,(1,1),2,2), (self.board.getCoords()[0] - (self.board.getWidth()//2 * 32)-100, 2*self.displayHeight//6))
+        hb = TroopButton(("healer",1,1,-30,1,70,(1,1),2,2), (self.board.getCoords()[0] - (self.board.getWidth()//2 * 32)-150, 3*self.displayHeight//6))    
+        kb = TroopButton(("knight",1,1,30,2,120,(1,1),1,2), (self.board.getCoords()[0] - (self.board.getWidth()//2 * 32)-100, 3*self.displayHeight//6))
+        sb = TroopButton(("shield",1,1,10,1,175,(1,1),1,2), (self.board.getCoords()[0] - (self.board.getWidth()//2 * 32)-100, 4*self.displayHeight//6))
+
+        newTroop = None
+        previewTroop = None
+        command  = None
+        square   = None    # Is just a tuple of (x,y)
+
+        canSwitch = False
+        switchPlayer   = False
+
+        command = None
+        while True:
+            events = pg.event.get()
+            for event in events:
+                if event.type == pg.QUIT:
+                    pg.quit()
+                    quit()
+
+                if event.type == pg.MOUSEBUTTONDOWN:
+                    coords = pg.mouse.get_pos()               # Uncomment for finished game...
+                    if self.board.isClicked(coords) == True:
+                        square = self.board.getSquareCoords(coords)
+                    else:
+                        square = None
+                        newTroop = None
+
+                    # Checks the troop placement buttons
+                    if tb.isClicked(coords) == True:
+                        newTroop = Troop(tb.getValue())
+                    if rb.isClicked(coords) == True:
+                        newTroop = Troop(rb.getValue())
+                    if sb.isClicked(coords) == True:
+                        newTroop = Troop(sb.getValue())
+                    if kb.isClicked(coords) == True:
+                        newTroop = Troop(kb.getValue())
+                    if hb.isClicked(coords) == True:
+                        newTroop = Troop(hb.getValue())
+                    
+                    if addButton.isClicked(coords) == True:
+                        command = addButton.getValue()
+                    if upgradeButton.isClicked(coords) == True:
+                        command = upgradeButton.getValue()
+                    if switchButton.isClicked(coords) == True:
+                        command = switchButton.getValue()
+
+                # Allows users the option to choose troops and actions via keystrokes.
+                if event.type == pg.KEYDOWN:
+                    key = pg.key.get_pressed()
+                    
+                    # Troops
+                    if key[pg.K_a]:
+                        newTroop = Troop(tb.getValue())
+                    if key[pg.K_r]:
+                        newTroop = Troop(rb.getValue())
+                    if key[pg.K_w]:
+                        newTroop = Troop(sb.getValue())
+                    if key[pg.K_e]:
+                        newTroop = Troop(kb.getValue())
+                    if key[pg.K_q]:
+                        newTroop = Troop(hb.getValue())
+
+                    # Actions
+                    if key[pg.K_1]:
+                        command = addButton.getValue()
+                    if key[pg.K_2]:
+                        command = upgradeButton.getValue()
+                    if key[pg.K_0]:
+                        command = switchButton.getValue()
+
+            # Clear previous screen, so it can be updated again.
+            self.display.fill((255,255,255))
+
+            self.displayText(self.playerObject.getName() + " - " + self.playerObject.getColor(), (self.displayWidth//2, 0))
+            self.displayText("Placement Stage", (0, self.displayHeight-40))
+            self.board.showBoard(self.display)
+
+            tb.showButton(self.display)
+            rb.showButton(self.display)
+            kb.showButton(self.display)
+            sb.showButton(self.display)
+            hb.showButton(self.display)
+
+            addButton.showButton(self.display)
+            upgradeButton.showButton(self.display)
+            switchButton.showButton(self.display)
+
+            outboundData = { 
+                'command': command
+                }
+            # Try to communicate with server here:
+            try:          
+                outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
+                self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
+
+                inData = self.socket.recvfrom(1024)      # Gets back data. Will be a Pickle object.
+                inData = inData[0]                       # (<data>, <address>)
+                gameState = pickle.loads(inData)         # Turn Pickle back into dictionary.
+            except:
+                self.displayText('Not connected', (self.displayWidth//2, self.displayHeight//2))
+
+            pg.display.update()
+            self.clock.tick(30)
+
+        
 PlayerView()
