@@ -43,6 +43,7 @@ class GameServer(object):
         # Begins connecting two players
         self.lobbyStage()
         self.setupStage()
+        self.placementStage()
 
         # Terminates the socket when the game is done
         self.socket.close()
@@ -138,10 +139,8 @@ class GameServer(object):
 
         gameState = {
             "connection":self.PORT,
-            "player": None,
-            "map": None,
-            "board": None,
-            "ready": False     
+            "ready": False,
+            "game": None     
         }
         while True:
             # Gets all the events from the game window. A.k.a., do stuff here.
@@ -160,8 +159,7 @@ class GameServer(object):
                     mapVotes.append(mVote)
                     playerNames[str(address)] = pName
             
-            # Both votes are in. Chooses a map, builds the board and player objects.
-            # Keeps all of this information here on the server, but tells PlayerViews they can advance.
+            # Both votes are in. Chooses a map, builds the Board object.
             if len(mapVotes) == 2:
                 # Only chooses one map for both players
                 if self.map == None:
@@ -172,31 +170,45 @@ class GameServer(object):
                         self.map = big
                     if m == "BASIC":
                         self.map = basic
-                
-                # Builds a board and sends it to both players
-                self.board = Board(self.map.dimensions[0], self.map.dimensions[1], self.map.MAP)
+
+                    # Builds the game board
+                    self.board = Board(self.map.dimensions[0], self.map.dimensions[1], self.map.MAP)
+
+            # Both players' names have been entered, creates Player objects.\
+            # Appends player objects to state variable. 
+            if len(playerNames) == 2 and len(colors) > 0:
                 p = Player(playerNames[str(address)], colors.pop(), None, self.map.tokens, address)
                 self.players.append(p)
-            
-                # Send back player and board objects, and tell clients the game is ready
-                gameState["board"] = self.board
-                gameState["player"] = p
-                gameState["ready"] = True
+                
+            # Player objects and Board object have both been created.
+            # Builds the Game object, stores it, then tells the PlayerViews its ready.
+            if len(self.players) == 2 and self.board != None:
+                self.game = Game(self.board, self.players[0], self.players[1])
+                gameState['game'] = self.game
+                gameState['ready'] = True
+
+                # Sends data to both players simultaneously
+                for client in self.clients:
+                    outboundData = pickle.dumps(gameState)
+                    self.socket.sendto(outboundData, client)
+                break
 
             # Packages up data and sends it back to the client
             outboundData = pickle.dumps(gameState)
             self.socket.sendto(outboundData, address)
-        
-        return 
 
+        
     def placementStage(self):
         """Communicates with player objects.
            Controls player turn-taking for placement.
            Keeps track of board and player changes."""
         print("--- Entering placement stage")
+        activePlayer = self.players[0]
+
         gameState = {
             "connection": str(self.PORT), 
-            "ready":False,
+            "active": activePlayer.getName(),
+            "game": self.game
             }
         while True:
             inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
@@ -208,8 +220,12 @@ class GameServer(object):
             updatedTime = time.time()                     
             self.clientUpdateTimes[str(address)] = updatedTime
 
-            if data['command'] != "":
-                pass
+            if data['stage'] == 'placement':
+                if data['command'] != None:
+                    print(data)
+                # Interacts with the game object, then sends the updated game back
+                self.game.placementActions(data['command'], data['square'], data['newTroop'])
+                gameState['game'] = self.game
 
             # Packages up data and sends it back to the client
             outboundData = pickle.dumps(gameState)

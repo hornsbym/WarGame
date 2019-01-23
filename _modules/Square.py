@@ -4,23 +4,22 @@ from _modules.Troop import Troop
 class Square(object):
     """Contains information about a single square on the game board."""
 
-    def __init__(self, x, y, coords, squareType, images):
+    def __init__(self, x, y, squareType):
         """     x = Integer for the square's horizontal position 
                     (relative to the other squares on the board.)
                 y = Integer for the square's vertical position 
                     (relative to the other squares on the board.)
            coords = Tuple containing the starting position for the 
                     board as a whole, not individual squares.
-       squareType = String saying what classification the square should be.
-           images = Dictionary holding pre-rendered images."""
+       squareType = String saying what classification the square should be."""
         self.TYPE = squareType
         self.x = x
         self.y = y
-        self.coords = coords
+        self.coords = None
         self.icon = self.TYPE
         self.troop = None
         self.color = ""
-        self.images = images
+        self.images = None
 
         self.image = None
 
@@ -68,10 +67,16 @@ class Square(object):
             
         self.setIcon()
 
-    def showSquare(self,display):
+    def setImages(self, imageDict):
+        """Accepts a python dictionary of pre-loaded images."""
+        self.images = imageDict
+
+    def showSquare(self,display, coords):
         """Accepts a pygame Display object as an argument.
+           Accepts a tuple of coordinates for where the square should be drawn.
            Shows the square in that display.
-           Handles rotations."""
+           Handles rotations.
+           Also sets the state coordinates of the square."""
         img = self.images[self.icon]
 
         # Handles rotations
@@ -85,8 +90,9 @@ class Square(object):
                 img = pg.transform.rotate(img, -90)
             if orientation == (-1,-1):
                 img = pg.transform.rotate(img, 180)
-        
-        display.blit(img, (self.coords[0] + (self.x * 32), self.coords[1] + ( self.y * 32)))
+
+        self.coords = coords
+        display.blit(img, (coords[0] + (self.x * 32), coords[1] + ( self.y * 32)))
 
     def isClicked(self, coords):
         """Accepts a tuple of coordinates in form (x,y).

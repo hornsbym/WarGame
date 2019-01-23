@@ -5,6 +5,7 @@ import socket
 import pickle
 
 import _modules.pygame_textinput as pygame_textinput
+from Game import Game
 from _modules.Square import Square
 from _modules.Board import Board
 from _modules.TroopButton import TroopButton
@@ -49,6 +50,30 @@ class PlayerView(object):
         self.BIG_FONT       = pg.font.SysFont(None, 30)
         self.TROOPCARD_FONT = pg.font.SysFont(None, 20)
 
+        ## Load images here so each square doesn't have to.
+        self.IMAGES = {
+            "barricade":pg.image.load("./_sprites/barricade.png").convert(),
+            "bluehealer":pg.image.load("./_sprites/bluehealer.png").convert(),
+            "blueknight":pg.image.load("./_sprites/blueknight.png").convert(),
+            "bluerifleman":pg.image.load("./_sprites/bluerifleman.png").convert(),
+            "blueshield":pg.image.load("./_sprites/blueshield.png").convert(),
+            "bluesquare":pg.image.load("./_sprites/bluesquare.png").convert(),
+            "bluetroop":pg.image.load("./_sprites/bluetroop.png").convert(),
+            "healer":pg.image.load("./_sprites/healer.png").convert(),
+            "knight":pg.image.load("./_sprites/knight.png").convert(),
+            "redhealer":pg.image.load("./_sprites/redhealer.png").convert(),
+            "redknight":pg.image.load("./_sprites/redknight.png").convert(),
+            "redrifleman":pg.image.load("./_sprites/redrifleman.png").convert(),
+            "redshield":pg.image.load("./_sprites/redshield.png").convert(),
+            "redsquare":pg.image.load("./_sprites/redsquare.png").convert(),
+            "redtroop":pg.image.load("./_sprites/redtroop.png").convert(),
+            "rifleman":pg.image.load("./_sprites/rifleman.png").convert(),
+            "shield":pg.image.load("./_sprites/shield.png").convert(),
+            "square":pg.image.load("./_sprites/square.png").convert(),
+            "troop":pg.image.load("./_sprites/troop.png").convert(),
+            "wall":pg.image.load("./_sprites/wall.png").convert(),
+        }
+
         # Socket variables
         self.HOST = '127.0.0.1'
         self.PORT = 5001
@@ -71,9 +96,10 @@ class PlayerView(object):
             except:
                 self.PORT += 1
         
-        # Relevent game info
-        self.playerObject = None
-        self.board = None
+        # Contains the Game object, which has all important Game information
+        # Game Object should never be changed, only looked at.
+        self.GAME = None
+        self.PLAYERNAME = None
 
         # Enters a lobby while waiting on another player
         self.lobbyStage()
@@ -325,6 +351,7 @@ class PlayerView(object):
                     if submitButton.isClicked(coords):
                         if mapVote != None:     # Only lets you submit once you've voted
                             command = submitButton.getValue()
+                            self.PLAYERNAME = name
                     
                     if testMap.isClicked(coords):
                         mapVote = testMap.getValue()
@@ -355,6 +382,7 @@ class PlayerView(object):
             submitButton.showButton(self.display)
 
             outboundData = { 
+                'stage': 'setup',
                 'command': command,
                 'mapVote': mapVote,
                 'playerName': name
@@ -364,14 +392,15 @@ class PlayerView(object):
                 outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
                 self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
 
-                inData = self.socket.recvfrom(1024)      # Gets back data. Will be a Pickle object.
+                # SOCKET MUST BE BIG SO THAT THE GAME OBJECT CAN FIT
+                inData = self.socket.recvfrom(12000)      # Gets back data. Will be a Pickle object.
                 inData = inData[0]                       # (<data>, <address>)
                 gameState = pickle.loads(inData)         # Turn Pickle back into dictionary.
-
+                
+                # Gets the set-up Game object back from the server
                 if gameState['ready'] == True:
-                    self.board = gameState['board']
-                    self.board.makeBoard((self.displayWidth//2, self.displayHeight//2))
-                    self.playerObject = gameState['player']
+                    self.GAME = gameState['game']
+                    self.GAME.getBoard().setCenterCoords((self.displayWidth//2, self.displayHeight//2))
                     break       # Advances to next stage of the game.
             except:
                 self.displayText('Not connected', (self.displayWidth//2, self.displayHeight//2))
@@ -388,15 +417,15 @@ class PlayerView(object):
         # Static game widgets for player to interact with
         startButton   = CommandButton("start",(self.displayWidth-70, self.displayHeight-30), (0,0,0))
 
-        addButton     = CommandButton("add", (self.board.getCoords()[0] + ((self.board.getWidth()* 32)/2) + 32, 2*self.displayHeight//6), (150,0,150))
-        upgradeButton = CommandButton("upgrade",(self.board.getCoords()[0] + ((self.board.getWidth()* 32)/2) + 32, 3*self.displayHeight//6), (200,150,0))
-        switchButton  = CommandButton("switch",(self.board.getCoords()[0] + ((self.board.getWidth()* 32)/2) + 32, 4*self.displayHeight//6), (0,0,0))
+        addButton     = CommandButton("add", (self.GAME.getBoard().getCoords()[0] + ((self.GAME.getBoard().getWidth()* 32)/2) + 32, 2*self.displayHeight//6), (150,0,150))
+        upgradeButton = CommandButton("upgrade",(self.GAME.getBoard().getCoords()[0] + ((self.GAME.getBoard().getWidth()* 32)/2) + 32, 3*self.displayHeight//6), (200,150,0))
+        switchButton  = CommandButton("switch",(self.GAME.getBoard().getCoords()[0] + ((self.GAME.getBoard().getWidth()* 32)/2) + 32, 4*self.displayHeight//6), (0,0,0))
 
-        tb = TroopButton(("troop",1,1,25,1,100,(1,1),1,1), (self.board.getCoords()[0] - (self.board.getWidth()//2 * 32)-150, 2*self.displayHeight//6))
-        rb = TroopButton(("rifleman",1,3,50,1,80,(1,1),2,2), (self.board.getCoords()[0] - (self.board.getWidth()//2 * 32)-100, 2*self.displayHeight//6))
-        hb = TroopButton(("healer",1,1,-30,1,70,(1,1),2,2), (self.board.getCoords()[0] - (self.board.getWidth()//2 * 32)-150, 3*self.displayHeight//6))    
-        kb = TroopButton(("knight",1,1,30,2,120,(1,1),1,2), (self.board.getCoords()[0] - (self.board.getWidth()//2 * 32)-100, 3*self.displayHeight//6))
-        sb = TroopButton(("shield",1,1,10,1,175,(1,1),1,2), (self.board.getCoords()[0] - (self.board.getWidth()//2 * 32)-100, 4*self.displayHeight//6))
+        tb = TroopButton(("troop",1,1,25,1,100,(1,1),1,1), (self.GAME.getBoard().getCoords()[0] - (self.GAME.getBoard().getWidth()//2 * 32)-150, 2*self.displayHeight//6))
+        rb = TroopButton(("rifleman",1,3,50,1,80,(1,1),2,2), (self.GAME.getBoard().getCoords()[0] - (self.GAME.getBoard().getWidth()//2 * 32)-100, 2*self.displayHeight//6))
+        hb = TroopButton(("healer",1,1,-30,1,70,(1,1),2,2), (self.GAME.getBoard().getCoords()[0] - (self.GAME.getBoard().getWidth()//2 * 32)-150, 3*self.displayHeight//6))    
+        kb = TroopButton(("knight",1,1,30,2,120,(1,1),1,2), (self.GAME.getBoard().getCoords()[0] - (self.GAME.getBoard().getWidth()//2 * 32)-100, 3*self.displayHeight//6))
+        sb = TroopButton(("shield",1,1,10,1,175,(1,1),1,2), (self.GAME.getBoard().getCoords()[0] - (self.GAME.getBoard().getWidth()//2 * 32)-100, 4*self.displayHeight//6))
 
         newTroop = None
         previewTroop = None
@@ -405,6 +434,8 @@ class PlayerView(object):
 
         canSwitch = False
         switchPlayer   = False
+
+        active = False
 
         command = None
         while True:
@@ -416,8 +447,8 @@ class PlayerView(object):
 
                 if event.type == pg.MOUSEBUTTONDOWN:
                     coords = pg.mouse.get_pos()               # Uncomment for finished game...
-                    if self.board.isClicked(coords) == True:
-                        square = self.board.getSquareCoords(coords)
+                    if self.GAME.getBoard().isClicked(coords) == True:
+                        square = self.GAME.getBoard().getSquareCoords(coords)
                     else:
                         square = None
                         newTroop = None
@@ -468,9 +499,10 @@ class PlayerView(object):
             # Clear previous screen, so it can be updated again.
             self.display.fill((255,255,255))
 
-            self.displayText(self.playerObject.getName() + " - " + self.playerObject.getColor(), (self.displayWidth//2, 0))
+            self.displayText(self.PLAYERNAME, (self.displayWidth//2, 0))
             self.displayText("Placement Stage", (0, self.displayHeight-40))
-            self.board.showBoard(self.display)
+
+            self.GAME.getBoard().showBoard(self.display, self.IMAGES)
 
             tb.showButton(self.display)
             rb.showButton(self.display)
@@ -482,17 +514,38 @@ class PlayerView(object):
             upgradeButton.showButton(self.display)
             switchButton.showButton(self.display)
 
+            # Sends blank data to server if it's not the player's turn
+            if active == False:
+                newTroop = None
+                command = None
+                square = None
+
             outboundData = { 
-                'command': command
+                "stage": 'placement',
+                "newTroop": newTroop,
+                "command": command,
+                "square": square
                 }
             # Try to communicate with server here:
             try:          
                 outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
                 self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
 
-                inData = self.socket.recvfrom(1024)      # Gets back data. Will be a Pickle object.
+                # SOCKET MUST BE BIG SO THAT THE GAME OBJECT CAN FIT
+                inData = self.socket.recvfrom(12000)     # Gets back data. Will be a Pickle object.
                 inData = inData[0]                       # (<data>, <address>)
                 gameState = pickle.loads(inData)         # Turn Pickle back into dictionary.
+
+                self.GAME = gameState['game']
+                board = self.GAME.getBoard()
+                board.setCenterCoords((self.displayWidth//2,self.displayHeight//2))
+
+                # Decides whether the player can send data to the server.
+                if gameState['active'] != self.PLAYERNAME:
+                    active = False
+                    self.displayText("Waiting for opponent's turn to end...", (self.displayWidth//2, self.displayHeight//4))
+                else:
+                    active = True
             except:
                 self.displayText('Not connected', (self.displayWidth//2, self.displayHeight//2))
 

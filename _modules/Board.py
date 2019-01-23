@@ -16,9 +16,12 @@ class Board(object):
         self.squares = []
         self.centerCoords = None
 
+        self.makeBoard()
 
-        # self.makeBoard()
-    
+    def __str__(self):
+        """String representation of a Board obj."""
+        return str("<Board object width:%i height:%i>") % (self.width, self.height)
+
     def getCoords(self):
         return self.centerCoords
 
@@ -28,56 +31,43 @@ class Board(object):
     def getHeight(self):
         return self.height
 
-    def makeBoard(self, centerCoords):
+    def setCenterCoords(self,coords):
+        """Accepts a tuple of coordinates.
+           These coordinates should be where the CENTER of the board will be.
+           Sets the state centerCoords variable to this value."""
+        self.centerCoords = coords
+
+    def makeBoard(self):
         """Accepts a tuple for where the center of the board should be drawn.
            Populates the board with squares.
            Returns nothing."""
-        self.centerCoords = centerCoords
         board = []
-
-        ## Load images here so each square doesn't have to.
-        images = {
-            "barricade":pg.image.load("./_sprites/barricade.png").convert(),
-            "bluehealer":pg.image.load("./_sprites/bluehealer.png").convert(),
-            "blueknight":pg.image.load("./_sprites/blueknight.png").convert(),
-            "bluerifleman":pg.image.load("./_sprites/bluerifleman.png").convert(),
-            "blueshield":pg.image.load("./_sprites/blueshield.png").convert(),
-            "bluesquare":pg.image.load("./_sprites/bluesquare.png").convert(),
-            "bluetroop":pg.image.load("./_sprites/bluetroop.png").convert(),
-            "healer":pg.image.load("./_sprites/healer.png").convert(),
-            "knight":pg.image.load("./_sprites/knight.png").convert(),
-            "redhealer":pg.image.load("./_sprites/redhealer.png").convert(),
-            "redknight":pg.image.load("./_sprites/redknight.png").convert(),
-            "redrifleman":pg.image.load("./_sprites/redrifleman.png").convert(),
-            "redshield":pg.image.load("./_sprites/redshield.png").convert(),
-            "redsquare":pg.image.load("./_sprites/redsquare.png").convert(),
-            "redtroop":pg.image.load("./_sprites/redtroop.png").convert(),
-            "rifleman":pg.image.load("./_sprites/rifleman.png").convert(),
-            "shield":pg.image.load("./_sprites/shield.png").convert(),
-            "square":pg.image.load("./_sprites/square.png").convert(),
-            "troop":pg.image.load("./_sprites/troop.png").convert(),
-            "wall":pg.image.load("./_sprites/wall.png").convert(),
-        }
-        
-        xOffset = round(self.width * 32//2)
-        yOffset = round(self.height * 32//2)
 
         for x in range(self.width):
             row = []
             for y in range(self.height):
-                row.append(Square(x,y,(centerCoords[0]-xOffset,centerCoords[1]-yOffset), self.layout[x][y], images))
+                row.append(Square(x,y, self.layout[x][y]))
 
             board.append(row)
 
         self.squares = board
 
-    def showBoard(self,display):
+    def showBoard(self,display, imageDict):
         """Accepts a pygame Display object.
+           Accepts a tuple for where the center of the board should be drawn.
+           Accepts a python dict full of pre-loaded images.
            Iterates through the board's squares and draws them on that display"""
+        xOffset = round(self.width * 32//2)
+        yOffset = round(self.height * 32//2)
+
         for x in range(len(self.squares)):
             for y in range(len(self.squares[x])):
-                self.squares[x][y].showSquare(display)
-    
+                square = self.squares[x][y]
+                
+                # Tells square what to look like and where to draw image
+                square.setImages(imageDict)     
+                square.showSquare(display,(self.centerCoords[0]-xOffset,self.centerCoords[1]-yOffset))
+
     def normalizeBoard(self):
         """Removes 'bluesquare' and 'redsquare' squares from the board."""
         for x in range(len(self.squares)):
@@ -206,7 +196,6 @@ class Board(object):
                                 break
                             else: 
                                 break    # Stops attack if it hits a non-shield teammate
-
     
     def move(self, troop, targetCoords):
         """Accepts a troop object.
