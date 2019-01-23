@@ -21,7 +21,6 @@ class Square(object):
         self.color = ""
         self.images = None
 
-        self.image = None
 
     def getX(self):
         """Returns the square's x-value."""
@@ -71,13 +70,17 @@ class Square(object):
         """Accepts a python dictionary of pre-loaded images."""
         self.images = imageDict
 
-    def showSquare(self,display, coords):
+    def setCoords(self, coords):
+        """Accepts a tuple for where the square's upper left coordinates are."""
+        self.coords = coords
+
+    def showSquare(self,display):
         """Accepts a pygame Display object as an argument.
-           Accepts a tuple of coordinates for where the square should be drawn.
            Shows the square in that display.
            Handles rotations.
            Also sets the state coordinates of the square."""
         img = self.images[self.icon]
+        coords = self.coords
 
         # Handles rotations
         if self.getTroop() != None:
@@ -91,7 +94,6 @@ class Square(object):
             if orientation == (-1,-1):
                 img = pg.transform.rotate(img, 180)
 
-        self.coords = coords
         display.blit(img, (coords[0] + (self.x * 32), coords[1] + ( self.y * 32)))
 
     def isClicked(self, coords):

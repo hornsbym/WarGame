@@ -414,18 +414,22 @@ class PlayerView(object):
         """Allows the player to place pieces on the game board."""
         print("--- Entering placement stage.")
 
+        # Defines board here for simplification
+        board = self.GAME.getBoard()
+        board.setCenterCoords((self.displayWidth//2, self.displayHeight//2))
+
         # Static game widgets for player to interact with
         startButton   = CommandButton("start",(self.displayWidth-70, self.displayHeight-30), (0,0,0))
 
-        addButton     = CommandButton("add", (self.GAME.getBoard().getCoords()[0] + ((self.GAME.getBoard().getWidth()* 32)/2) + 32, 2*self.displayHeight//6), (150,0,150))
-        upgradeButton = CommandButton("upgrade",(self.GAME.getBoard().getCoords()[0] + ((self.GAME.getBoard().getWidth()* 32)/2) + 32, 3*self.displayHeight//6), (200,150,0))
-        switchButton  = CommandButton("switch",(self.GAME.getBoard().getCoords()[0] + ((self.GAME.getBoard().getWidth()* 32)/2) + 32, 4*self.displayHeight//6), (0,0,0))
+        addButton     = CommandButton("add", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 2*self.displayHeight//6), (150,0,150))
+        upgradeButton = CommandButton("upgrade",(board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 3*self.displayHeight//6), (200,150,0))
+        switchButton  = CommandButton("switch",(board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 4*self.displayHeight//6), (0,0,0))
 
-        tb = TroopButton(("troop",1,1,25,1,100,(1,1),1,1), (self.GAME.getBoard().getCoords()[0] - (self.GAME.getBoard().getWidth()//2 * 32)-150, 2*self.displayHeight//6))
-        rb = TroopButton(("rifleman",1,3,50,1,80,(1,1),2,2), (self.GAME.getBoard().getCoords()[0] - (self.GAME.getBoard().getWidth()//2 * 32)-100, 2*self.displayHeight//6))
-        hb = TroopButton(("healer",1,1,-30,1,70,(1,1),2,2), (self.GAME.getBoard().getCoords()[0] - (self.GAME.getBoard().getWidth()//2 * 32)-150, 3*self.displayHeight//6))    
-        kb = TroopButton(("knight",1,1,30,2,120,(1,1),1,2), (self.GAME.getBoard().getCoords()[0] - (self.GAME.getBoard().getWidth()//2 * 32)-100, 3*self.displayHeight//6))
-        sb = TroopButton(("shield",1,1,10,1,175,(1,1),1,2), (self.GAME.getBoard().getCoords()[0] - (self.GAME.getBoard().getWidth()//2 * 32)-100, 4*self.displayHeight//6))
+        tb = TroopButton(("troop",1,1,25,1,100,(1,1),1,1), (board.getCoords()[0] - (board.getWidth()//2 * 32)-150, 2*self.displayHeight//6))
+        rb = TroopButton(("rifleman",1,3,50,1,80,(1,1),2,2), (board.getCoords()[0] - (board.getWidth()//2 * 32)-100, 2*self.displayHeight//6))
+        hb = TroopButton(("healer",1,1,-30,1,70,(1,1),2,2), (board.getCoords()[0] - (board.getWidth()//2 * 32)-150, 3*self.displayHeight//6))    
+        kb = TroopButton(("knight",1,1,30,2,120,(1,1),1,2), (board.getCoords()[0] - (board.getWidth()//2 * 32)-100, 3*self.displayHeight//6))
+        sb = TroopButton(("shield",1,1,10,1,175,(1,1),1,2), (board.getCoords()[0] - (board.getWidth()//2 * 32)-100, 4*self.displayHeight//6))
 
         newTroop = None
         previewTroop = None
@@ -439,6 +443,9 @@ class PlayerView(object):
 
         command = None
         while True:
+            # Define the game board here... Just to simplify things.
+            board = self.GAME.getBoard()
+
             events = pg.event.get()
             for event in events:
                 if event.type == pg.QUIT:
@@ -447,8 +454,8 @@ class PlayerView(object):
 
                 if event.type == pg.MOUSEBUTTONDOWN:
                     coords = pg.mouse.get_pos()               # Uncomment for finished game...
-                    if self.GAME.getBoard().isClicked(coords) == True:
-                        square = self.GAME.getBoard().getSquareCoords(coords)
+                    if board.isClicked(coords) == True:
+                        square = board.getSquareCoords(coords)
                     else:
                         square = None
                         newTroop = None
@@ -502,7 +509,7 @@ class PlayerView(object):
             self.displayText(self.PLAYERNAME, (self.displayWidth//2, 0))
             self.displayText("Placement Stage", (0, self.displayHeight-40))
 
-            self.GAME.getBoard().showBoard(self.display, self.IMAGES)
+            board.showBoard(self.display, self.IMAGES)
 
             tb.showButton(self.display)
             rb.showButton(self.display)
@@ -541,9 +548,9 @@ class PlayerView(object):
                 board.setCenterCoords((self.displayWidth//2,self.displayHeight//2))
 
                 # Decides whether the player can send data to the server.
-                if gameState['active'] != self.PLAYERNAME:
+                if self.GAME.getActivePlayer() != self.PLAYERNAME:
                     active = False
-                    self.displayText("Waiting for opponent's turn to end...", (self.displayWidth//2, self.displayHeight//4))
+                    self.displayText("Waiting for opponent's turn to end...", (self.displayWidth//2, self.displayHeight-40))
                 else:
                     active = True
             except:

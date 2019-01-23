@@ -34,8 +34,22 @@ class Board(object):
     def setCenterCoords(self,coords):
         """Accepts a tuple of coordinates.
            These coordinates should be where the CENTER of the board will be.
-           Sets the state centerCoords variable to this value."""
+           Sets the state centerCoords variable to this value.
+           Also tells each square where its coords are."""
         self.centerCoords = coords
+        self.setSquareCoords()
+
+    def setSquareCoords(self):
+        """Uses the board's center coords to tell each square where to draw itself."""
+        xOffset = round(self.width * 32//2)
+        yOffset = round(self.height * 32//2)
+
+        for x in range(len(self.squares)):
+            for y in range(len(self.squares[x])):
+                square = self.squares[x][y]
+                
+                # Tells square what to look like and where to draw image    
+                square.setCoords((self.centerCoords[0]-xOffset,self.centerCoords[1]-yOffset))
 
     def makeBoard(self):
         """Accepts a tuple for where the center of the board should be drawn.
@@ -54,19 +68,15 @@ class Board(object):
 
     def showBoard(self,display, imageDict):
         """Accepts a pygame Display object.
-           Accepts a tuple for where the center of the board should be drawn.
            Accepts a python dict full of pre-loaded images.
            Iterates through the board's squares and draws them on that display"""
-        xOffset = round(self.width * 32//2)
-        yOffset = round(self.height * 32//2)
-
         for x in range(len(self.squares)):
             for y in range(len(self.squares[x])):
                 square = self.squares[x][y]
                 
                 # Tells square what to look like and where to draw image
                 square.setImages(imageDict)     
-                square.showSquare(display,(self.centerCoords[0]-xOffset,self.centerCoords[1]-yOffset))
+                square.showSquare(display)
 
     def normalizeBoard(self):
         """Removes 'bluesquare' and 'redsquare' squares from the board."""

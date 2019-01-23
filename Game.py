@@ -28,6 +28,7 @@ class Game(object):
         self.player2 = player2
 
         self.activePlayer = player1
+        self.canSwitch = False
 
     def __str__(self):
         """Returns the string representation of a Game object"""
@@ -41,6 +42,10 @@ class Game(object):
         """Returns a list of the players in the game.
            Returns list of Player objects."""
         return [self.player1, self.player2]
+
+    def getActivePlayer(self):
+        """Returns the name of the player who can edit the board."""
+        return self.activePlayer.getName()
 
     def canUpgrade(self, player,troop):
         """Accepts a Player object.
@@ -87,18 +92,19 @@ class Game(object):
         """Accepts a Board object.
         Creates Player objects and executes the placement stage of the game.
         Returns a tuple containing (Board, Player1, Player2)."""
-        canSwitch = False
-        switchPlayer   = False
-
-        currentPlayer = self.player1
+        currentPlayer = self.activePlayer
 
         if currentPlayer.getTokens() == 0:
             command = "switch"
 
         if command == "switch":
-            if canSwitch == True:
-                switchPlayer = True
-                canSwitch = False
+            if self.canSwitch == True:
+                if currentPlayer == self.player1:
+                    self.activePlayer = self.player2
+                else:
+                    self.activePlayer = self.player1
+                self.canSwitch = False
+
 
         if command == "add":
             if newTroop != None and square != None:
@@ -108,8 +114,7 @@ class Game(object):
                         self.player1.spendTokens(newTroop.getCost())
                         newTroop.setColor()
                         self.board.setSquareValue(square,newTroop)   # Add troop to board
-                        canSwitch = True
-                        newTroop = None
+                        self.canSwitch = True
                 if self.board.getSquareType(square) == "redsquare":
                     if currentPlayer == self.player2 and self.board.getSquareValue(square) == None and self.player1.getTokens() >= 0 and self.canUpgrade(currentPlayer,newTroop) == True:
                         self.player2.addTroop(newTroop)               # Add troop to player's list
@@ -117,9 +122,7 @@ class Game(object):
                         newTroop.setColor()
                         self.board.setSquareValue(square,newTroop)   # Add troop to board
                         self.board.setTroopOrientation(newTroop,(square[0],0)) # Rotates square to face opponents
-                        canSwitch = True
-                        newTroop = None
-                square = None
+                        self.canSwitch = True
 
         if command == "upgrade":
             if square != None:
@@ -135,18 +138,6 @@ class Game(object):
                             if abs(5-troop.getLevel()) >= currentPlayer.getTokens():
                                 u = self.upgrade(troop,currentPlayer.getTokens())
                         currentPlayer.spendTokens(u)
-                        square = None 
-                        canSwitch = True
-
-        # Switches active players
-        if switchPlayer == True:
-            if currentPlayer == self.player1:
-                currentPlayer = self.player2
-            else:
-                currentPlayer = self.player1
-            switchPlayer = False
-            command = None
-
         return
 
     def battleActions(self, command, square, selectedTroop):

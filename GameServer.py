@@ -135,7 +135,7 @@ class GameServer(object):
         # Holds player map and name information here. Will be used to create objects later.
         mapVotes = []
         playerNames = {}
-        colors  = ["blue","red"]
+        colors  = ["red", "blue"]
 
         gameState = {
             "connection":self.PORT,
@@ -197,12 +197,12 @@ class GameServer(object):
             outboundData = pickle.dumps(gameState)
             self.socket.sendto(outboundData, address)
 
-        
     def placementStage(self):
         """Communicates with player objects.
            Controls player turn-taking for placement.
            Keeps track of board and player changes."""
         print("--- Entering placement stage")
+
         activePlayer = self.players[0]
 
         gameState = {
@@ -221,8 +221,6 @@ class GameServer(object):
             self.clientUpdateTimes[str(address)] = updatedTime
 
             if data['stage'] == 'placement':
-                if data['command'] != None:
-                    print(data)
                 # Interacts with the game object, then sends the updated game back
                 self.game.placementActions(data['command'], data['square'], data['newTroop'])
                 gameState['game'] = self.game
@@ -230,6 +228,7 @@ class GameServer(object):
             # Packages up data and sends it back to the client
             outboundData = pickle.dumps(gameState)
             self.socket.sendto(outboundData, address)
+
 
             # Check client connections here
             self.cleanClientList(time.time())
