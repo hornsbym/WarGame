@@ -25,7 +25,7 @@ class Game(object):
 
         # Boilerplate pygame stuff:
         pg.init()
-        self.BackGround = pg.image.load('gray background.JPG')
+        self.BackGround = pg.image.load('_images/gray background.JPG')
         self.BackGround = pg.transform.scale(self.BackGround, (width, height))
         self.clock = pg.time.Clock()
         self.displayWidth = width
