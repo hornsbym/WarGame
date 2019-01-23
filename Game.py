@@ -25,6 +25,8 @@ class Game(object):
 
         # Boilerplate pygame stuff:
         pg.init()
+        self.BackGround = pg.image.load('gray background.JPG')
+        self.BackGround = pg.transform.scale(self.BackGround, (width, height))
         self.clock = pg.time.Clock()
         self.displayWidth = width
         self.displayHeight = height
@@ -342,6 +344,9 @@ class Game(object):
 
             self.display.fill((255,255,255))
 
+            #Background painting
+            self.display.blit(self.BackGround, [0,0])
+            
             change1.showButton(self.display)
             change2.showButton(self.display)
 
@@ -398,6 +403,8 @@ class Game(object):
         while (loop == True):
             # Gets all the events from the game window. A.k.a., do stuff here.
             for event in pg.event.get():
+
+
                 if event.type == pg.QUIT:
                     pg.quit()
                     quit()
@@ -458,6 +465,9 @@ class Game(object):
             
             # Clear previous screen, so it can be updated again.
             self.display.fill((255,255,255))
+
+            # Background painting
+            self.display.blit(self.BackGround, [0,0])
 
             b.showBoard(self.display)
 
@@ -608,6 +618,8 @@ class Game(object):
         while True:
             # Gets all the events from the game window. A.k.a., do stuff here.
             for event in pg.event.get():
+
+
                 if event.type == pg.QUIT:
                     pg.quit()
                     quit()
@@ -636,6 +648,9 @@ class Game(object):
             # Clear previous screen, so it can be updated again.
             
             self.display.fill((255,255,255))
+
+            # Background placement
+            self.display.blit(self.BackGround, [0,0])
 
             attackButton.showButton(self.display)
             moveButton.showButton(self.display)
