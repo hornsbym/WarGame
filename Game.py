@@ -34,6 +34,12 @@ class Game(object):
         """Returns the string representation of a Game object"""
         return str("<Game object board:%s p1:%s p2:%s>") % (str(self.board), str(self.player1), str(self.player2))
 
+    def setPlayerMoves(self):
+        """Called once per game.
+           Sets the number of moves each player can move per turn."""
+        self.player1.setMoves(len(self.player1.getTroops()))
+        self.player2.setMoves(len(self.player2.getTroops()))
+
     def getBoard(self):
         """Returns a Board object."""
         return self.board
@@ -47,6 +53,19 @@ class Game(object):
         """Returns the name of the player who can edit the board."""
         return self.activePlayer.getName()
 
+    def getPlayerByName(self, name):
+        """Accepts a string.
+           Finds and returns the player with the matching name to that string."""
+        if self.player1.getName() == name:
+            return self.player1
+        else:
+            return self.player2
+
+    def normalizeBoard(self):
+        """Called once per game.
+           Removes red and blue tiles from the game for the battle stage."""
+        self.board.normalizeBoard()
+
     def canUpgrade(self, player,troop):
         """Accepts a Player object.
            Accepts a Troop object.
@@ -58,29 +77,25 @@ class Game(object):
         else: 
             return True
 
-    def upgrade(self, troop, tokens):
+    def upgrade(self, troop, upgrades):
         """Accepts a troop object.
            Accepts an integer representing spendable tokens.
-           Accepts a tuple of coordinates where the player has clicked.
            Displays the troop's stats and allows the user to see what
            happens when they add upgrade points to certain attributes.
            Upgrades the troop when user presses "apply".
            Returns integer representing how many tokens were spent."""
-        STARTING_TOKENS = tokens
-        tokens = tokens
-
         # Keep track of upgrades
-        r = 0
-        a = 0
-        s = 0
-        h = 0
+        r = upgrades[0]
+        a = upgrades[1]
+        s = upgrades[2]
+        h = upgrades[3]
 
         troop.upgradeStats("r",r)
         troop.upgradeStats("a",a)
         troop.upgradeStats("s",s)
         troop.upgradeStats("h",h)
 
-        return abs(STARTING_TOKENS - tokens)
+        return r + a + s + h
 
 
 
@@ -88,23 +103,19 @@ class Game(object):
 
 
 
-    def placementActions(self, command, square, newTroop):
+    def placementActions(self, command, square, newTroop, upgrades):
         """Accepts a Board object.
         Creates Player objects and executes the placement stage of the game.
         Returns a tuple containing (Board, Player1, Player2)."""
         currentPlayer = self.activePlayer
 
-        if currentPlayer.getTokens() == 0:
-            command = "switch"
-
-        if command == "switch":
-            if self.canSwitch == True:
+        if command == "switch" or currentPlayer.getTokens() == 0:
+            if self.canSwitch == True or currentPlayer.getTokens() == 0:
                 if currentPlayer == self.player1:
                     self.activePlayer = self.player2
                 else:
                     self.activePlayer = self.player1
                 self.canSwitch = False
-
 
         if command == "add":
             if newTroop != None and square != None:
@@ -130,44 +141,33 @@ class Game(object):
                 if troop != None:
                     if troop.getTeam() == currentPlayer and troop.getLevel() <= 5:
                         if currentPlayer.getTokens() >= 5:
-                            if self.canUpgrade(currentPlayer,troop) == True:   ###
-                                u = self.upgrade(troop,5-troop.getLevel())     ###
+                            u = self.upgrade(troop, upgrades)     ###
                         if currentPlayer.getTokens() < 5:
                             if abs(5-troop.getLevel()) < currentPlayer.getTokens():
-                                u = self.upgrade(troop, abs(5-troop.getLevel()))
+                                u = self.upgrade(troop, upgrades)
                             if abs(5-troop.getLevel()) >= currentPlayer.getTokens():
-                                u = self.upgrade(troop,currentPlayer.getTokens())
+                                u = self.upgrade(troop, upgrades)
                         currentPlayer.spendTokens(u)
+        
         return
 
-    def battleActions(self, command, square, selectedTroop):
+    def battleActions(self, command, square):
         """Accepts a tuple containing the Board and Player objects in the game.
         Executes the battle stage of the game."""
-        # Removes red and blue squares from the board
-        self.board.normalizeBoard()
+        currentPlayer = self.activePlayer
 
-        # Tells each player how many times they can move per turn
-        self.player1.setMoves(len(self.player1.getTroops()))
-        self.player2.setMoves(len(self.player2.getTroops()))
-
-        switchPlayer = False
-
-        currentPlayer = self.player1
-
-                ### GAME LOGIC ###
-
-
+        # Finds the selected troop on the Game's board
+        selectedTroop = None
         if square != None:
             if self.board.getSquareValue(square) != None:
                 if self.board.getSquareValue(square).getTeam() == currentPlayer:
                     selectedTroop = self.board.getSquareValue(square)
-                if self.board.getSquareValue(square).getTeam() != currentPlayer:
-                    previewTroop = self.board.getSquareValue(square)
-                
 
-        if command == "pass":
-            switchPlayer = True
 
+                ### GAME LOGIC ###
+        # Automatically pass to next player if you're out of moves
+        if currentPlayer.getMoves() == 0:
+            command = "pass"
 
         if command == "attack":
             if selectedTroop != None and square != None and selectedTroop.getTeam() == currentPlayer and selectedTroop.getCooldownCounter() == 0:
@@ -175,11 +175,10 @@ class Game(object):
                 currentPlayer.decrementMoves()
                 selectedTroop.setCooldownCounter()
 
-                self.board.killTroops()    # Remove troops from board.
+                self.board.killTroops()     # Remove dead troops from board.
 
-                self.player1.killTroops()   # Remove troops from players' records.
+                self.player1.killTroops()   # Remove dead troops from players' records.
                 self.player2.killTroops()
-
 
 
         if command == "move":
@@ -193,26 +192,26 @@ class Game(object):
 
 
         if command == "rotate":
-            if selectedTroop != None and square != None:
+            if selectedTroop != None and selectedTroop.getTeam() == currentPlayer and square != None:
                 self.board.setTroopOrientation(selectedTroop,square)
-        
-
-        if currentPlayer.getMoves() <= 0:
-            switchPlayer = True
 
 
         # Switches active player
-        if switchPlayer == True:
-            currentPlayer.resetMoves()
-            currentPlayer.restTroops()
-
+        if command == 'pass':
             if currentPlayer == self.player1:
-                currentPlayer.decrementCooldowns()
-                currentPlayer = self.player2
-            else:
-                currentPlayer.decrementCooldowns()
-                currentPlayer = self.player1
+                print("player1 is passing")
+                self.activePlayer = self.player2
+                self.player1.resetMoves()
+                self.player1.restTroops()
+                self.player1.decrementCooldowns()
+                return
+            if currentPlayer == self.player2:
+                print("player2 is passing")
+                self.activePlayer = self.player1
+                self.player2.resetMoves()
+                self.player2.restTroops()
+                self.player2.decrementCooldowns()
+                return
 
-            switchPlayer = False
 
 # Game()

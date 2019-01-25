@@ -100,11 +100,12 @@ class PlayerView(object):
         # Game Object should never be changed, only looked at.
         self.GAME = None
         self.PLAYERNAME = None
+        self.PLAYEROBJECT = None
 
-        # Enters a lobby while waiting on another player
-        self.lobbyStage()
+        self.lobbyStage()       # Enters a lobby while waiting on another player
         self.setupStage()
         self.placementStage()
+        self.battleStage()
 
         pg.quit()
         quit()
@@ -141,6 +142,7 @@ class PlayerView(object):
         Accepts a Troop object specifying which troop is selected.
         Gets that player's Troops and displays all of their healthbars."""
         troops = player.getTroops()
+        side = side.upper()
 
         if side == "LEFT":
             # Finds the longest healthbar
@@ -200,6 +202,7 @@ class PlayerView(object):
     def displayTroopCard(self, troop, side):
         """Accepts a Troop object.
         Accepts a string of either "LEFT" or "RIGHT"."""
+        side = side.upper()
         if side == "LEFT":
             x = 5
             y = self.displayHeight * .76
@@ -217,17 +220,112 @@ class PlayerView(object):
         self.displayText(str(troop.getRange())+" attack range", (x+5,y+(3 * spacing)), self.TROOPCARD_FONT)
         self.displayText(str(troop.getSpeed())+" speed", (x+5,y+(4 * spacing)), self.TROOPCARD_FONT)
 
-    def canUpgrade(self, player ,troop):
-        """Accepts a Player object.
-        Accepts a Troop object.
-        Checks to see if the player object has enough tokens to purchase a given troop. """
-        player = self.playerObject
-        tokens = player.getTokens()
+    def canUpgrade(self,troop):
+        """Accepts a Troop object.
+           Checks to see if the player object has enough tokens to purchase a given troop. """
+        tokens = self.PLAYEROBJECT.getTokens()
         cost   = troop.getCost()
         if cost > tokens:
             return False
         else: 
             return True
+
+    def getUpgradeStats(self, troop, tokens):
+        """Accepts a Troop object to be upgraded.
+           Accepts an Integer representing the player's tokens.
+           Does not directly upgrade Troop. 
+           Opens a new section of the screen to gather information about the upgrade.
+           Aborts changes on "cancel", accepts on "accept".
+           Returns a Tuple of Ints: (range, attack, speed, health)"""
+        # Create add/subtract buttons
+        rPlus  = CommandButton("+",(25, 140), (0,225,75))
+        rMinus = CommandButton(" -",(10, 140), (225,0,75))
+        aPlus  = CommandButton("+",(25, 180), (0,225,75))
+        aMinus = CommandButton(" -",(10, 180), (225,0,75))
+        sPlus  = CommandButton("+",(25, 220), (0,225,75))
+        sMinus = CommandButton(" -",(10, 220), (225,0,75))
+        hPlus  = CommandButton("+",(25, 260), (0,225,75))
+        hMinus = CommandButton(" -",(10, 260), (225,0,75))
+
+        apply  = CommandButton("Apply",(100,300),(0,0,0))
+        cancel = CommandButton("Cancel",(10,300), (255, 75,75))
+
+        # Keep track of upgrades
+        r = 0
+        a = 0
+        s = 0
+        h = 0
+
+        upgradeRect = pg.Rect(0, 0, self.displayWidth//4, self.displayHeight)
+
+        loop = True
+        while (loop == True):
+            # Gets all the events from the game window. A.k.a., do stuff here.
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    pg.quit()
+                    quit()
+                
+                if event.type == pg.MOUSEBUTTONDOWN:
+                    coords = pg.mouse.get_pos()
+                    if cancel.isClicked(coords) == True:
+                        loop = False
+                        return (0,0,0,0)
+
+                    # Adds/subtracts tokens
+                    if rPlus.isClicked(coords) == True and tokens > 0:
+                        tokens -= 1
+                        r += 1
+                    if rMinus.isClicked(coords) == True and r > 0:
+                        tokens += 1
+                        r -= 1
+                    if aPlus.isClicked(coords) == True and tokens > 0:
+                        tokens -= 1
+                        a += 1
+                    if aMinus.isClicked(coords) == True and a > 0:
+                        tokens += 1
+                        a -= 1
+                    if sPlus.isClicked(coords) == True and tokens > 0:
+                        tokens -= 1
+                        s += 1
+                    if sMinus.isClicked(coords) == True and s > 0:
+                        tokens += 1
+                        s -= 1
+                    if hPlus.isClicked(coords) == True and tokens > 0:
+                        tokens -= 1
+                        h += 1
+                    if hMinus.isClicked(coords) == True and h > 0:
+                        tokens += 1
+                        h -= 1
+                    
+                    if apply.isClicked(coords) == True:
+                        return (r,a,s,h)
+                
+            self.display.fill((255,255,255))
+
+            self.displayText(troop.getName()+" - "+str(tokens)+" tokens",(15,85))
+
+            # Create text labels
+            self.displayText("Range: "+str(troop.previewUpgrade("r",r)),(50,140))
+            self.displayText("Attack: "+str(troop.previewUpgrade("a",a)),(50,180))
+            self.displayText("Speed: "+str(troop.previewUpgrade("s",s)),(50,220))
+            self.displayText("Health: "+str(troop.previewUpgrade("h",h)),(50,260))
+
+            # Show add/subtract buttons
+            rPlus.showButton(self.display)
+            rMinus.showButton(self.display)
+            aPlus.showButton(self.display)
+            aMinus.showButton(self.display)
+            sPlus.showButton(self.display)
+            sMinus.showButton(self.display)
+            hPlus.showButton(self.display)
+            hMinus.showButton(self.display)    
+
+            apply.showButton(self.display)
+            cancel.showButton(self.display)
+
+            pg.display.update(upgradeRect)
+            self.clock.tick(20)
 
     ### -----| Update screen during main game loops below |----- ###
 
@@ -274,8 +372,10 @@ class PlayerView(object):
             self.displayText(str(self.PORT),(0,0))    # Displays the port in the window
 
             # Packages data to send to the server here as a python dictionary
-            outboundData = { "command": command }
-
+            outboundData = { 
+                "stage": "lobby",
+                "command": command 
+                }
             # Try to communicate with server here:
             try:          
                 outboundData = pickle.dumps(outboundData)          # Packages outbound data into Pickle
@@ -323,6 +423,7 @@ class PlayerView(object):
 
         name = nameInput.get_text()
         mapVote = None
+        submitted = False
 
         redButton     = CommandButton(("RED"), (3*self.displayWidth//7, self.displayHeight//5), (200, 50, 50))
         blueButton    = CommandButton(("BLUE"), (4*self.displayWidth//7, self.displayHeight//5), (50, 50, 200))
@@ -351,7 +452,9 @@ class PlayerView(object):
                     if submitButton.isClicked(coords):
                         if mapVote != None:     # Only lets you submit once you've voted
                             command = submitButton.getValue()
+                            submitButton.deactivate()
                             self.PLAYERNAME = name
+                            submitted = True
                     
                     if testMap.isClicked(coords):
                         mapVote = testMap.getValue()
@@ -362,24 +465,25 @@ class PlayerView(object):
                     
 
             self.display.fill((255,255,255))
-
-            self.displayText("Setup Stage", (0, self.displayHeight-40))
-
-            self.displayText("Name: "+name,(0,0))
-            self.displayText("Map: "+str(mapVote), (0,30))
-
+            
+            # Draws buttons for interacting with the server
             redButton.showButton(self.display)
             blueButton.showButton(self.display)
-
             testMap.showButton(self.display)
             baseMap.showButton(self.display)
             bigMap.showButton(self.display)
+            changeNameButton.showButton(self.display)
+            if submitted == False:
+                submitButton.showButton(self.display)
 
+            # Draws information about the stage/player
+            self.displayText("Setup Stage", (0, self.displayHeight-40))
+            self.displayText("Name: "+name,(0,0))
+            self.displayText("Map: "+str(mapVote), (0,30))
+
+            # Draws input area
             nameInput.update(events)
             self.display.blit(nameInput.get_surface(), (self.displayWidth//2,0))
-            changeNameButton.showButton(self.display)
-
-            submitButton.showButton(self.display)
 
             outboundData = { 
                 'stage': 'setup',
@@ -401,6 +505,7 @@ class PlayerView(object):
                 if gameState['ready'] == True:
                     self.GAME = gameState['game']
                     self.GAME.getBoard().setCenterCoords((self.displayWidth//2, self.displayHeight//2))
+                    self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
                     break       # Advances to next stage of the game.
             except:
                 self.displayText('Not connected', (self.displayWidth//2, self.displayHeight//2))
@@ -418,8 +523,11 @@ class PlayerView(object):
         board = self.GAME.getBoard()
         board.setCenterCoords((self.displayWidth//2, self.displayHeight//2))
 
+        # Define the global player object here
+        self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
+
         # Static game widgets for player to interact with
-        startButton   = CommandButton("start",(self.displayWidth-70, self.displayHeight-30), (0,0,0))
+        startButton   = CommandButton("start",(self.displayWidth-70, self.displayHeight-30), (0,0,0), False)
 
         addButton     = CommandButton("add", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 2*self.displayHeight//6), (150,0,150))
         upgradeButton = CommandButton("upgrade",(board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 3*self.displayHeight//6), (200,150,0))
@@ -431,20 +539,23 @@ class PlayerView(object):
         kb = TroopButton(("knight",1,1,30,2,120,(1,1),1,2), (board.getCoords()[0] - (board.getWidth()//2 * 32)-100, 3*self.displayHeight//6))
         sb = TroopButton(("shield",1,1,10,1,175,(1,1),1,2), (board.getCoords()[0] - (board.getWidth()//2 * 32)-100, 4*self.displayHeight//6))
 
-        newTroop = None
+        upgradeTroop = None
+
+        # Holds stuff to send to the server here
+        newTroop     = None
         previewTroop = None
-        command  = None
-        square   = None    # Is just a tuple of (x,y)
+        command      = None
+        square       = None    # Is just a tuple of (x,y)
+        upgrades     = (0,0,0,0)
+        start        = False
 
-        canSwitch = False
-        switchPlayer   = False
-
+        # Keeps track of when the user can interact with server
         active = False
 
-        command = None
         while True:
             # Define the game board here... Just to simplify things.
             board = self.GAME.getBoard()
+            player = self.GAME.getPlayerByName(self.PLAYERNAME)
 
             events = pg.event.get()
             for event in events:
@@ -478,6 +589,8 @@ class PlayerView(object):
                         command = upgradeButton.getValue()
                     if switchButton.isClicked(coords) == True:
                         command = switchButton.getValue()
+                    if startButton.isClicked(coords) == True:
+                        start = True
 
                 # Allows users the option to choose troops and actions via keystrokes.
                 if event.type == pg.KEYDOWN:
@@ -506,32 +619,63 @@ class PlayerView(object):
             # Clear previous screen, so it can be updated again.
             self.display.fill((255,255,255))
 
-            self.displayText(self.PLAYERNAME, (self.displayWidth//2, 0))
-            self.displayText("Placement Stage", (0, self.displayHeight-40))
 
+            # Draws the game board
             board.showBoard(self.display, self.IMAGES)
 
+
+            # Draws buttons for interacting with the game
             tb.showButton(self.display)
             rb.showButton(self.display)
             kb.showButton(self.display)
             sb.showButton(self.display)
             hb.showButton(self.display)
-
             addButton.showButton(self.display)
             upgradeButton.showButton(self.display)
             switchButton.showButton(self.display)
+
+
+            # Draws information about the player/stage
+            self.displayText("Placement Stage", (0,0))
+            self.displayText(player.getName() + " - " + player.getColor(), (self.displayWidth//2, 0))
+            if active == True:
+                self.displayText(str(player.getTokens()) + " tokens left", (self.displayWidth//2, 40))
+            self.displayText(command, ((self.displayWidth//2)-(board.getWidth()/2*32), (self.displayHeight//2)-(board.getHeight()/2*32)-35))
+            if previewTroop != None:
+                self.displayTroopCard(previewTroop, "right")
+
+
+            # Displays the selected troop's info, if its present
+            if newTroop != None:
+                self.displayTroopCard(newTroop, "left")
+            self.drawPlayerHealthbars(player, "left", None)
+
+
+            # Gathers one of the other team's troops info
+            if square != None:
+                troop = board.getSquareValue(square)
+                if troop != None:
+                    if troop.getTeam() != player:
+                        previewTroop = troop
+            
+                
+            if command == "upgrade":
+                if square != None:
+                    upgradeTroop = board.getSquareValue(square)   
+                    upgrades = self.getUpgradeStats(upgradeTroop, player.getTokens())
 
             # Sends blank data to server if it's not the player's turn
             if active == False:
                 newTroop = None
                 command = None
-                square = None
 
             outboundData = { 
                 "stage": 'placement',
                 "newTroop": newTroop,
                 "command": command,
-                "square": square
+                "square": square,
+                "upgrades": upgrades,
+                "start": start
                 }
             # Try to communicate with server here:
             try:          
@@ -543,9 +687,161 @@ class PlayerView(object):
                 inData = inData[0]                       # (<data>, <address>)
                 gameState = pickle.loads(inData)         # Turn Pickle back into dictionary.
 
+                # Gets and sets up the board here
                 self.GAME = gameState['game']
                 board = self.GAME.getBoard()
                 board.setCenterCoords((self.displayWidth//2,self.displayHeight//2))
+
+                self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
+
+                # When the server sends the signal, progresses to next stage
+                if gameState['start'] == True:
+                    break
+
+                if gameState['ready'] == True:
+                    startButton.showButton(self.display)
+                    startButton.activate()
+
+                # Decides whether the player can send data to the server.
+                if self.GAME.getActivePlayer() != self.PLAYERNAME:
+                    active = False
+                    if self.PLAYEROBJECT.getTokens() > 0:
+                        self.displayText("Waiting for opponent's turn to end...", (self.displayWidth//2, self.displayHeight-40))
+                else:
+                    active = True
+            except:
+                self.display.fill((0,0,0))
+                self.displayText('Not connected', (self.displayWidth//2, self.displayHeight//2))
+
+            if active == True:
+                upgrades = (0,0,0,0)
+                square = None
+
+            pg.display.update()
+            self.clock.tick(30)
+
+    def battleStage(self):
+        """Allows the player to place pieces on the game board."""
+        print("-- Entering battle stage.")
+        # Defines board here for simplification
+        board = self.GAME.getBoard()
+        board.setCenterCoords((self.displayWidth//2, self.displayHeight//2))
+
+        # Define the global player object here
+        self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
+
+        # Static game widgets for player to interact with
+        attackButton = CommandButton("attack", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 2*self.displayHeight//8), (0,50,200))
+        moveButton = CommandButton("move", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 3*self.displayHeight//8), (50,150,0))
+        rotateButton = CommandButton("rotate", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 4*self.displayHeight//8), (200,100,0))
+        passButton = CommandButton("pass", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 5*self.displayHeight//8), (200,50,250))
+        
+        # Holds stuff to display on the player's screen here
+        previewTroop = None
+        selectedTroop = None
+
+        # Holds stuff to send to the server here
+        command      = None
+        square       = None    # Is just a tuple of (x,y)
+
+        # Keeps track of when the user can interact with server
+        active = False
+
+        while True:
+            # Define the game board here... Just to simplify things.
+            board = self.GAME.getBoard()
+            player = self.GAME.getPlayerByName(self.PLAYERNAME)
+
+            events = pg.event.get()
+            for event in events:
+                if event.type == pg.QUIT:
+                    pg.quit()
+                    quit()
+
+                if event.type == pg.MOUSEBUTTONDOWN:
+                    coords = pg.mouse.get_pos()               # Uncomment for finished game...
+                    if board.isClicked(coords) == True:
+                        square = board.getSquareCoords(coords)
+                    else:
+                        selectedTroop = None
+                        previewTroop  = None
+                        square        = None
+
+                    if attackButton.isClicked(coords) == True:
+                        command = attackButton.getValue()
+                    elif moveButton.isClicked(coords) == True:
+                        command = moveButton.getValue()
+                    elif rotateButton.isClicked(coords) == True:
+                        command = rotateButton.getValue()
+                    elif passButton.isClicked(coords) == True:
+                        command = passButton.getValue()
+                    else:
+                        if board.isClicked(coords) == False:
+                            command = None
+
+            # Clear previous screen, so it can be updated again.
+            self.display.fill((255,255,255))
+
+            # Draws the game board
+            board.showBoard(self.display, self.IMAGES)
+
+            # Draws buttons for interacting with the game
+            attackButton.showButton(self.display)
+            moveButton.showButton(self.display)
+            rotateButton.showButton(self.display)
+            passButton.showButton(self.display)
+
+            # Draws information about the player/stage
+            self.displayText("Battle Stage", (0,0))
+            self.displayText(player.getName() + " - " + player.getColor(), (self.displayWidth//2, 0))
+            self.displayText(command, ((self.displayWidth//2)-(board.getWidth()/2*32), (self.displayHeight//2)-(board.getHeight()/2*32)-35))
+            if active == True:
+                self.displayText(str(player.getMoves()) + " moves left", (self.displayWidth//2, 40))
+            if previewTroop != None:
+                self.displayTroopCard(previewTroop, "right")
+            if selectedTroop != None:
+                self.displayTroopCard(selectedTroop, "left")
+            if square != None:
+                self.displayText(str(square),(self.displayWidth-50, 0))
+
+            # Displays the selected troop's info, if its present
+            self.drawPlayerHealthbars(player, "left", None)
+
+            # Gathers one of the other team's troops info
+            if square != None:
+                troop = board.getSquareValue(square)
+                if troop != None:
+                    if troop.getTeam() != player:
+                        previewTroop = troop
+                    if troop.getTeam() == player:
+                        selectedTroop = troop
+            
+            # Sends blank data to server if it's not the player's turn
+            if active == False:
+                command = None
+                square = None
+
+            outboundData = { 
+                "stage": 'battle',
+                "command": command,
+                "square": square
+                }
+            # Try to communicate with server here:
+            try:          
+                outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
+                self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
+
+                # SOCKET MUST BE BIG ENOUGH FOR THE GAME OBJECT TO FIT
+                inData = self.socket.recvfrom(12000)     # Gets back data. Will be a Pickle object.
+                inData = inData[0]                       # (<data>, <address>)
+                gameState = pickle.loads(inData)         # Turn Pickle back into dictionary.
+
+                # Gets and sets up the board here
+                self.GAME = gameState['game']
+                board = self.GAME.getBoard()
+                board.setCenterCoords((self.displayWidth//2,self.displayHeight//2))
+
+                self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
 
                 # Decides whether the player can send data to the server.
                 if self.GAME.getActivePlayer() != self.PLAYERNAME:
@@ -554,10 +850,17 @@ class PlayerView(object):
                 else:
                     active = True
             except:
+                self.display.fill((0,0,0))
                 self.displayText('Not connected', (self.displayWidth//2, self.displayHeight//2))
+
+            if active == True:
+                square = None
+            
+            if command == "pass":
+                command = None
 
             pg.display.update()
             self.clock.tick(30)
 
-        
+
 PlayerView()

@@ -36,7 +36,7 @@ class GameServer(object):
         print("UDP Server started at", self.PORT)
 
         # Game information
-        self.map = None
+        self.map     = None
         self.board   = None
         self.players = []
 
@@ -44,6 +44,7 @@ class GameServer(object):
         self.lobbyStage()
         self.setupStage()
         self.placementStage()
+        self.battleStage()
 
         # Terminates the socket when the game is done
         self.socket.close()
@@ -204,6 +205,71 @@ class GameServer(object):
         print("--- Entering placement stage")
 
         activePlayer = self.players[0]
+        readyPlayers = set()
+
+        gameState = {
+            "connection": str(self.PORT), 
+            "active": activePlayer.getName(),
+            "game": self.game,
+            "ready": False,
+            "start": False
+            }
+        while True:
+            inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
+            data = inboundData[0]                         # Separates data from address
+            address = inboundData[1]                      # Separates address from data
+            data = pickle.loads(data)                     # Unpickles data back into a python dict
+
+
+            # Keeps track of how often the server recieves information from each client.
+            updatedTime = time.time()                     
+            self.clientUpdateTimes[str(address)] = updatedTime
+
+            if data['stage'] == 'placement':
+                # Interacts with the game object, then sends the updated game back
+                self.game.placementActions(data['command'], data['square'], data['newTroop'], data['upgrades'])
+                gameState['game'] = self.game
+
+                # Advances to battle stage of the game, and tells the players to do the same
+                if data['start'] == True:
+                    readyPlayers.add(address)
+                    print("ready players:", readyPlayers)
+                if len(readyPlayers) == 2:
+                    for address in readyPlayers:
+                        gameState['start'] = True
+                        outboundData = pickle.dumps(gameState)
+                        self.socket.sendto(outboundData, address)
+                    break
+
+                ready = 0
+                for player in self.game.getPlayers():
+                    if player.getTokens() == 0:
+                        ready += 1
+
+                if ready == 2:
+                    gameState['ready'] = True
+
+            # Packages up data and sends it back to the client
+            outboundData = pickle.dumps(gameState)
+            self.socket.sendto(outboundData, address)
+
+            # Check client connections here
+            self.cleanClientList(time.time())
+
+    def battleStage(self):
+        """Communicates with player objects.
+           Controls player turn-taking for placement.
+           Keeps track of board and player changes."""
+        print("-- Entering battle stage")
+
+        # Prepare the board for play; removes red and blue squares from the board
+        self.game.normalizeBoard()
+        
+        # Sets players' moves per turn
+        self.game.setPlayerMoves()
+
+        # Keeps track of who can edit the board.
+        activePlayer = self.players[0]
 
         gameState = {
             "connection": str(self.PORT), 
@@ -220,20 +286,17 @@ class GameServer(object):
             updatedTime = time.time()                     
             self.clientUpdateTimes[str(address)] = updatedTime
 
-            if data['stage'] == 'placement':
+            if data['stage'] == 'battle':
                 # Interacts with the game object, then sends the updated game back
-                self.game.placementActions(data['command'], data['square'], data['newTroop'])
+                self.game.battleActions(data['command'], data['square'])
                 gameState['game'] = self.game
 
             # Packages up data and sends it back to the client
             outboundData = pickle.dumps(gameState)
             self.socket.sendto(outboundData, address)
 
-
             # Check client connections here
             self.cleanClientList(time.time())
-
-
 
 
 GameServer()
