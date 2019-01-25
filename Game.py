@@ -196,7 +196,7 @@ class Game(object):
                 self.board.setTroopOrientation(selectedTroop,square)
 
 
-        # Switches active player
+        # Switches active player 
         if command == 'pass':
             if currentPlayer == self.player1:
                 print("player1 is passing")
