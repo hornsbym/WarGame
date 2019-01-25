@@ -151,10 +151,12 @@ class Game(object):
         
         return
 
-    def battleActions(self, command, square):
+    def battleActions(self, command, square, moveSquare):
         """Accepts a tuple containing the Board and Player objects in the game.
         Executes the battle stage of the game."""
         currentPlayer = self.activePlayer
+
+        print("current player:", currentPlayer, "command:", command, "square:", square, "moveSquare:", moveSquare)
 
         # Finds the selected troop on the Game's board
         selectedTroop = None
@@ -182,10 +184,10 @@ class Game(object):
 
 
         if command == "move":
-            if selectedTroop != None and square != None:
-                ownSquare = self.board.findTroopSquare(selectedTroop)
-                if square != (ownSquare.getX(),ownSquare.getY()):
-                    self.board.move(selectedTroop,square)
+            if selectedTroop != None and moveSquare != None:
+                ownSquare = square
+                if moveSquare != ownSquare:
+                    self.board.move(selectedTroop,moveSquare)
                     if selectedTroop.canMove() == False:
                         currentPlayer.decrementMoves()
                         selectedTroop.resetStamina()

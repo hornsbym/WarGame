@@ -233,7 +233,6 @@ class GameServer(object):
                 # Advances to battle stage of the game, and tells the players to do the same
                 if data['start'] == True:
                     readyPlayers.add(address)
-                    print("ready players:", readyPlayers)
                 if len(readyPlayers) == 2:
                     for address in readyPlayers:
                         gameState['start'] = True
@@ -288,8 +287,9 @@ class GameServer(object):
 
             if data['stage'] == 'battle':
                 # Interacts with the game object, then sends the updated game back
-                self.game.battleActions(data['command'], data['square'])
-                gameState['game'] = self.game
+                if data['command'] != None:        # Only sends relevante data
+                    self.game.battleActions(data['command'], data['square'], data['moveSquare'])
+                    gameState['game'] = self.game
 
             # Packages up data and sends it back to the client
             outboundData = pickle.dumps(gameState)

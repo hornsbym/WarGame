@@ -741,8 +741,9 @@ class PlayerView(object):
         selectedTroop = None
 
         # Holds stuff to send to the server here
-        command      = None
-        square       = None    # Is just a tuple of (x,y)
+        command    = None
+        square     = None    # Is just a tuple of (x,y)
+        moveSquare = None
 
         # Keeps track of when the user can interact with server
         active = False
@@ -761,7 +762,10 @@ class PlayerView(object):
                 if event.type == pg.MOUSEBUTTONDOWN:
                     coords = pg.mouse.get_pos()               # Uncomment for finished game...
                     if board.isClicked(coords) == True:
-                        square = board.getSquareCoords(coords)
+                        if command == "move" and square != None:
+                            moveSquare = board.getSquareCoords(coords)   # Saves the coords of the second click for moves
+                        else:
+                            square = board.getSquareCoords(coords)
                     else:
                         selectedTroop = None
                         previewTroop  = None
@@ -824,7 +828,8 @@ class PlayerView(object):
             outboundData = { 
                 "stage": 'battle',
                 "command": command,
-                "square": square
+                "square": square,
+                "moveSquare": moveSquare
                 }
             # Try to communicate with server here:
             try:          
@@ -854,10 +859,16 @@ class PlayerView(object):
                 self.displayText('Not connected', (self.displayWidth//2, self.displayHeight//2))
 
             if active == True:
-                square = None
-            
+                if command != "move":       # Doesn't override 'square' on moves because  
+                    square = None           # we need to send two squares at the same time.
+                if command == "move" and moveSquare != None:
+                    moveSquare = None
+                    square = None
+                
             if command == "pass":
                 command = None
+                        
+
 
             pg.display.update()
             self.clock.tick(30)
