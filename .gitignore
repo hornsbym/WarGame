@@ -2,8 +2,8 @@
 /_maps/__pycache__/*
 /_maps/template.py
 /_modules/__pycache__
-/client_examples
-/server_examples
-rect_practice.py
-colorchanger.py
-.gitignore
+/client_examples/*
+/server_examples/*
+/rect_practice.py
+/colorchanger.py
+/.gitignore
