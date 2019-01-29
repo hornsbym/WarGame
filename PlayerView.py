@@ -71,8 +71,7 @@ class PlayerView(object):
             "shield":pg.image.load("./_sprites/shield.png").convert(),
             "square":pg.image.load("./_sprites/square.png").convert(),
             "troop":pg.image.load("./_sprites/troop.png").convert(),
-            "wall":pg.image.load("./_sprites/wall.png").convert(),
-        }
+            "wall":pg.image.load("./_sprites/wall.png").convert()}
 
         # Socket variables
         self.HOST = '127.0.0.1'
@@ -623,16 +622,37 @@ class PlayerView(object):
             # Draws the game board
             board.showBoard(self.display, self.IMAGES)
 
+            ## Deactivates buttons if it's not the player's turn.
+            if active == False:
+                tb.deactivate()
+                rb.deactivate()
+                kb.deactivate()
+                sb.deactivate()
+                hb.deactivate()
+                addButton.deactivate()
+                upgradeButton.deactivate()
+                switchButton.deactivate()
 
-            # Draws buttons for interacting with the game
-            tb.showButton(self.display)
-            rb.showButton(self.display)
-            kb.showButton(self.display)
-            sb.showButton(self.display)
-            hb.showButton(self.display)
-            addButton.showButton(self.display)
-            upgradeButton.showButton(self.display)
-            switchButton.showButton(self.display)
+            # Draws buttons for interacting with the game if it's the player's turn
+            # Activates visible buttons
+            if active == True:
+                tb.showButton(self.display)
+                rb.showButton(self.display)
+                kb.showButton(self.display)
+                sb.showButton(self.display)
+                hb.showButton(self.display)
+                addButton.showButton(self.display)
+                upgradeButton.showButton(self.display)
+                switchButton.showButton(self.display)
+
+                tb.activate()
+                rb.activate()
+                kb.activate()
+                sb.activate()
+                hb.activate()
+                addButton.activate()
+                upgradeButton.activate()
+                switchButton.activate()
 
 
             # Draws information about the player/stage
@@ -868,8 +888,6 @@ class PlayerView(object):
             if command == "pass":
                 command = None
                         
-
-
             pg.display.update()
             self.clock.tick(30)
 
