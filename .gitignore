@@ -6,3 +6,4 @@
 /server_examples
 rect_practice.py
 colorchanger.py
+.gitignore
