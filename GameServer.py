@@ -1,5 +1,3 @@
-import pygame as pg
-
 import socket 
 import pickle
 import time
