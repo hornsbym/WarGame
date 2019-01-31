@@ -61,8 +61,8 @@ class GameServer(Thread):
             self.setupStage()
             self.placementStage()
             self.battleStage()
-        except:
-            print(str(Exception), file=self.logs)
+        except Exception as e:
+            print(e, file=self.logs)
 
         # Terminates the socket when the game is done
         self.socket.close()
