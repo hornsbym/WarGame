@@ -76,6 +76,7 @@ class GameServer(Thread):
     def lobbyStage(self):
         """Handles connecting players and setting up the game."""
         # Organizes outbound data to clients into a dict
+        print('Starting lobby stage.')
         gameState = {
             "connection": str(self.PORT), 
             "ready":False,
@@ -137,9 +138,7 @@ class GameServer(Thread):
             self.socket.sendto(outboundData, address)
 
             # Check client connections here
-            self.cleanClientList(time.time())
-
-            time.sleep(.001)
+            # self.cleanClientList(time.time())
 
     def setupStage(self):
         """Determines dimensions of the game board, players' names, and eventually the player's army.

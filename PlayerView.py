@@ -77,8 +77,7 @@ class PlayerView(object):
         self.HOST = socket.gethostbyname(socket.gethostname())
         self.PORT = 6001
 
-        # Game socket variables
-        self.SERVER = ('127.0.0.1',5000)
+        # Connector socket variable
         self.CONNECTOR = ('142.93.118.50', 4999)
 
         # Create the local socket to communicate with the game server through
@@ -87,9 +86,8 @@ class PlayerView(object):
         # Finds an open port on the local machine to bind the socket to
         while True:
             try:
-                print("self.HOST,self.PORT", self.HOST, self.PORT)
                 self.socket.bind((self.HOST,self.PORT))
-                print("Connected to", self.HOST, "on port", self.PORT)
+                print("Bound to", self.HOST, "on port", self.PORT)
                 break
             except:
                 self.PORT += 1
@@ -97,15 +95,16 @@ class PlayerView(object):
 
         # Found a socket to establish on local machine, now connect to the server
         self.connect()
-        print("I know where the server is:", self.SERVER)
 
+        print("Sending initial message to server.")
         # Sends the dimensions of the client's screen to the server upon first connection
         dimensions = { "dimensions":(self.displayWidth,self.displayHeight) }
         dimensions = pickle.dumps(dimensions)
         self.socket.sendto(dimensions, self.SERVER)
+        print("Initial message recieved by server.")
         
         # Contains the Game object, which has all important Game information
-        # Game Object should never be changed, only looked at.
+        # Game Object should never be mutated, only accessed.
         self.GAME = None
         self.PLAYERNAME = None
         self.PLAYEROBJECT = None
@@ -341,17 +340,15 @@ class PlayerView(object):
         outboundData = { 
             "hello": "hello" 
             }
-        print("Talking to Connector...")
+        print("Connected to connector server.")
         # Try to communicate with server here:
         outboundData = pickle.dumps(outboundData)          # Packages outbound data into Pickle
         self.socket.sendto(outboundData, self.CONNECTOR)   # Sends Pickled data to server
         
-        print("Sent message to Connector...")
         inData = self.socket.recvfrom(1024)      # Gets back data. Will be a Pickle object.
         inData = inData[0]                       #### For some reason it's a tuple now?
         serverLocation = pickle.loads(inData)         # Turn Pickle back into dictionary.
 
-        print("Got data back from the Connector...")
 
         self.SERVER = (serverLocation["gameServer host"], serverLocation["gameServer port"])
         print("Connector pointed to", self.SERVER)
@@ -360,6 +357,8 @@ class PlayerView(object):
 
     def lobbyStage(self):
         """Waits for two players to join."""
+        print("Starting lobby stage.")
+
         command = ""
 
         dots    = ""
@@ -371,6 +370,7 @@ class PlayerView(object):
 
         wait = True
         while (wait == True):
+            print("In lobby loop...")
             # Gets all the events from the game window. A.k.a., do stuff here.
             events = pg.event.get()
 
