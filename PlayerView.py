@@ -73,27 +73,36 @@ class PlayerView(object):
             "troop":pg.image.load("./_sprites/troop.png").convert(),
             "wall":pg.image.load("./_sprites/wall.png").convert()}
 
-        # Socket variables
+        # Client socket variables
         self.HOST = '127.0.0.1'
-        self.PORT = 5001
-        self.SERVER = ('127.0.0.1',5000)
+        self.PORT = 6001
 
-        # Create the socket to communicate with the game server through
+        # Game socket variables
+        self.SERVER = ('127.0.0.1',5000)
+        self.CONNECTOR = ('127.0.0.1', 4999)
+
+        # Create the local socket to communicate with the game server through
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-        # Finds an open port to bind the socket to
+        # Finds an open port on the local machine to bind the socket to
         while True:
             try:
+                print("self.HOST,self.PORT", self.HOST, self.PORT)
                 self.socket.bind((self.HOST,self.PORT))
                 print("Connected to", self.HOST, "on port", self.PORT)
-
-                # Sends the dimensions of the client's screen to the server upon first connection
-                dimensions = { "dimensions":(self.displayWidth,self.displayHeight) }
-                dimensions = pickle.dumps(dimensions)
-                self.socket.sendto(dimensions, self.SERVER)
                 break
             except:
                 self.PORT += 1
+                pass
+
+        # Found a socket to establish on local machine, now connect to the server
+        self.connect()
+        print("I know where the server is:", self.SERVER)
+
+        # Sends the dimensions of the client's screen to the server upon first connection
+        dimensions = { "dimensions":(self.displayWidth,self.displayHeight) }
+        dimensions = pickle.dumps(dimensions)
+        self.socket.sendto(dimensions, self.SERVER)
         
         # Contains the Game object, which has all important Game information
         # Game Object should never be changed, only looked at.
@@ -325,6 +334,27 @@ class PlayerView(object):
 
             pg.display.update(upgradeRect)
             self.clock.tick(20)
+
+    def connect(self):
+        """Connects to the Connector, which then tells the view which port the game is on."""
+        # Packages data to send to the server here as a python dictionary
+        outboundData = { 
+            "hello": "hello" 
+            }
+        print("Talking to Connector...")
+        # Try to communicate with server here:
+        outboundData = pickle.dumps(outboundData)          # Packages outbound data into Pickle
+        self.socket.sendto(outboundData, self.CONNECTOR)   # Sends Pickled data to server
+        
+        print("Sent message to Connector...")
+        inData = self.socket.recvfrom(1024)      # Gets back data. Will be a Pickle object.
+        inData = inData[0]                       #### For some reason it's a tuple now?
+        serverLocation = pickle.loads(inData)         # Turn Pickle back into dictionary.
+
+        print("Got data back from the Connector...")
+
+        self.SERVER = (serverLocation["gameServer host"], serverLocation["gameServer port"])
+        print("Connector pointed to", self.SERVER)
 
     ### -----| Update screen during main game loops below |----- ###
 

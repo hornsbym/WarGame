@@ -1,4 +1,5 @@
 import socket 
+from threading import Thread
 import pickle
 import time
 import math
@@ -17,21 +18,33 @@ import _maps.test_map as test
 import _maps.big_map as big
 
 
-class GameServer(object):
-    def __init__(self):
+class GameServer(Thread):
+    def __init__(self, args=(), kwargs=None):
+        super().__init__()
+        self.args = args
+        self.kwargs = kwargs
+
+    def run(self):
         self.STARTTIME = math.floor(time.time())
         self.lastUpdate = self.STARTTIME
 
         self.HOST = "127.0.0.1"
-        self.PORT = 5000
+        self.PORT = self.args
 
         self.clients = []
         self.clientScreenDimensions = {}
         self.clientUpdateTimes = {}
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)    # Creats socket
-        self.socket.bind((self.HOST,self.PORT))                           # Binds socket to local port
-        print("UDP Server started at", self.PORT)
+
+        while True:
+            try:
+                print("Trying to bind to port", self.PORT)
+                self.socket.bind((self.HOST,self.PORT))     # Tries to bind socket to port
+                print("UDP Server started at", self.PORT)
+                break                                       # Has bound to a port, exits the while loop
+            except:
+                self.PORT += 1      # If port is taken, tries the next port up
 
         # Game information
         self.map     = None
@@ -125,6 +138,8 @@ class GameServer(object):
 
             # Check client connections here
             self.cleanClientList(time.time())
+
+            time.sleep(.001)
 
     def setupStage(self):
         """Determines dimensions of the game board, players' names, and eventually the player's army.

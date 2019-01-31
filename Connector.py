@@ -4,18 +4,17 @@
 Purpose: Creates a socket that constantly runs. It waits for players to connect 
          and then pairs them up in a new GameServer.
 """
+from GameServer import GameServer
 import socket 
 import pickle
-import subprocess
-
-from GameServer import GameServer
+import os
+import threading
 
 class Connector (object):
     def __init__(self):
         """
         Starts the server.
         """
-        print("Connector 1")
         # Socket info here:
         self.HOST = "127.0.0.1"
         self.PORT = 4999
@@ -23,51 +22,60 @@ class Connector (object):
         self.socket.bind((self.HOST,self.PORT))                           # Binds socket to local port
 
         # Keeps track of existing games here (only allow 10 for testing):
-        self.waitingGames = []
+        self.activePort = 5000
+        self.connected = 0
 
-        print("Connector listening at port", self.PORT)
+        print("CONNECTOR: listening at port", self.PORT)
         outboundData = {
             "gameServer host": None,
             "gameServer port": None
         }
+        counter = 0 
         while True:
-            try:
-                inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
-                data = inboundData[0]                         # Separates data from address
-                address = inboundData[1]                      # Separates address from data
-                data = pickle.loads(data)                     # Unpickles data back into a python dict
+            print("CONNECTOR: Active port number is", self.activePort, "Iteration", counter)
+            counter += 1
 
-                # Creates the first server here
-                if len(self.waitingGames) == 0 and data['hello'] == 'hello':
-                    print("Data:", data)
-                    print("A")
-                    # g = GameServer(self.HOST, self.PORT+len(self.waitingGames)+1)
-                    # subprocess.run("python GameServer.py")
-                    print("A")
-                    # Creates and keeps track of a new game server here:
-                    print("A")
-                    self.waitingGames.append((self.HOST, self.PORT+len(self.waitingGames)+1))
-                    print("A")
+            print('CONNECTOR: Trying to recieve data...')
+            inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
+            data = inboundData[0]                         # Separates data from address
 
-                    # Informs the player where the new game is located:
-                    outboundData["gameServer host"] = self.HOST
-                    outboundData["gameServer port"] = self.PORT
+            print('CONNECTOR: Recieved data.')
+            
+            address = inboundData[1]                      # Separates address from data
+            data = pickle.loads(data)                     # Unpickles data back into a python dict
 
-                else:
-                    latestGame = self.waitingGames[len(self.waitingGames)]
+            print("CONNECTOR:Message:", data, "From:",address)
 
-                    # Connects a player to an existing game if the latest game isn't full
-                    if latestGame.isServerFull() == False:
-                        outboundData["gameServer host"] = latestGame[0]
-                        outboundData["gameServer port"] = latestGame.getServerPort()[1]
+            # Creates a new server here
+            if self.connected == 0:
+                print("CONNECTOR: Someone wants to play, creating a game...")
+                g = GameServer(self.activePort)     # Creates game
+                g.start()                           # Starts game
 
-                        self.waitingGames.pop(latestGame)
-                    
+                # Tells the first person to start the game where it's being hosted
+                outboundData["gameServer host"] = self.HOST
+                outboundData["gameServer port"] = self.activePort
 
-                # Packages up data and sends it back to the player
-                out = pickle.dumps(outboundData)
-                self.socket.sendto(out, address)
-            except:
-                pass
+                # Keeps track of how many people have successfully connected
+                self.connected += 1
+                print("CONNECTOR: Keeping track of the number of people who have connected:", self.connected)  
+
+            # Connects a player to an existing game if the latest game isn't full.
+            # Keeps track of who needs to connect still, and which port hasn't been used yet.
+            elif self.connected != 0:
+                # Sends the player to the already existing game
+                outboundData["gameServer host"] = self.HOST     
+                outboundData["gameServer port"] = self.activePort
+
+                # Moves to the next availible port and resets the counter for people to still be connected.
+                self.activePort += 1
+                self.connected = 0
+                
+            print('CONNECTOR: Trying to send data out...')
+
+            # Packages up data and sends it back to the player
+            out = pickle.dumps(outboundData)
+            self.socket.sendto(out, address)
+            print("CONNECTOR: Sent data out to", address)
 
 Connector()
