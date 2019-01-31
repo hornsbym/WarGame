@@ -45,7 +45,7 @@ class GameServer(Thread):
         while True:
             try:
                 self.socket.bind((self.HOST,self.PORT))     # Tries to bind socket to port
-                print("UDP Server started at ("+self.HOST, ",", self.PORT +")", file=self.logs)
+                print("UDP Server started at ("+self.HOST+", "+ str(self.PORT) +")", file=self.logs)
                 break                                       # Has bound to a port, exits the while loop
             except:
                 self.PORT += 1      # If port is taken, tries the next port up
@@ -83,7 +83,7 @@ class GameServer(Thread):
     def lobbyStage(self):
         """Handles connecting players and setting up the game."""
         # Organizes outbound data to clients into a dict
-        print("("+self.HOST, ",", self.PORT +"):: Starting lobby stage.", file=self.logs)
+        print("("+self.HOST, ", ", str(self.PORT) +"):: Starting lobby stage.", file=self.logs)
         gameState = {
             "connection": str(self.PORT), 
             "ready":False,
@@ -124,14 +124,14 @@ class GameServer(Thread):
                 self.clientScreenDimensions[str(address)] = dimensions
             else:
                 if data['command'] != "":
-                    print("("+self.HOST, ",", self.PORT +")::", data, file=self.logs)   # Only prints out non-trivial data from clients                            
+                    print("("+self.HOST, ", ", str(self.PORT) +")::", data, file=self.logs)   # Only prints out non-trivial data from clients                            
                     
                     # Handle commands from other servers
                     if data['command'] == "close":              # Ends the server
                         break
 
                     if data['command'] == 'ping':               # Confirms connection to client servers
-                        print("("+self.HOST, ",", self.PORT +")::", self.clients, file=self.logs)
+                        print("("+self.HOST, ", ", str(self.PORT) +")::", self.clients, file=self.logs)
                 
                     if data['command'] == 'start':
                         for client in self.clients:             # Tells both player views to move on
@@ -229,7 +229,7 @@ class GameServer(Thread):
         """Communicates with player objects.
            Controls player turn-taking for placement.
            Keeps track of board and player changes."""
-        print("("+self.HOST, ",", self.PORT +"):: Entering placement stage", file=self.logs)
+        print("("+self.HOST, ", ", str(self.PORT) +"):: Entering placement stage", file=self.logs)
 
         activePlayer = self.players[0]
         readyPlayers = set()
@@ -294,7 +294,7 @@ class GameServer(Thread):
         self.logs.close()
         self.logs = open(str(self.filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
 
-        print("("+self.HOST, ",", self.PORT +"):: Entering battle stage", file=self.logs)
+        print("("+self.HOST, ", ", str(self.PORT) +"):: Entering battle stage", file=self.logs)
 
         # Prepare the board for play; removes red and blue squares from the board
         self.game.normalizeBoard()
