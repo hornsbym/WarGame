@@ -32,8 +32,8 @@ class GameServer(Thread):
         self.PORT = self.args
 
         # Saves the print statements here:
-        filepath = os.getcwd()
-        self.logs = open(str(filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
+        self.filepath = os.getcwd()
+        self.logs = open(str(self.filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
 
         self.clients = []
         self.clientScreenDimensions = {}
@@ -101,6 +101,8 @@ class GameServer(Thread):
             }
 
         while True:
+            self.logs.close()
+            self.logs.open(str(self.filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
             inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
             data = inboundData[0]                         # Separates data from address
             address = inboundData[1]                      # Separates address from data
