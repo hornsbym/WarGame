@@ -65,6 +65,7 @@ class GameServer(Thread):
             print("Stopped via Ctrl-C.")
             print("Stopped via Ctrl-C.", file=self.logs)
         except:
+            print("Somethings went wrong... Closing now.")
             print("Something went wrong... Closing now.", file=self.logs)
         finally:
             self.logs.close()
