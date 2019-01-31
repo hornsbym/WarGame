@@ -1,11 +1,8 @@
-import pygame as pg
 import time
 
 import _modules.pygame_textinput as pygame_textinput
 from _modules.Square import Square
 from _modules.Board import Board
-from _modules.TroopButton import TroopButton
-from _modules.CommandButton import CommandButton
 from _modules.Player import Player
 from _modules.Troop import Troop
 

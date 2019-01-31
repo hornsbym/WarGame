@@ -1,5 +1,3 @@
-import pygame as pg
-
 class Player(object):
     """Holds information relevant for each player in the game."""
     def __init__(self, name, color, armyType, spendableTokens, address):

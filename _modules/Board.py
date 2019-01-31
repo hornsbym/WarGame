@@ -1,4 +1,3 @@
-import pygame as pg
 from _modules.Square import Square
 
 class Board(object):

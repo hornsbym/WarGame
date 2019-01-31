@@ -368,9 +368,11 @@ class PlayerView(object):
         pingButton = CommandButton('ping', (self.displayWidth//2, self.displayHeight//3), (50,100,0))
         closeButton = CommandButton('close',(self.displayWidth//2, 2*self.displayHeight//3), (100,50,0))
 
+        counter = 0
         wait = True
         while (wait == True):
-            print("In lobby loop...")
+            print("%10i" % counter)
+            counter += 1
             # Gets all the events from the game window. A.k.a., do stuff here.
             events = pg.event.get()
 

@@ -309,6 +309,3 @@ class GameServer(Thread):
 
             # Check client connections here
             self.cleanClientList(time.time())
-
-
-GameServer()
