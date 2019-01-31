@@ -1,4 +1,5 @@
 import socket 
+import os
 from threading import Thread
 import pickle
 import time
@@ -31,6 +32,10 @@ class GameServer(Thread):
         self.HOST = "142.93.118.50"
         self.PORT = self.args
 
+        # Saves the print statements here:
+        filepath = os.getcwd()
+        self.logs = open(str(filepath)+"/_logs/"+ str(self.PORT) + ".txt", "w+")
+
         self.clients = []
         self.clientScreenDimensions = {}
         self.clientUpdateTimes = {}
@@ -39,9 +44,11 @@ class GameServer(Thread):
 
         while True:
             try:
-                print("Trying to bind to port", self.PORT)
+                print("Trying to bind to port", self.PORT, file=self.logs)
+                self.logs.close()
                 self.socket.bind((self.HOST,self.PORT))     # Tries to bind socket to port
-                print("UDP Server started at", self.PORT)
+                print("UDP Server started at", self.PORT, file=self.logs)
+                self.logs.close()
                 break                                       # Has bound to a port, exits the while loop
             except:
                 self.PORT += 1      # If port is taken, tries the next port up
@@ -70,13 +77,13 @@ class GameServer(Thread):
             if diff > 1:
                 removeList.append(client)
         for client in removeList:
-            print("Removing:", client)
+            print("Removing:", client, file=self.logs)
             self.clients.remove(client)
 
     def lobbyStage(self):
         """Handles connecting players and setting up the game."""
         # Organizes outbound data to clients into a dict
-        print('Starting lobby stage.')
+        print('Starting lobby stage.', file=self.logs)
         gameState = {
             "connection": str(self.PORT), 
             "ready":False,
@@ -117,14 +124,14 @@ class GameServer(Thread):
                 self.clientScreenDimensions[str(address)] = dimensions
             else:
                 if data['command'] != "":
-                    print(data)   # Only prints out non-trivial data from clients                            
+                    print(data, file=self.logs)   # Only prints out non-trivial data from clients                            
                     
                     # Handle commands from other servers
                     if data['command'] == "close":              # Ends the server
                         break
 
                     if data['command'] == 'ping':               # Confirms connection to client servers
-                        print(self.clients)
+                        print(self.clients, file=self.logs)
                 
                     if data['command'] == 'start':
                         for client in self.clients:             # Tells both player views to move on
@@ -143,7 +150,7 @@ class GameServer(Thread):
     def setupStage(self):
         """Determines dimensions of the game board, players' names, and eventually the player's army.
         Return a tuple containing (Board, Player1, Player2)."""
-        print("--- Initiating setup stage")
+        print("--- Initiating setup stage", file=self.logs)
 
         # Holds player map and name information here. Will be used to create objects later.
         mapVotes = []
@@ -214,7 +221,7 @@ class GameServer(Thread):
         """Communicates with player objects.
            Controls player turn-taking for placement.
            Keeps track of board and player changes."""
-        print("--- Entering placement stage")
+        print("--- Entering placement stage", file=self.logs)
 
         activePlayer = self.players[0]
         readyPlayers = set()
@@ -271,7 +278,7 @@ class GameServer(Thread):
         """Communicates with player objects.
            Controls player turn-taking for placement.
            Keeps track of board and player changes."""
-        print("-- Entering battle stage")
+        print("-- Entering battle stage", file=self.logs)
 
         # Prepare the board for play; removes red and blue squares from the board
         self.game.normalizeBoard()
