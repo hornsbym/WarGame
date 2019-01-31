@@ -18,7 +18,6 @@ import _maps.basic_map as basic
 import _maps.test_map as test
 import _maps.big_map as big
 
-
 class GameServer(Thread):
     def __init__(self, args=(), kwargs=None):
         super().__init__()
@@ -45,10 +44,8 @@ class GameServer(Thread):
         while True:
             try:
                 print("Trying to bind to port", self.PORT, file=self.logs)
-                self.logs.close()
                 self.socket.bind((self.HOST,self.PORT))     # Tries to bind socket to port
                 print("UDP Server started at", self.PORT, file=self.logs)
-                self.logs.close()
                 break                                       # Has bound to a port, exits the while loop
             except:
                 self.PORT += 1      # If port is taken, tries the next port up
@@ -59,10 +56,15 @@ class GameServer(Thread):
         self.players = []
 
         # Begins connecting two players
-        self.lobbyStage()
-        self.setupStage()
-        self.placementStage()
-        self.battleStage()
+        try:
+            self.lobbyStage()
+            self.setupStage()
+            self.placementStage()
+            self.battleStage()
+        except:
+            print("Something went wrong... Closing now.", file=self.logs)
+            self.logs.close()
+            pass
 
         # Terminates the socket when the game is done
         self.socket.close()
