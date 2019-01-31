@@ -33,7 +33,7 @@ class GameServer(Thread):
 
         # Saves the print statements here:
         filepath = os.getcwd()
-        self.logs = open(str(filepath)+"/_logs/"+ str(self.PORT) + ".txt", "w+")
+        self.logs = open(str(filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
 
         self.clients = []
         self.clientScreenDimensions = {}
@@ -61,9 +61,14 @@ class GameServer(Thread):
             self.setupStage()
             self.placementStage()
             self.battleStage()
+        except KeyboardInterrupt:
+            print("Stopped via Ctrl-C.")
+            print("Stopped via Ctrl-C.", file=self.logs)
         except:
             print("Something went wrong... Closing now.", file=self.logs)
+        finally:
             self.logs.close()
+            self.socket.close()
             pass
 
         # Terminates the socket when the game is done
