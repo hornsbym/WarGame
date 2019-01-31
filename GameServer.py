@@ -31,9 +31,10 @@ class GameServer(Thread):
         self.HOST = "142.93.118.50"
         self.PORT = self.args
 
-        # Saves the print statements here:
+        # Saves the print statements to a local text file:
         self.filepath = os.getcwd()
         self.logs = open(str(self.filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
+        print("\n\n*****NEW SERVER SESSION*****", file=self.logs)
 
         self.clients = []
         self.clientScreenDimensions = {}
@@ -55,22 +56,14 @@ class GameServer(Thread):
         self.board   = None
         self.players = []
 
-        # Begins connecting two players
+        # GAME FUNCTIONS HERE:
         try:
             self.lobbyStage()
             self.setupStage()
             self.placementStage()
             self.battleStage()
-        except KeyboardInterrupt:
-            print("Stopped via Ctrl-C.")
-            print("Stopped via Ctrl-C.", file=self.logs)
         except:
-            print("Somethings went wrong... Closing now.")
-            print("Something went wrong... Closing now.", file=self.logs)
-        finally:
-            self.logs.close()
-            self.socket.close()
-            pass
+            print(str(Exception), file=self.logs)
 
         # Terminates the socket when the game is done
         self.socket.close()
@@ -101,8 +94,10 @@ class GameServer(Thread):
             }
 
         while True:
+            # Continuously saves logging information to a text file:
             self.logs.close()
-            self.logs.open(str(self.filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
+            self.logs = open(str(self.filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
+
             inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
             data = inboundData[0]                         # Separates data from address
             address = inboundData[1]                      # Separates address from data
@@ -173,6 +168,10 @@ class GameServer(Thread):
             "game": None     
         }
         while True:
+            # Continuously saves logging information to a text file:
+            self.logs.close()
+            self.logs = open(str(self.filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
+
             # Gets all the events from the game window. A.k.a., do stuff here.
             inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
             data = inboundData[0]                         # Separates data from address
@@ -244,6 +243,10 @@ class GameServer(Thread):
             "start": False
             }
         while True:
+            # Continuously saves logging information to a text file:
+            self.logs.close()
+            self.logs = open(str(self.filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
+
             inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
             data = inboundData[0]                         # Separates data from address
             address = inboundData[1]                      # Separates address from data
@@ -288,6 +291,10 @@ class GameServer(Thread):
         """Communicates with player objects.
            Controls player turn-taking for placement.
            Keeps track of board and player changes."""
+        # Continuously saves logging information to a text file:
+        self.logs.close()
+        self.logs = open(str(self.filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
+
         print("-- Entering battle stage", file=self.logs)
 
         # Prepare the board for play; removes red and blue squares from the board
