@@ -83,7 +83,7 @@ class GameServer(Thread):
     def lobbyStage(self):
         """Handles connecting players and setting up the game."""
         # Organizes outbound data to clients into a dict
-        print("("+self.HOST, ", ", str(self.PORT) +"):: Starting lobby stage.", file=self.logs)
+        print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Starting lobby stage.", file=self.logs)
         gameState = {
             "connection": str(self.PORT), 
             "ready":False,
@@ -154,7 +154,7 @@ class GameServer(Thread):
     def setupStage(self):
         """Determines dimensions of the game board, players' names, and eventually the player's army.
         Return a tuple containing (Board, Player1, Player2)."""
-        print("("+self.HOST, ",", self.PORT +"):: Initiating setup stage", file=self.logs)
+        print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Initiating setup stage", file=self.logs)
 
         # Holds player map and name information here. Will be used to create objects later.
         mapVotes = []
@@ -229,7 +229,7 @@ class GameServer(Thread):
         """Communicates with player objects.
            Controls player turn-taking for placement.
            Keeps track of board and player changes."""
-        print("("+self.HOST, ", ", str(self.PORT) +"):: Entering placement stage", file=self.logs)
+        print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Entering placement stage", file=self.logs)
 
         activePlayer = self.players[0]
         readyPlayers = set()
@@ -294,7 +294,7 @@ class GameServer(Thread):
         self.logs.close()
         self.logs = open(str(self.filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
 
-        print("("+self.HOST, ", ", str(self.PORT) +"):: Entering battle stage", file=self.logs)
+        print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Entering battle stage", file=self.logs)
 
         # Prepare the board for play; removes red and blue squares from the board
         self.game.normalizeBoard()
