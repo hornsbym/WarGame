@@ -1,6 +1,5 @@
 import pygame as pg
 import time
-from screeninfo import get_monitors
 
 import _modules.pygame_textinput as pygame_textinput
 from _modules.Square import Square

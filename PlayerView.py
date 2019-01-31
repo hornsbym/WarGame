@@ -74,12 +74,12 @@ class PlayerView(object):
             "wall":pg.image.load("./_sprites/wall.png").convert()}
 
         # Client socket variables
-        self.HOST = '127.0.0.1'
+        self.HOST = socket.gethostbyname(socket.gethostname())
         self.PORT = 6001
 
         # Game socket variables
         self.SERVER = ('127.0.0.1',5000)
-        self.CONNECTOR = ('127.0.0.1', 4999)
+        self.CONNECTOR = ('142.93.118.50', 4999)
 
         # Create the local socket to communicate with the game server through
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

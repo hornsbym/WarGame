@@ -28,7 +28,7 @@ class GameServer(Thread):
         self.STARTTIME = math.floor(time.time())
         self.lastUpdate = self.STARTTIME
 
-        self.HOST = "127.0.0.1"
+        self.HOST = "142.93.118.50"
         self.PORT = self.args
 
         self.clients = []
