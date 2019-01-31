@@ -105,6 +105,7 @@ class GameServer(Thread):
             # If a new address connects, add it  to the list of clients
             if address not in self.clients:
                 self.clients.append(address)
+                print(str(address)+ ":: New connection.", file=self.logs)
             
             # If there are two players, the game is ready to start.
             if len(self.clients) == 2:
@@ -124,14 +125,14 @@ class GameServer(Thread):
                 self.clientScreenDimensions[str(address)] = dimensions
             else:
                 if data['command'] != "":
-                    print("("+self.HOST, ", ", str(self.PORT) +")::", data, file=self.logs)   # Only prints out non-trivial data from clients                            
+                    print("(" + str(address) +")::", data, file=self.logs)   # Only prints out non-trivial data from clients                            
                     
                     # Handle commands from other servers
                     if data['command'] == "close":              # Ends the server
                         break
 
                     if data['command'] == 'ping':               # Confirms connection to client servers
-                        print("("+self.HOST, ", ", str(self.PORT) +")::", self.clients, file=self.logs)
+                        print("(" + str(address) +")::", self.clients, file=self.logs)
                 
                     if data['command'] == 'start':
                         for client in self.clients:             # Tells both player views to move on
@@ -284,7 +285,7 @@ class GameServer(Thread):
             self.socket.sendto(outboundData, address)
 
             # Check client connections here
-            self.cleanClientList(time.time())
+            # self.cleanClientList(time.time())
 
     def battleStage(self):
         """Communicates with player objects.
@@ -331,4 +332,4 @@ class GameServer(Thread):
             self.socket.sendto(outboundData, address)
 
             # Check client connections here
-            self.cleanClientList(time.time())
+            # self.cleanClientList(time.time())
