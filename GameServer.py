@@ -85,16 +85,19 @@ class GameServer(Thread):
             'testObj':''
             }
 
+        counter = 0
         while True:
             try:
                 inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
                 data = inboundData[0]                         # Separates data from address
                 address = inboundData[1]                      # Separates address from data
                 data = pickle.loads(data)                     # Unpickles data back into a python dict
+                print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Recieved info on iteration:", counter, file=self.logs)
             except TimeoutError as t:
-                print(t)
+                print(t, file=self.logs)
             except Exception as e:
                 print(e, file=self.logs)
+            print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Iteration:", counter, file=self.logs)
 
             # Keeps track of how often the server recieves information from each client.
             updatedTime = time.time()                     
@@ -143,14 +146,19 @@ class GameServer(Thread):
             try:
                 outboundData = pickle.dumps(gameState)
                 self.socket.sendto(outboundData, address)
+                print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Sent info on iteration:", counter, file=self.logs)
             except TimeoutError as t:
-                print(t)
+                print(t, file=self.logs)
             except Exception as e:
                 print(e, file=self.logs)
+                
+            print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Iteration:", counter, file=self.logs)
 
             # Continuously saves logging information to a text file:
             self.logs.close()
             self.logs = open(str(self.filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
+
+            counter += 1
 
             # Check client connections here
             # self.cleanClientList(time.time())
