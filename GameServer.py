@@ -85,16 +85,12 @@ class GameServer(Thread):
             'testObj':''
             }
 
-        counter = None
         while True:
             try:
                 inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
                 data = inboundData[0]                         # Separates data from address
                 address = inboundData[1]                      # Separates address from data
                 data = pickle.loads(data)                     # Unpickles data back into a python dict
-                counter = data["counter"]
-            except TimeoutError as t:
-                print(t, file=self.logs)
             except Exception as e:
                 print(e, file=self.logs)
 
@@ -155,8 +151,6 @@ class GameServer(Thread):
             # Continuously saves logging information to a text file:
             self.logs.close()
             self.logs = open(str(self.filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
-
-            # counter += 1
 
             # Check client connections here
             # self.cleanClientList(time.time())
