@@ -490,6 +490,7 @@ class PlayerView(object):
             printString += "Server address: "+str(address)
 
             print("----- Iteration:", counter)
+            print()
 
             # Counts the number of loops
             counter += 1

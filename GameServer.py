@@ -152,7 +152,7 @@ class GameServer(Thread):
                 print(e, file=self.logs)
                 
             print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Iteration:", counter, file=self.logs)
-            print()
+            print(file=self.logs)
 
             # Continuously saves logging information to a text file:
             self.logs.close()
