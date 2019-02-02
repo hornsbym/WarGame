@@ -444,10 +444,9 @@ class PlayerView(object):
                 }
             # Try to communicate with server here:
             try:          
-                print("- Data:", outboundData)
                 outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
                 self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
-                print("- Successfully sent data on:", counter)
+                print("- Successfully sent data on:", counter, "Data:", outboundData)
             except TimeoutError as t:
                 print(t)
             except Exception as e:
