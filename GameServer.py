@@ -93,6 +93,7 @@ class GameServer(Thread):
                 address = inboundData[1]                      # Separates address from data
                 data = pickle.loads(data)                     # Unpickles data back into a python dict
                 print("B", file=self.logs)
+                print("Data:", file=self.logs)
                 ## DEBUGGING ONLY##
                 counter = data["counter"]
                 print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Recieved info on iteration:", counter, file=self.logs)

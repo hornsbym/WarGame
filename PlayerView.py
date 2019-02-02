@@ -402,7 +402,6 @@ class PlayerView(object):
 
         gamestate = None
 
-        counter = 0
         wait = True
         while (wait == True):
             printString = "%10i: " % counter        
@@ -445,6 +444,7 @@ class PlayerView(object):
                 }
             # Try to communicate with server here:
             try:          
+                print("- Data:", outboundData)
                 outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
                 self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
                 print("- Successfully sent data on:", counter)
