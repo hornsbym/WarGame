@@ -85,13 +85,16 @@ class GameServer(Thread):
             'testObj':''
             }
 
-        counter = 0
+        counter = None
         while True:
             try:
                 inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
                 data = inboundData[0]                         # Separates data from address
                 address = inboundData[1]                      # Separates address from data
                 data = pickle.loads(data)                     # Unpickles data back into a python dict
+
+                ## DEBUGGING ONLY##
+                counter = data["counter"]
                 print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Recieved info on iteration:", counter, file=self.logs)
             except TimeoutError as t:
                 print(t, file=self.logs)

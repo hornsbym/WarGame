@@ -440,7 +440,8 @@ class PlayerView(object):
             # Packages data to send to the server here as a python dictionary
             outboundData = { 
                 "stage": "lobby",
-                "command": command 
+                "command": command ,
+                "counter": counter
                 }
             # Try to communicate with server here:
             try:          
@@ -480,6 +481,7 @@ class PlayerView(object):
                     self.displayText("Other Player (on port %i)"%(gameState['opponentPort'][1]), (2*self.displayWidth//3, self.displayHeight//2))
             except:
                 pass
+
             pingButton.showButton(self.display)
             closeButton.showButton(self.display)
 
