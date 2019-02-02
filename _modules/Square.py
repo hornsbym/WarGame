@@ -37,6 +37,14 @@ class Square(object):
     def getType(self):
         """Returns the square's type."""
         return self.TYPE
+    
+    def getIcon(self):
+        """Returns the square's icon."""
+        return self.icon
+    
+    def getCoords(self):
+        """Returns the square's coords."""
+        return self.coords
 
     def setType(self, t):
         """Accepts a string.

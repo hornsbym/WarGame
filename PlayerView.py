@@ -245,17 +245,17 @@ class PlayerView(object):
            Aborts changes on "cancel", accepts on "accept".
            Returns a Tuple of Ints: (range, attack, speed, health)"""
         # Create add/subtract buttons
-        rPlus  = CommandButton("+",(25, 140), (0,225,75))
-        rMinus = CommandButton(" -",(10, 140), (225,0,75))
-        aPlus  = CommandButton("+",(25, 180), (0,225,75))
-        aMinus = CommandButton(" -",(10, 180), (225,0,75))
-        sPlus  = CommandButton("+",(25, 220), (0,225,75))
-        sMinus = CommandButton(" -",(10, 220), (225,0,75))
-        hPlus  = CommandButton("+",(25, 260), (0,225,75))
-        hMinus = CommandButton(" -",(10, 260), (225,0,75))
+        rPlus  = CommandButton("+",(25, 140), (0,225,75), self.DEFAULT_FONT)
+        rMinus = CommandButton(" -",(10, 140), (225,0,75), self.DEFAULT_FONT)
+        aPlus  = CommandButton("+",(25, 180), (0,225,75), self.DEFAULT_FONT)
+        aMinus = CommandButton(" -",(10, 180), (225,0,75), self.DEFAULT_FONT)
+        sPlus  = CommandButton("+",(25, 220), (0,225,75), self.DEFAULT_FONT)
+        sMinus = CommandButton(" -",(10, 220), (225,0,75), self.DEFAULT_FONT)
+        hPlus  = CommandButton("+",(25, 260), (0,225,75), self.DEFAULT_FONT)
+        hMinus = CommandButton(" -",(10, 260), (225,0,75), self.DEFAULT_FONT)
 
-        apply  = CommandButton("Apply",(100,300),(0,0,0))
-        cancel = CommandButton("Cancel",(10,300), (255, 75,75))
+        apply  = CommandButton("Apply",(100,300),(0,0,0), self.DEFAULT_FONT)
+        cancel = CommandButton("Cancel",(10,300), (255, 75,75), self.DEFAULT_FONT)
 
         # Keep track of upgrades
         r = 0
@@ -334,6 +334,41 @@ class PlayerView(object):
             pg.display.update(upgradeRect)
             self.clock.tick(20)
 
+    def showBoard(self, board):
+        """Accepts a Board object.
+           Blits the board and its squares onto the screen."""
+        def showSquare(square):
+            """Accepts a pygame Display object as an argument.
+               Shows the square in that display.
+               Handles rotations.
+              Also sets the state coordinates of the square."""
+            display = self.display
+            img = self.IMAGES[square.getIcon()]
+            coords = square.getCoords()
+
+            # Handles rotations
+            if square.getTroop() != None:
+                orientation = square.getTroop().getOrientation()
+                if orientation == (1,1):
+                    img = pg.transform.rotate(img, 0)
+                if orientation == (1,-1):
+                    img = pg.transform.rotate(img, 90)
+                if orientation == (-1,1):
+                    img = pg.transform.rotate(img, -90)
+                if orientation == (-1,-1):
+                    img = pg.transform.rotate(img, 180)
+
+            display.blit(img, (coords[0] + (self.x * 32), coords[1] + ( self.y * 32)))
+        
+        squares = board.getSquares()
+
+        for x in range(len(squares)):
+            for y in range(len(squares[x])):
+                square = squares[x][y]
+                
+                # Tells square what to look like and where to draw image
+                showSquare(square)
+
     def connect(self):
         """Connects to the Connector, which then tells the view which port the game is on."""
         # Packages data to send to the server here as a python dictionary
@@ -364,9 +399,9 @@ class PlayerView(object):
         dots    = ""
         counter = 0
 
-        startButton = CommandButton('start', (self.displayWidth//2, self.displayHeight//2), (0,0,0))
-        pingButton = CommandButton('ping', (self.displayWidth//2, self.displayHeight//3), (50,100,0))
-        closeButton = CommandButton('close',(self.displayWidth//2, 2*self.displayHeight//3), (100,50,0))
+        startButton = CommandButton('start', (self.displayWidth//2, self.displayHeight//2), (0,0,0), self.DEFAULT_FONT)
+        pingButton = CommandButton('ping', (self.displayWidth//2, self.displayHeight//3), (50,100,0), self.DEFAULT_FONT)
+        closeButton = CommandButton('close',(self.displayWidth//2, 2*self.displayHeight//3), (100,50,0), self.DEFAULT_FONT)
 
         counter = 0
         wait = True
@@ -456,15 +491,15 @@ class PlayerView(object):
         mapVote = None
         submitted = False
 
-        redButton     = CommandButton(("RED"), (3*self.displayWidth//7, self.displayHeight//5), (200, 50, 50))
-        blueButton    = CommandButton(("BLUE"), (4*self.displayWidth//7, self.displayHeight//5), (50, 50, 200))
+        redButton     = CommandButton(("RED"), (3*self.displayWidth//7, self.displayHeight//5), (200, 50, 50), self.DEFAULT_FONT)
+        blueButton    = CommandButton(("BLUE"), (4*self.displayWidth//7, self.displayHeight//5), (50, 50, 200), self.DEFAULT_FONT)
 
-        testMap       = CommandButton("TEST",(2*self.displayWidth//5,self.displayHeight//2), (0,0,0))
-        baseMap       = CommandButton("BASIC",(3*self.displayWidth//5, self.displayHeight//2), (0,0,0))
-        bigMap        = CommandButton("BIG",(4*self.displayWidth//5, self.displayHeight//2), (0,0,0))
+        testMap       = CommandButton("TEST",(2*self.displayWidth//5,self.displayHeight//2), (0,0,0), self.DEFAULT_FONT)
+        baseMap       = CommandButton("BASIC",(3*self.displayWidth//5, self.displayHeight//2), (0,0,0), self.DEFAULT_FONT)
+        bigMap        = CommandButton("BIG",(4*self.displayWidth//5, self.displayHeight//2), (0,0,0), self.DEFAULT_FONT)
 
-        changeNameButton = CommandButton("Change name",(self.displayWidth//2,35), (100,100,100))
-        submitButton = CommandButton("SUBMIT", (self.displayWidth//2,self.displayHeight-40), (200,100,100))
+        changeNameButton = CommandButton("Change name",(self.displayWidth//2,35), (100,100,100), self.DEFAULT_FONT)
+        submitButton = CommandButton("SUBMIT", (self.displayWidth//2,self.displayHeight-40), (200,100,100), self.DEFAULT_FONT)
         
         command = None
         while True:
@@ -558,11 +593,11 @@ class PlayerView(object):
         self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
 
         # Static game widgets for player to interact with
-        startButton   = CommandButton("start",(self.displayWidth-70, self.displayHeight-30), (0,0,0), False)
+        startButton   = CommandButton("start",(self.displayWidth-70, self.displayHeight-30), (0,0,0), self.DEFAULT_FONT, False)
 
-        addButton     = CommandButton("add", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 2*self.displayHeight//6), (150,0,150))
-        upgradeButton = CommandButton("upgrade",(board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 3*self.displayHeight//6), (200,150,0))
-        switchButton  = CommandButton("switch",(board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 4*self.displayHeight//6), (0,0,0))
+        addButton     = CommandButton("add", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 2*self.displayHeight//6), (150,0,150), self.DEFAULT_FONT)
+        upgradeButton = CommandButton("upgrade",(board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 3*self.displayHeight//6), (200,150,0), self.DEFAULT_FONT)
+        switchButton  = CommandButton("switch",(board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 4*self.displayHeight//6), (0,0,0), self.DEFAULT_FONT)
 
         tb = TroopButton(("troop",1,1,25,1,100,(1,1),1,1), (board.getCoords()[0] - (board.getWidth()//2 * 32)-150, 2*self.displayHeight//6))
         rb = TroopButton(("rifleman",1,3,50,1,80,(1,1),2,2), (board.getCoords()[0] - (board.getWidth()//2 * 32)-100, 2*self.displayHeight//6))
@@ -652,7 +687,8 @@ class PlayerView(object):
 
 
             # Draws the game board
-            board.showBoard(self.display, self.IMAGES)
+            # board.showBoard(self.display, self.IMAGES)
+            self.showBoard(board)
 
             ## Deactivates buttons if it's not the player's turn.
             if active == False:
@@ -783,10 +819,10 @@ class PlayerView(object):
         self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
 
         # Static game widgets for player to interact with
-        attackButton = CommandButton("attack", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 2*self.displayHeight//8), (0,50,200))
-        moveButton = CommandButton("move", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 3*self.displayHeight//8), (50,150,0))
-        rotateButton = CommandButton("rotate", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 4*self.displayHeight//8), (200,100,0))
-        passButton = CommandButton("pass", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 5*self.displayHeight//8), (200,50,250))
+        attackButton = CommandButton("attack", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 2*self.displayHeight//8), (0,50,200), self.DEFAULT_FONT)
+        moveButton = CommandButton("move", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 3*self.displayHeight//8), (50,150,0), self.DEFAULT_FONT)
+        rotateButton = CommandButton("rotate", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 4*self.displayHeight//8), (200,100,0), self.DEFAULT_FONT)
+        passButton = CommandButton("pass", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 5*self.displayHeight//8), (200,50,250), self.DEFAULT_FONT)
         
         # Holds stuff to display on the player's screen here
         previewTroop = None
@@ -839,7 +875,8 @@ class PlayerView(object):
             self.display.fill((255,255,255))
 
             # Draws the game board
-            board.showBoard(self.display, self.IMAGES)
+            # board.showBoard(self.display, self.IMAGES)
+            self.showBoard(board)
 
             # Draws buttons for interacting with the game
             attackButton.showButton(self.display)

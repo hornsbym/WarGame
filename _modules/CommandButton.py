@@ -2,15 +2,17 @@ import pygame as pg
 
 class CommandButton(object):
 
-    def __init__(self, value, coords, color, active=True):
+    def __init__(self, value, coords, color, font, active=True):
         """ value  = String
            coords  = Tuple describing coordinates of where the button should be drawn
             color  = Tuple of rgb values
-            active = Boolean for whether the button can be clicked; default is True"""
+            active = Boolean for whether the button can be clicked; default is True
+            font   = Pygame Font object"""
         self.value = value
         self.coords = coords
         self.color = color
         self.active = active
+        self.font = font
 
         self.surface = None
         self.width = None
@@ -38,7 +40,7 @@ class CommandButton(object):
         
     def makeButton(self):
         """Creates the button."""
-        font = pg.font.SysFont(None, 25)
+        font = self.font
         self.surface = font.render(self.value, True, (255,255,255))
 
         self.width = self.surface.get_width()

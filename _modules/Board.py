@@ -30,6 +30,10 @@ class Board(object):
     def getHeight(self):
         return self.height
 
+    def getSquares(self):
+        """Returns a 2D array of squares."""
+        return self.squares
+
     def setCenterCoords(self,coords):
         """Accepts a tuple of coordinates.
            These coordinates should be where the CENTER of the board will be.
