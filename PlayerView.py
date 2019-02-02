@@ -358,7 +358,7 @@ class PlayerView(object):
                 if orientation == (-1,-1):
                     img = pg.transform.rotate(img, 180)
 
-            display.blit(img, (coords[0] + (self.x * 32), coords[1] + ( self.y * 32)))
+            display.blit(img, (coords[0] + (square.getX() * 32), coords[1] + (square.getY() * 32)))
         
         squares = board.getSquares()
 

@@ -1,4 +1,3 @@
-import pygame as pg
 from _modules.Troop import Troop
 
 class Square(object):
@@ -19,7 +18,6 @@ class Square(object):
         self.icon = self.TYPE
         self.troop = None
         self.color = ""
-        self.images = None
 
 
     def getX(self):
@@ -82,28 +80,6 @@ class Square(object):
         """Accepts a tuple for where the square's upper left coordinates are."""
         self.coords = coords
 
-    def showSquare(self,display):
-        """Accepts a pygame Display object as an argument.
-           Shows the square in that display.
-           Handles rotations.
-           Also sets the state coordinates of the square."""
-        img = self.images[self.icon]
-        coords = self.coords
-
-        # Handles rotations
-        if self.getTroop() != None:
-            orientation = self.getTroop().getOrientation()
-            if orientation == (1,1):
-                img = pg.transform.rotate(img, 0)
-            if orientation == (1,-1):
-                img = pg.transform.rotate(img, 90)
-            if orientation == (-1,1):
-                img = pg.transform.rotate(img, -90)
-            if orientation == (-1,-1):
-                img = pg.transform.rotate(img, 180)
-
-        display.blit(img, (coords[0] + (self.x * 32), coords[1] + ( self.y * 32)))
-
     def isClicked(self, coords):
         """Accepts a tuple of coordinates in form (x,y).
            Returns True if the coordinates fall within the board's active area.
@@ -123,4 +99,3 @@ class Square(object):
         if self.getTroop().getHealth() <= 0:
             self.icon = "square"
             self.troop = None
-

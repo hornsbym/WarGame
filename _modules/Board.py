@@ -69,18 +69,6 @@ class Board(object):
 
         self.squares = board
 
-    def showBoard(self,display, imageDict):
-        """Accepts a pygame Display object.
-           Accepts a python dict full of pre-loaded images.
-           Iterates through the board's squares and draws them on that display"""
-        for x in range(len(self.squares)):
-            for y in range(len(self.squares[x])):
-                square = self.squares[x][y]
-                
-                # Tells square what to look like and where to draw image
-                square.setImages(imageDict)     
-                square.showSquare(display)
-
     def normalizeBoard(self):
         """Removes 'bluesquare' and 'redsquare' squares from the board."""
         for x in range(len(self.squares)):
