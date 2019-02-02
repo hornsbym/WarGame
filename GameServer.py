@@ -92,7 +92,6 @@ class GameServer(Thread):
                 data = inboundData[0]                         # Separates data from address
                 address = inboundData[1]                      # Separates address from data
                 data = pickle.loads(data)                     # Unpickles data back into a python dict
-                ## DEBUGGING ONLY##
                 counter = data["counter"]
             except TimeoutError as t:
                 print(t, file=self.logs)
