@@ -97,7 +97,6 @@ class GameServer(Thread):
                 print(t, file=self.logs)
             except Exception as e:
                 print(e, file=self.logs)
-            print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Iteration:", counter, file=self.logs)
 
             # Keeps track of how often the server recieves information from each client.
             updatedTime = time.time()                     
@@ -153,6 +152,7 @@ class GameServer(Thread):
                 print(e, file=self.logs)
                 
             print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Iteration:", counter, file=self.logs)
+            print()
 
             # Continuously saves logging information to a text file:
             self.logs.close()

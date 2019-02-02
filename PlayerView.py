@@ -446,6 +446,7 @@ class PlayerView(object):
             try:          
                 outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
                 self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
+                print("- Successfully sent data on:", counter)
             except TimeoutError as t:
                 print(t)
             except Exception as e:
@@ -456,6 +457,7 @@ class PlayerView(object):
                 inData = inData[0]                       #### For some reason it's a tuple now?
                 address = inData[1]
                 gameState = pickle.loads(inData)         # Turn Pickle back into dictionary.
+                print("--- Successfully recieved data on:", counter)
             except TimeoutError as t:
                 print(t)
             # Keeps user in the waiting screen if they can't connect to server
@@ -487,10 +489,12 @@ class PlayerView(object):
             ########
             printString += "Server address: "+str(address)
 
+            print("----- Iteration:", counter)
+
             # Counts the number of loops
             counter += 1
 
-            print(printString)
+            # print(printString)
 
             pg.display.update()
             self.clock.tick(30)
