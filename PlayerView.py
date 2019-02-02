@@ -580,8 +580,16 @@ class PlayerView(object):
             try:          
                 outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
                 self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
+            except TimeoutError as t:
+                print(t)
+                pass
+            except Exception as e:
+                print(e)
+                self.displayText('Not connected', (self.displayWidth//2, self.displayHeight//2))
+                pass    
 
                 # SOCKET MUST BE BIG SO THAT THE GAME OBJECT CAN FIT
+            try:
                 inData = self.socket.recvfrom(12000)      # Gets back data. Will be a Pickle object.
                 inData = inData[0]                        # (<data>, <address>)
                 gameState = pickle.loads(inData)          # Turn Pickle back into dictionary.
@@ -593,20 +601,13 @@ class PlayerView(object):
                 self.displayText('Not connected', (self.displayWidth//2, self.displayHeight//2))
                 pass
                 
-            # Try to get the Game object back from the server
-            try:
-                if gameState['ready'] == True:
-                    self.GAME = gameState['game']
-                    self.GAME.getBoard().setCenterCoords((self.displayWidth//2, self.displayHeight//2))
-                    self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
-                    break       # Advances to next stage of the game.
-            except TimeoutError as t:
-                print(t)
-                pass
-            except Exception as e:
-                print(e)
-                self.displayText('Not connected', (self.displayWidth//2, self.displayHeight//2))
-                pass            
+
+            if gameState['ready'] == True:
+                self.GAME = gameState['game']
+                self.GAME.getBoard().setCenterCoords((self.displayWidth//2, self.displayHeight//2))
+                self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
+                break       # Advances to next stage of the game.
+    
 
 
             command = None

@@ -145,8 +145,6 @@ class Game(object):
         Executes the battle stage of the game."""
         currentPlayer = self.activePlayer
 
-        print("current player:", currentPlayer, "command:", command, "square:", square, "moveSquare:", moveSquare)
-
         # Finds the selected troop on the Game's board
         selectedTroop = None
         if square != None:
@@ -190,14 +188,12 @@ class Game(object):
         # Switches active player 
         if command == 'pass':
             if currentPlayer == self.player1:
-                print("player1 is passing")
                 self.activePlayer = self.player2
                 self.player1.resetMoves()
                 self.player1.restTroops()
                 self.player1.decrementCooldowns()
                 return
             if currentPlayer == self.player2:
-                print("player2 is passing")
                 self.activePlayer = self.player1
                 self.player2.resetMoves()
                 self.player2.restTroops()
