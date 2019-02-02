@@ -7,12 +7,8 @@ import math
 import random
 
 from Game import Game
-from _modules.Square import Square
 from _modules.Board import Board
-from _modules.TroopButton import TroopButton
-from _modules.CommandButton import CommandButton
 from _modules.Player import Player
-from _modules.Troop import Troop
 
 import _maps.basic_map as basic
 import _maps.test_map as test

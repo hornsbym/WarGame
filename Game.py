@@ -1,14 +1,7 @@
-import time
-
-import _modules.pygame_textinput as pygame_textinput
 from _modules.Square import Square
 from _modules.Board import Board
 from _modules.Player import Player
 from _modules.Troop import Troop
-
-import _maps.basic_map as basic
-import _maps.test_map as test
-import _maps.big_map as big
 
 class Game(object):
     """Class containing ALL pertinent Game information.

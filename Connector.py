@@ -7,8 +7,6 @@ Purpose: Creates a socket that constantly runs. It waits for players to connect
 from GameServer import GameServer
 import socket 
 import pickle
-import os
-import threading
 
 class Connector (object):
     def __init__(self):
