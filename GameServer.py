@@ -52,13 +52,10 @@ class GameServer(Thread):
         self.players = []
 
         # GAME FUNCTIONS HERE:
-        # try:
         self.lobbyStage()
         self.setupStage()
         self.placementStage()
         self.battleStage()
-        # except Exception as e:
-        #     print(e, file=self.logs)
 
         # Terminates the socket when the game is done
         self.socket.close()
@@ -94,6 +91,8 @@ class GameServer(Thread):
                 data = inboundData[0]                         # Separates data from address
                 address = inboundData[1]                      # Separates address from data
                 data = pickle.loads(data)                     # Unpickles data back into a python dict
+            except TimeoutError as t:
+                print(t)
             except Exception as e:
                 print(e, file=self.logs)
 
@@ -144,6 +143,8 @@ class GameServer(Thread):
             try:
                 outboundData = pickle.dumps(gameState)
                 self.socket.sendto(outboundData, address)
+            except TimeoutError as t:
+                print(t)
             except Exception as e:
                 print(e, file=self.logs)
 
