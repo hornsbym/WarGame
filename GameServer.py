@@ -92,10 +92,8 @@ class GameServer(Thread):
                 data = inboundData[0]                         # Separates data from address
                 address = inboundData[1]                      # Separates address from data
                 data = pickle.loads(data)                     # Unpickles data back into a python dict
-                print("Data:", data, file=self.logs)
                 ## DEBUGGING ONLY##
                 counter = data["counter"]
-                print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Recieved info on iteration:", counter, file=self.logs)
             except TimeoutError as t:
                 print(t, file=self.logs)
             except Exception as e:
@@ -148,14 +146,12 @@ class GameServer(Thread):
             try:
                 outboundData = pickle.dumps(gameState)
                 self.socket.sendto(outboundData, address)
-                print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Sent info on iteration:", counter, file=self.logs)
             except TimeoutError as t:
                 print(t, file=self.logs)
             except Exception as e:
                 print(e, file=self.logs)
                 
-            print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Iteration:", counter, file=self.logs)
-            print("", file=self.logs)
+
 
             # Continuously saves logging information to a text file:
             self.logs.close()

@@ -50,6 +50,10 @@ class PlayerView(object):
         self.BIG_FONT       = pg.font.SysFont(None, 30)
         self.TROOPCARD_FONT = pg.font.SysFont(None, 20)
 
+        # # Saves the print statements to a local text file:
+        # self.filepath = os.getcwd()
+        # self.errorLogs = open(str(self.filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
+
         ## Load images here so each square doesn't have to.
         self.IMAGES = {
             "barricade":pg.image.load("./_sprites/barricade.png").convert(),
@@ -85,6 +89,7 @@ class PlayerView(object):
 
         # Finds an open port on the local machine to bind the socket to
         self.socket.bind(("",0))
+        self.socket.settimeout(.75)
         self.HOST = self.socket.getsockname()[0]
         self.PORT = self.socket.getsockname()[1]
         print("Bound to", self.HOST, "on port", self.PORT)
@@ -448,7 +453,7 @@ class PlayerView(object):
                 self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
                 print("- Successfully sent data on:", counter)
             except TimeoutError as t:
-                print(t)
+                # print(t, file="logs.txt")
                 pass
             except Exception as e:
                 print(e)
@@ -461,7 +466,7 @@ class PlayerView(object):
                 gameState = pickle.loads(inData)         # Turn Pickle back into dictionary.
                 print("--- Successfully recieved data on:", counter)
             except TimeoutError as t:
-                print(t)
+                # print(t, file="logs.txt")
                 pass
             # Keeps user in the waiting screen if they can't connect to server
             except Exception as e:
