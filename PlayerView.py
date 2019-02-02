@@ -446,11 +446,13 @@ class PlayerView(object):
             try:          
                 outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
                 self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
-                print("- Successfully sent data on:", counter, "Data:", outboundData)
+                print("- Successfully sent data on:", counter)
             except TimeoutError as t:
                 print(t)
+                pass
             except Exception as e:
                 print(e)
+                pass
 
             try:
                 inData = self.socket.recvfrom(1024)      # Gets back data. Will be a Pickle object.
@@ -460,9 +462,11 @@ class PlayerView(object):
                 print("--- Successfully recieved data on:", counter)
             except TimeoutError as t:
                 print(t)
+                pass
             # Keeps user in the waiting screen if they can't connect to server
             except Exception as e:
                 print(e)
+                pass
                 # self.displayText("Waiting"+dots,(self.displayWidth//2,self.displayHeight//2))
 
 

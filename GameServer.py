@@ -88,12 +88,10 @@ class GameServer(Thread):
         counter = None
         while True:
             try:
-                print("A", file=self.logs)
                 inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
                 data = inboundData[0]                         # Separates data from address
                 address = inboundData[1]                      # Separates address from data
                 data = pickle.loads(data)                     # Unpickles data back into a python dict
-                print("B", file=self.logs)
                 print("Data:", data, file=self.logs)
                 ## DEBUGGING ONLY##
                 counter = data["counter"]
