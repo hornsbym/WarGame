@@ -87,11 +87,12 @@ class GameServer(Thread):
 
         while True:
             try:
+                print("A", file=self.logs)
                 inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
                 data = inboundData[0]                         # Separates data from address
                 address = inboundData[1]                      # Separates address from data
                 data = pickle.loads(data)                     # Unpickles data back into a python dict
-
+                print("B", file=self.logs)
                 ## DEBUGGING ONLY##
                 counter = data["counter"]
                 print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Recieved info on iteration:", counter, file=self.logs)
@@ -154,7 +155,7 @@ class GameServer(Thread):
                 print(e, file=self.logs)
                 
             print("(" + str(self.HOST) + ", " + str(self.PORT) +"):: Iteration:", counter, file=self.logs)
-            print(file=self.logs)
+            print("", file=self.logs)
 
             # Continuously saves logging information to a text file:
             self.logs.close()
