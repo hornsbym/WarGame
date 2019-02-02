@@ -85,7 +85,6 @@ class GameServer(Thread):
             'testObj':''
             }
 
-        counter = None
         while True:
             try:
                 inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
