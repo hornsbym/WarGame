@@ -85,6 +85,7 @@ class GameServer(Thread):
             'testObj':''
             }
 
+        counter = None
         while True:
             try:
                 print("A", file=self.logs)
@@ -162,7 +163,7 @@ class GameServer(Thread):
             self.logs.close()
             self.logs = open(str(self.filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
 
-            counter += 1
+            # counter += 1
 
             # Check client connections here
             # self.cleanClientList(time.time())
