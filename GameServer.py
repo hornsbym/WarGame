@@ -52,13 +52,13 @@ class GameServer(Thread):
         self.players = []
 
         # GAME FUNCTIONS HERE:
-        try:
-            self.lobbyStage()
-            self.setupStage()
-            self.placementStage()
-            self.battleStage()
-        except Exception as e:
-            print(e, file=self.logs)
+        # try:
+        self.lobbyStage()
+        self.setupStage()
+        self.placementStage()
+        self.battleStage()
+        # except Exception as e:
+        #     print(e, file=self.logs)
 
         # Terminates the socket when the game is done
         self.socket.close()
@@ -89,10 +89,13 @@ class GameServer(Thread):
             }
 
         while True:
-            inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
-            data = inboundData[0]                         # Separates data from address
-            address = inboundData[1]                      # Separates address from data
-            data = pickle.loads(data)                     # Unpickles data back into a python dict
+            try:
+                inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
+                data = inboundData[0]                         # Separates data from address
+                address = inboundData[1]                      # Separates address from data
+                data = pickle.loads(data)                     # Unpickles data back into a python dict
+            except Exception as e:
+                print(e, file=self.logs)
 
             # Keeps track of how often the server recieves information from each client.
             updatedTime = time.time()                     
@@ -138,8 +141,11 @@ class GameServer(Thread):
                         break
 
             # Packages up data and sends it back to the client
-            outboundData = pickle.dumps(gameState)
-            self.socket.sendto(outboundData, address)
+            try:
+                outboundData = pickle.dumps(gameState)
+                self.socket.sendto(outboundData, address)
+            except Exception as e:
+                print(e, file=self.logs)
 
             # Continuously saves logging information to a text file:
             self.logs.close()

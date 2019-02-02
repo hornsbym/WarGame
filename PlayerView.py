@@ -74,8 +74,8 @@ class PlayerView(object):
             "wall":pg.image.load("./_sprites/wall.png").convert()}
 
         # Client socket variables
-        self.HOST = socket.gethostbyname(socket.gethostname())
-        self.PORT = 6001
+        self.HOST = None
+        self.PORT = None
 
         # Connector socket variable
         self.CONNECTOR = ('142.93.118.50', 4999)
@@ -84,14 +84,11 @@ class PlayerView(object):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         # Finds an open port on the local machine to bind the socket to
-        while True:
-            try:
-                self.socket.bind((self.HOST,self.PORT))
-                print("Bound to", self.HOST, "on port", self.PORT)
-                break
-            except:
-                self.PORT += 1
-                pass
+        self.socket.bind(("",0))
+        self.HOST = self.socket.getsockname()[0]
+        self.PORT = self.socket.getsockname()[1]
+        print("Bound to", self.HOST, "on port", self.PORT)
+
 
         # Found a socket to establish on local machine, now connect to the server
         self.connect()
@@ -403,10 +400,13 @@ class PlayerView(object):
         pingButton = CommandButton('ping', (self.displayWidth//2, self.displayHeight//3), (50,100,0), self.DEFAULT_FONT)
         closeButton = CommandButton('close',(self.displayWidth//2, 2*self.displayHeight//3), (100,50,0), self.DEFAULT_FONT)
 
+        gamestate = None
+
         counter = 0
         wait = True
         while (wait == True):
-            print("%10i" % counter)
+            printString = "%10i: " % counter        
+
             counter += 1
             # Gets all the events from the game window. A.k.a., do stuff here.
             events = pg.event.get()
@@ -444,39 +444,50 @@ class PlayerView(object):
                 }
             # Try to communicate with server here:
             try:          
-                outboundData = pickle.dumps(outboundData)          # Packages outbound data into Pickle
-                self.socket.sendto(outboundData, self.SERVER) # Sends Pickled data to server
-                
+                outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
+                self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
+            except Exception as e:
+                    print(e)
+
+            try:
                 inData = self.socket.recvfrom(1024)      # Gets back data. Will be a Pickle object.
                 inData = inData[0]                       #### For some reason it's a tuple now?
+                address = inData[1]
                 gameState = pickle.loads(inData)         # Turn Pickle back into dictionary.
-                
-                # Displays banner at top of window
-                self.displayText("Port "+str(gameState['connection']),(self.displayWidth//2,0))
-                self.displayText("You (on port %i)"%self.PORT, (self.displayWidth//5,self.displayHeight//2))
-
-                # Allows users to interact with the server via buttons.
-                try:
-                    if gameState['start'] == True:
-                        break
-                    if gameState['ready'] == True:
-                        startButton.showButton(self.display)
-                    if gameState['opponentPort'] != None:
-                        self.displayText("Other Player (on port %i)"%(gameState['opponentPort'][1]), (2*self.displayWidth//3, self.displayHeight//2))
-                except:
-                    pass
-                pingButton.showButton(self.display)
-                closeButton.showButton(self.display)
-
+            
             # Keeps user in the waiting screen if they can't connect to server
+            except Exception as e:
+                print(e)
+                # self.displayText("Waiting"+dots,(self.displayWidth//2,self.displayHeight//2))
+
+
+            # Displays banner at top of window
+            self.displayText("Port "+str(gameState['connection']),(self.displayWidth//2,0))
+            self.displayText("You (on port %i)"%self.PORT, (self.displayWidth//5,self.displayHeight//2))
+
+            # Allows users to interact with the server via buttons.
+            try:
+                if gameState['start'] == True:
+                    break
+                if gameState['ready'] == True:
+                    startButton.showButton(self.display)
+                if gameState['opponentPort'] != None:
+                    self.displayText("Other Player (on port %i)"%(gameState['opponentPort'][1]), (2*self.displayWidth//3, self.displayHeight//2))
             except:
-                self.displayText("Waiting"+dots,(self.displayWidth//2,self.displayHeight//2))
+                pass
+            pingButton.showButton(self.display)
+            closeButton.showButton(self.display)
 
             # Resets command empty
             command = ""
             
+            ########
+            printString += "Server address: "+str(address)
+
             # Counts the number of loops
             counter += 1
+
+            print(printString)
 
             pg.display.update()
             self.clock.tick(30)
