@@ -137,7 +137,6 @@ class Game(object):
                             if abs(5-troop.getLevel()) >= currentPlayer.getTokens():
                                 u = self.upgrade(troop, upgrades)
                         currentPlayer.spendTokens(u)
-        
         return
 
     def battleActions(self, command, square, moveSquare):

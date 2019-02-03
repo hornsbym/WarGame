@@ -89,7 +89,7 @@ class PlayerView(object):
 
         # Finds an open port on the local machine to bind the socket to
         self.socket.bind(("",0))
-        self.socket.settimeout(.75)
+        self.socket.setblocking(False)
     
         self.HOST = self.socket.getsockname()[0]
         self.PORT = self.socket.getsockname()[1]
