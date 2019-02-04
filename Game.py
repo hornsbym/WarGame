@@ -86,6 +86,17 @@ class Game(object):
 
         return r + a + s + h
 
+    def isFinished(self):
+        """Checks if either player has no characters left.
+           If either player has no characters left, returns True.
+           If both players have at least one character left, returns False.
+           Returns Boolean."""
+        if len(self.player1.getTroops()) == 0:
+            return True
+        if len(self.player2.getTroops()) == 0:
+            return True
+        return False
+        
 
 
     ### -------| Game Loops Below |------- ###

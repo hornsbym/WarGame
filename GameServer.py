@@ -6,6 +6,9 @@ import time
 import math
 import random
 
+######
+import sys
+
 from Game import Game
 from _modules.Board import Board
 from _modules.Player import Player
@@ -46,6 +49,10 @@ class GameServer(Thread):
             except:
                 self.PORT += 1      # If port is taken, tries the next port up
 
+        ###KEEPS TRACK OF HOW MANY BITS COME IN/GO OUT###
+        self.bitsIn  = 0
+        self.bitsOut = 0 
+
         # Game information
         self.map     = None
         self.board   = None
@@ -56,6 +63,10 @@ class GameServer(Thread):
         self.setupStage()
         self.placementStage()
         self.battleStage()
+
+        print("\n~~~ GAME OVER ~~~", file=self.logs)
+        print(" Total bits in: %10i"% self.bitsIn, file=self.logs)
+        print("Total bits out: %10i"% self.bitsOut, file=self.logs)
 
         # Terminates the socket when the game is done
         self.socket.close()
@@ -89,6 +100,10 @@ class GameServer(Thread):
             try:
                 inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
                 data = inboundData[0]                         # Separates data from address
+                
+                ########
+                self.bitsIn += sys.getsizeof(data)
+
                 address = inboundData[1]                      # Separates address from data
                 data = pickle.loads(data)                     # Unpickles data back into a python dict
             except Exception as e:
@@ -140,6 +155,10 @@ class GameServer(Thread):
             # Packages up data and sends it back to the client
             try:
                 outboundData = pickle.dumps(gameState)
+
+                ######
+                self.bitsOut += sys.getsizeof(outboundData)
+                
                 self.socket.sendto(outboundData, address)
             except TimeoutError as t:
                 print(t, file=self.logs)
@@ -178,6 +197,10 @@ class GameServer(Thread):
             # Gets all the events from the game window. A.k.a., do stuff here.
             inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
             data = inboundData[0]                         # Separates data from address
+
+            ########
+            self.bitsIn += sys.getsizeof(data)
+
             address = inboundData[1]                      # Separates address from data
             data = pickle.loads(data)                     # Unpickles data back into a python dict
 
@@ -227,6 +250,10 @@ class GameServer(Thread):
 
             # Packages up data and sends it back to the client
             outboundData = pickle.dumps(gameState)
+
+            ######
+            self.bitsOut += sys.getsizeof(outboundData)
+
             self.socket.sendto(outboundData, address)
 
     def placementStage(self):
@@ -252,6 +279,10 @@ class GameServer(Thread):
 
             inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
             data = inboundData[0]                         # Separates data from address
+            
+            ########
+            self.bitsIn += sys.getsizeof(data)
+
             address = inboundData[1]                      # Separates address from data
             data = pickle.loads(data)                     # Unpickles data back into a python dict
 
@@ -285,6 +316,10 @@ class GameServer(Thread):
 
             # Packages up data and sends it back to the client
             outboundData = pickle.dumps(gameState)
+
+            ######
+            self.bitsOut += sys.getsizeof(outboundData)
+
             self.socket.sendto(outboundData, address)
 
             # Check client connections here
@@ -317,6 +352,10 @@ class GameServer(Thread):
         while True:
             inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
             data = inboundData[0]                         # Separates data from address
+
+            ########
+            self.bitsIn += sys.getsizeof(data)
+
             address = inboundData[1]                      # Separates address from data
             data = pickle.loads(data)                     # Unpickles data back into a python dict
 
@@ -326,12 +365,19 @@ class GameServer(Thread):
 
             if data['stage'] == 'battle':
                 # Interacts with the game object, then sends the updated game back
+                if self.game.isFinished() == True:
+                    break
+
                 if data['command'] != None:        # Only sends relevante data
                     self.game.battleActions(data['command'], data['square'], data['moveSquare'])
                     gameState['game'] = self.game
 
             # Packages up data and sends it back to the client
             outboundData = pickle.dumps(gameState)
+
+            ######
+            self.bitsOut += sys.getsizeof(outboundData)
+
             self.socket.sendto(outboundData, address)
 
             # Check client connections here
