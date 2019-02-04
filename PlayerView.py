@@ -101,7 +101,8 @@ class PlayerView(object):
 
         # Makes first contact with the server.
         print("Sending initial message to server.")
-        self.socket.sendto("", self.SERVER)
+        data = pickle.dumps({"command":""})
+        self.socket.sendto(data, self.SERVER)
         print("Initial message recieved by server.")
         
         # Contains the Game object, which has all important Game information
@@ -504,10 +505,12 @@ class PlayerView(object):
         print("---- Initiating setup stage...")
         nameInput = pygame_textinput.TextInput("Player "+ str(self.PORT))
 
+        # Keeps track of player's information here:
         name = nameInput.get_text()
         mapVote = None
         submitted = False
 
+        # Makes buttons here:
         redButton     = CommandButton(("RED"), (3*self.displayWidth//7, self.displayHeight//5), (200, 50, 50), self.DEFAULT_FONT)
         blueButton    = CommandButton(("BLUE"), (4*self.displayWidth//7, self.displayHeight//5), (50, 50, 200), self.DEFAULT_FONT)
 
@@ -518,6 +521,7 @@ class PlayerView(object):
         changeNameButton = CommandButton("Change name",(self.displayWidth//2,35), (100,100,100), self.DEFAULT_FONT)
         submitButton = CommandButton("SUBMIT", (self.displayWidth//2,self.displayHeight-40), (200,100,100), self.DEFAULT_FONT)
         
+        reset = False
         command = None
         while True:
 
@@ -535,6 +539,7 @@ class PlayerView(object):
                     if submitButton.isClicked(coords):
                         if mapVote != None:     # Only lets you submit once you've voted
                             command = submitButton.getValue()
+                            name = nameInput.getText()
                             submitButton.deactivate()
                             self.PLAYERNAME = name
                             submitted = True
@@ -578,6 +583,7 @@ class PlayerView(object):
             try:          
                 outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
                 self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
+                reset = True
             except TimeoutError as t:
                 print(t)
                 pass
@@ -606,9 +612,10 @@ class PlayerView(object):
                 self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
                 break       # Advances to next stage of the game.
     
-
-
-            command = None
+            if reset == True:
+                command = None
+                name = ""
+                mapVote = None
 
             pg.display.update()
             self.clock.tick(30)
