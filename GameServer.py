@@ -36,7 +36,6 @@ class GameServer(Thread):
         print("\n*****NEW SERVER SESSION*****", file=self.logs)
 
         self.clients = []
-        self.clientScreenDimensions = {}
         self.clientUpdateTimes = {}
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)    # Creats socket
@@ -64,9 +63,7 @@ class GameServer(Thread):
         self.placementStage()
         self.battleStage()
 
-        print("\n~~~ GAME OVER ~~~", file=self.logs)
-        print(" Total bits in: %10i"% self.bitsIn, file=self.logs)
-        print("Total bits out: %10i"% self.bitsOut, file=self.logs)
+        print("Closing socket...", file=self.logs)
 
         # Terminates the socket when the game is done
         self.socket.close()
@@ -129,14 +126,9 @@ class GameServer(Thread):
                 gameState['ready'] = False
                 gameState['opponentPort'] = None
 
-            # Maintains dictionary of each clients' screen resolutions.
-            # Only on the first connection of a new client.
-            if 'dimensions' in data:
-                dimensions = data['dimensions']
-                self.clientScreenDimensions[str(address)] = dimensions
             else:
                 if data['command'] != "":
-                    print("(" + str(address) +")::", data, file=self.logs)   # Only prints out non-trivial data from clients                            
+                    print(str(address) +"::", data, file=self.logs)   # Only prints out non-trivial data from clients                            
                     
                     # Handle commands from other servers
                     if data['command'] == "close":              # Ends the server
@@ -366,6 +358,9 @@ class GameServer(Thread):
             if data['stage'] == 'battle':
                 # Interacts with the game object, then sends the updated game back
                 if self.game.isFinished() == True:
+                    print("\n~~~ GAME OVER ~~~", file=self.logs)
+                    print(" Total bits in: %3.5f mb"% (self.bitsIn/8000000), file=self.logs)
+                    print("Total bits out: %3.5f mb"% (self.bitsOut/8000000), file=self.logs)
                     break
 
                 if data['command'] != None:        # Only sends relevante data

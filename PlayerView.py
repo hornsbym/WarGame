@@ -99,11 +99,9 @@ class PlayerView(object):
         # Found a socket to establish on local machine, now connect to the server
         self.connect()
 
+        # Makes first contact with the server.
         print("Sending initial message to server.")
-        # Sends the dimensions of the client's screen to the server upon first connection
-        dimensions = { "dimensions":(self.displayWidth,self.displayHeight) }
-        dimensions = pickle.dumps(dimensions)
-        self.socket.sendto(dimensions, self.SERVER)
+        self.socket.sendto("", self.SERVER)
         print("Initial message recieved by server.")
         
         # Contains the Game object, which has all important Game information
