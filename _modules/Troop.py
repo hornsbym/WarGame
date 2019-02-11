@@ -122,6 +122,8 @@ class Troop(object):
         """Accepts int.
            Subtracts that int from self.health."""
         self.health -= dmg
+        if self.health > self.MAX_HEALTH:
+            self.health = self.MAX_HEALTH
     
     def previewUpgrade(self,stat,tokens):
         """Accepts a string specifying which stat is being upgraded.

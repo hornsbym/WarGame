@@ -2,4 +2,5 @@
 /_maps/__pycache__/*
 /_maps/template.py
 /_modules/__pycache__/*
+/_logs/*
 writing.py

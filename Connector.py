@@ -14,7 +14,8 @@ class Connector (object):
         Starts the server.
         """
         # Socket info here:
-        self.HOST = "142.93.118.50"
+        # self.HOST = "142.93.118.50"     # On the server
+        self.HOST = "127.0.0.1"     # For testing
         self.PORT = 4999
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)    # Creates socket
         self.socket.bind((self.HOST,self.PORT))                           # Binds socket to local port

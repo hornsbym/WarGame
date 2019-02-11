@@ -82,7 +82,8 @@ class PlayerView(object):
         self.PORT = None
 
         # Connector socket variable
-        self.CONNECTOR = ('142.93.118.50', 4999)
+        # self.CONNECTOR = ('142.93.118.50', 4999)    # For the server
+        self.CONNECTOR = ('127.0.0.1', 4999)    # For testing
 
         # Create the local socket to communicate with the game server through
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -259,11 +260,15 @@ class PlayerView(object):
         apply  = CommandButton("Apply",(100,300),(0,0,0), self.DEFAULT_FONT)
         cancel = CommandButton("Cancel",(10,300), (255, 75,75), self.DEFAULT_FONT)
 
+        # Gets troop's level
+        level = troop.getLevel()
+
         # Keep track of upgrades
         r = 0
         a = 0
         s = 0
         h = 0
+        total = 0
 
         upgradeRect = pg.Rect(0, 0, self.displayWidth//4, self.displayHeight)
 
@@ -279,33 +284,35 @@ class PlayerView(object):
                     coords = pg.mouse.get_pos()
                     if cancel.isClicked(coords) == True:
                         loop = False
-                        return (0,0,0,0)
+                        return (0,0,0,0)    # Sends back empty tuple upon cancelation 
 
-                    # Adds/subtracts tokens
-                    if rPlus.isClicked(coords) == True and tokens > 0:
-                        tokens -= 1
-                        r += 1
-                    if rMinus.isClicked(coords) == True and r > 0:
-                        tokens += 1
-                        r -= 1
-                    if aPlus.isClicked(coords) == True and tokens > 0:
-                        tokens -= 1
-                        a += 1
-                    if aMinus.isClicked(coords) == True and a > 0:
-                        tokens += 1
-                        a -= 1
-                    if sPlus.isClicked(coords) == True and tokens > 0:
-                        tokens -= 1
-                        s += 1
-                    if sMinus.isClicked(coords) == True and s > 0:
-                        tokens += 1
-                        s -= 1
-                    if hPlus.isClicked(coords) == True and tokens > 0:
-                        tokens -= 1
-                        h += 1
-                    if hMinus.isClicked(coords) == True and h > 0:
-                        tokens += 1
-                        h -= 1
+                    # Only allows upgrades if the troop isn't maxed out (MAX LEVEL CURRENTLY 6):
+                    if (total + level) <= 5:
+                        # Adds/subtracts tokens
+                        if rPlus.isClicked(coords) == True and tokens > 0:
+                            tokens -= 1
+                            r += 1
+                        if rMinus.isClicked(coords) == True and r > 0:
+                            tokens += 1
+                            r -= 1
+                        if aPlus.isClicked(coords) == True and tokens > 0:
+                            tokens -= 1
+                            a += 1
+                        if aMinus.isClicked(coords) == True and a > 0:
+                            tokens += 1
+                            a -= 1
+                        if sPlus.isClicked(coords) == True and tokens > 0:
+                            tokens -= 1
+                            s += 1
+                        if sMinus.isClicked(coords) == True and s > 0:
+                            tokens += 1
+                            s -= 1
+                        if hPlus.isClicked(coords) == True and tokens > 0:
+                            tokens -= 1
+                            h += 1
+                        if hMinus.isClicked(coords) == True and h > 0:
+                            tokens += 1
+                            h -= 1
                     
                     if apply.isClicked(coords) == True:
                         return (r,a,s,h)
@@ -332,6 +339,8 @@ class PlayerView(object):
 
             apply.showButton(self.display)
             cancel.showButton(self.display)
+
+            total = r+a+s+h
 
             pg.display.update(upgradeRect)
             self.clock.tick(20)
@@ -405,7 +414,7 @@ class PlayerView(object):
         pingButton = CommandButton('ping', (self.displayWidth//2, self.displayHeight//3), (50,100,0), self.DEFAULT_FONT)
         closeButton = CommandButton('close',(self.displayWidth//2, 2*self.displayHeight//3), (100,50,0), self.DEFAULT_FONT)
 
-        gamestate = None
+        gameState = None
 
         wait = True
         while (wait == True):
@@ -470,9 +479,10 @@ class PlayerView(object):
                 pass
                 # self.displayText("Waiting"+dots,(self.displayWidth//2,self.displayHeight//2))
 
-            # Displays banner at top of window
-            self.displayText("Port "+str(gameState['connection']),(self.displayWidth//2,0))
-            self.displayText("You (on port %i)"%self.PORT, (self.displayWidth//5,self.displayHeight//2))
+            if gameState != None:
+                # Displays banner at top of window
+                self.displayText("Port "+str(gameState['connection']),(self.displayWidth//2,0))
+                self.displayText("You (on port %i)"%self.PORT, (self.displayWidth//5,self.displayHeight//2))
 
             # Allows users to interact with the server via buttons.
             try:
@@ -539,7 +549,7 @@ class PlayerView(object):
                     if submitButton.isClicked(coords):
                         if mapVote != None:     # Only lets you submit once you've voted
                             command = submitButton.getValue()
-                            name = nameInput.getText()
+                            name = nameInput.get_text()
                             submitButton.deactivate()
                             self.PLAYERNAME = name
                             submitted = True
@@ -583,7 +593,8 @@ class PlayerView(object):
             try:          
                 outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
                 self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
-                reset = True
+                if command != None:
+                    reset = True
             except TimeoutError as t:
                 print(t)
                 pass
@@ -653,10 +664,12 @@ class PlayerView(object):
         square       = None    # Is just a tuple of (x,y)
         upgrades     = (0,0,0,0)
         start        = False
+        
+        # Indicates whether the above information should be reset.
+        reset = False
 
         # Keeps track of when the user can interact with server
         active = False
-
         while True:
             # Define the game board here... Just to simplify things.
             board = self.GAME.getBoard()
@@ -695,6 +708,7 @@ class PlayerView(object):
                     if switchButton.isClicked(coords) == True:
                         command = switchButton.getValue()
                     if startButton.isClicked(coords) == True:
+                        startButton.deactivate()
                         start = True
 
                 # Allows users the option to choose troops and actions via keystrokes.
@@ -730,7 +744,7 @@ class PlayerView(object):
             self.showBoard(board)
 
             ## Deactivates buttons if it's not the player's turn.
-            if active == False:
+            if active == False or start == True:
                 tb.deactivate()
                 rb.deactivate()
                 kb.deactivate()
@@ -742,7 +756,7 @@ class PlayerView(object):
 
             # Draws buttons for interacting with the game if it's the player's turn
             # Activates visible buttons
-            if active == True:
+            if active == True and start == False:
                 tb.showButton(self.display)
                 rb.showButton(self.display)
                 kb.showButton(self.display)
@@ -808,6 +822,10 @@ class PlayerView(object):
             try:          
                 outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
                 self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
+
+                if command == 'switch':
+                    reset = True
+
             except TimeoutError as t:
                 print(t)
                 pass
@@ -840,7 +858,7 @@ class PlayerView(object):
             if gameState['start'] == True:
                 break
 
-            if gameState['ready'] == True:
+            if gameState['ready'] == True and start == False:
                 startButton.showButton(self.display)
                 startButton.activate()
 

@@ -2,6 +2,7 @@ import socket
 import os
 from threading import Thread
 import pickle
+import datetime
 import time
 import math
 import random
@@ -24,16 +25,20 @@ class GameServer(Thread):
         self.kwargs = kwargs
 
     def run(self):
+        """Kind of like __init__, but for threads."""
         self.STARTTIME = math.floor(time.time())
         self.lastUpdate = self.STARTTIME
 
-        self.HOST = "142.93.118.50"
+        # self.HOST = "142.93.118.50"    # For the server
+        self.HOST = "127.0.0.1"    # For testing
         self.PORT = self.args
 
         # Saves the print statements to a local text file:
         self.filepath = os.getcwd()
         self.logs = open(str(self.filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
-        print("\n*****NEW SERVER SESSION*****", file=self.logs)
+        date = datetime.datetime.now()
+        print("\n*****NEW SERVER SESSION @ " + str(date) + "*****\n", file=self.logs)
+
 
         self.clients = []
         self.clientUpdateTimes = {}

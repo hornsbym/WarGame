@@ -209,6 +209,3 @@ class Game(object):
                 self.player2.restTroops()
                 self.player2.decrementCooldowns()
                 return
-
-
-# Game()
