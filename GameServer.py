@@ -29,8 +29,8 @@ class GameServer(Thread):
         self.STARTTIME = math.floor(time.time())
         self.lastUpdate = self.STARTTIME
 
-        # self.HOST = "142.93.118.50"    # For the server
-        self.HOST = "127.0.0.1"    # For testing
+        self.HOST = "142.93.118.50"    # For the server
+        # self.HOST = "127.0.0.1"    # For testing
         self.PORT = self.args
 
         # Saves the print statements to a local text file:

@@ -82,8 +82,8 @@ class PlayerView(object):
         self.PORT = None
 
         # Connector socket variable
-        # self.CONNECTOR = ('142.93.118.50', 4999)    # For the server
-        self.CONNECTOR = ('127.0.0.1', 4999)    # For testing
+        self.CONNECTOR = ('142.93.118.50', 4999)    # For the server
+        # self.CONNECTOR = ('127.0.0.1', 4999)    # For testing
 
         # Create the local socket to communicate with the game server through
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
