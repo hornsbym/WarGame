@@ -3,9 +3,10 @@ import time
 from screeninfo import get_monitors
 import socket
 import pickle
+import random
 
 import _modules.pygame_textinput as pygame_textinput
-from Game import Game
+from _modules.Game import Game
 from _modules.Square import Square
 from _modules.Board import Board
 from _modules.TroopButton import TroopButton
@@ -82,8 +83,8 @@ class PlayerView(object):
         self.PORT = None
 
         # Connector socket variable
-        self.CONNECTOR = ('142.93.118.50', 4999)    # For the server
-        # self.CONNECTOR = ('127.0.0.1', 4999)    # For testing
+        # self.CONNECTOR = ('142.93.118.50', 4999)    # For the server
+        self.CONNECTOR = ('127.0.0.1', 4999)    # For testing
 
         # Create the local socket to communicate with the game server through
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -380,6 +381,90 @@ class PlayerView(object):
                 # Tells square what to look like and where to draw image
                 showSquare(square)
 
+    def animateMove(self, board, troop, previousSquare, orientation):
+        """Accepts a Board object, a Troop object, a tuple of square values, and a tuple for the troop's orientation.
+           Animate's the Troop's movement to the new square.
+           Returns nothing."""
+        # Tells the loop when to break:
+        counter = 0   
+
+        # Holds info relevent for animating here:
+        troopID = troop.getID()
+        troopSquare = self.findTroopSquareByID(board, troopID)
+        display = self.display
+        prevSquare = board.getSquares()[previousSquare[0]][previousSquare[1]]
+
+        img = self.IMAGES[troopSquare.getIcon()]
+        troopOrientation = orientation
+        # Handles rotations
+        if troopOrientation == (1,1):
+            img = pg.transform.rotate(img, 0)
+        if troopOrientation == (1,-1):
+            img = pg.transform.rotate(img, 90)
+        if troopOrientation == (-1,1):
+            img = pg.transform.rotate(img, -90)
+        if troopOrientation == (-1,-1):
+            img = pg.transform.rotate(img, 180)
+
+        prevSquareCoords = (prevSquare.getCoords()[0] + (prevSquare.getX() * 32), prevSquare.getCoords()[1] + (prevSquare.getY() * 32))
+        troopSquareCoords = (troopSquare.getCoords()[0] + (troopSquare.getX() * 32), troopSquare.getCoords()[1] + (troopSquare.getY() * 32))
+
+        xOffset = 0
+        yOffset = 0
+        animationFactor = .25
+
+        # Hides the troop on the temporary animation board:
+        troopSquare.hideIcon()
+
+        
+        while True:
+            # Gets all the events from the game window. A.k.a., do stuff here.
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    pg.quit()
+                    quit()
+            
+            if counter >= 15:
+                break
+
+            display.fill((255,255,255))
+            
+            self.showBoard(board)
+
+            # Horizontal animation:
+            if troopSquareCoords[0] != prevSquareCoords[0]:
+                xDiff = troopSquareCoords[0] - (prevSquareCoords[0] + xOffset)
+                xAnim = xDiff * animationFactor
+                display.blit(img, (prevSquareCoords[0] + (xOffset + xAnim), troopSquareCoords[1]))
+                xOffset += (xDiff * animationFactor)
+            
+            # Horizontal animation:
+            if troopSquareCoords[1] != prevSquareCoords[1]:
+                yDiff = troopSquareCoords[1] - (prevSquareCoords[1] + yOffset)
+                yAnim = yDiff * animationFactor
+                display.blit(img, (troopSquareCoords[0], prevSquareCoords[1] + (yOffset + yAnim)))
+                yOffset += (yDiff * animationFactor)
+
+            pg.display.update()
+            self.clock.tick(35)
+
+            counter += 1
+
+    def findTroopSquareByID(self, board, troopID):
+        """ Accepts a Board object.
+            Accepts a Troop object's ID value (string).
+            Iterates through the board's squares and finds the square that contains a troop 
+            with the ID that matches the given ID.
+            Returns a Square object.
+        """
+        for row in range(len(board.getSquares())):
+            for column in range(len(board.getSquares()[row])):
+                square = board.getSquares()[row][column]
+                troop = square.getTroop()
+                if troop != None:
+                    if troop.getID() == troopID:
+                        return square
+
     def connect(self):
         """Connects to the Connector, which then tells the view which port the game is on."""
         # Packages data to send to the server here as a python dictionary
@@ -603,8 +688,8 @@ class PlayerView(object):
                 self.displayText('Not connected', (self.displayWidth//2, self.displayHeight//2))
                 pass    
 
-                # SOCKET MUST BE BIG SO THAT THE GAME OBJECT CAN FIT
             try:
+                # SOCKET MUST BE BIG ENOUGH SO THAT THE GAME OBJECT CAN FIT
                 inData = self.socket.recvfrom(12000)      # Gets back data. Will be a Pickle object.
                 inData = inData[0]                        # (<data>, <address>)
                 gameState = pickle.loads(inData)          # Turn Pickle back into dictionary.
@@ -649,12 +734,6 @@ class PlayerView(object):
         upgradeButton = CommandButton("upgrade",(board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 3*self.displayHeight//6), (200,150,0), self.DEFAULT_FONT)
         switchButton  = CommandButton("switch",(board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 4*self.displayHeight//6), (0,0,0), self.DEFAULT_FONT)
 
-        tb = TroopButton(("troop",1,1,25,1,100,(1,1),1,1), (board.getCoords()[0] - (board.getWidth()//2 * 32)-150, 2*self.displayHeight//6))
-        rb = TroopButton(("rifleman",1,3,50,1,80,(1,1),2,2), (board.getCoords()[0] - (board.getWidth()//2 * 32)-100, 2*self.displayHeight//6))
-        hb = TroopButton(("healer",1,1,-30,1,70,(1,1),2,2), (board.getCoords()[0] - (board.getWidth()//2 * 32)-150, 3*self.displayHeight//6))    
-        kb = TroopButton(("knight",1,1,30,2,120,(1,1),1,2), (board.getCoords()[0] - (board.getWidth()//2 * 32)-100, 3*self.displayHeight//6))
-        sb = TroopButton(("shield",1,1,10,1,175,(1,1),1,2), (board.getCoords()[0] - (board.getWidth()//2 * 32)-100, 4*self.displayHeight//6))
-
         upgradeTroop = None
 
         # Holds stuff to send to the server here
@@ -665,6 +744,9 @@ class PlayerView(object):
         upgrades     = (0,0,0,0)
         start        = False
         
+        # Makes sure all troops are unique:
+        lastSelectedTroop = None
+        
         # Indicates whether the above information should be reset.
         reset = False
 
@@ -674,6 +756,14 @@ class PlayerView(object):
             # Define the game board here... Just to simplify things.
             board = self.GAME.getBoard()
             player = self.GAME.getPlayerByName(self.PLAYERNAME)
+
+            # Gives each troop a random ID number:
+            randomID = random.randint(0,999999)
+            tb = TroopButton(("troop",1,1,25,1,100,(1,1),1,1,"t-%0.6d" % randomID), (board.getCoords()[0] - (board.getWidth()//2 * 32)-150, 2*self.displayHeight//6))
+            rb = TroopButton(("rifleman",1,3,50,1,80,(1,1),2,2,"r-%0.6d" % randomID), (board.getCoords()[0] - (board.getWidth()//2 * 32)-100, 2*self.displayHeight//6))
+            hb = TroopButton(("healer",1,1,-30,1,70,(1,1),2,2,"h-%0.6d" % randomID), (board.getCoords()[0] - (board.getWidth()//2 * 32)-150, 3*self.displayHeight//6))    
+            kb = TroopButton(("knight",1,1,30,2,120,(1,1),1,2,"k-%0.6d" % randomID), (board.getCoords()[0] - (board.getWidth()//2 * 32)-100, 3*self.displayHeight//6))
+            sb = TroopButton(("shield",1,1,10,1,175,(1,1),1,2,"s-%0.6d" % randomID), (board.getCoords()[0] - (board.getWidth()//2 * 32)-100, 4*self.displayHeight//6))
 
             events = pg.event.get()
             for event in events:
@@ -688,19 +778,25 @@ class PlayerView(object):
                     else:
                         square = None
                         newTroop = None
+                        lastSelectedTroop = None
 
                     # Checks the troop placement buttons
-                    if tb.isClicked(coords) == True:
+                    if tb.isClicked(coords) == True or lastSelectedTroop == "troop":
                         newTroop = Troop(tb.getValue())
-                    if rb.isClicked(coords) == True:
+                        lastSelectedTroop = "troop"
+                    if rb.isClicked(coords) == True or lastSelectedTroop == "rifleman":
                         newTroop = Troop(rb.getValue())
-                    if sb.isClicked(coords) == True:
+                        lastSelectedTroop = "rifleman"
+                    if sb.isClicked(coords) == True or lastSelectedTroop == "shield":
                         newTroop = Troop(sb.getValue())
-                    if kb.isClicked(coords) == True:
+                        lastSelectedTroop = "shield"
+                    if kb.isClicked(coords) == True or lastSelectedTroop == "knight":
                         newTroop = Troop(kb.getValue())
-                    if hb.isClicked(coords) == True:
+                        lastSelectedTroop = "knight"
+                    if hb.isClicked(coords) == True or lastSelectedTroop == "healer":
                         newTroop = Troop(hb.getValue())
-                    
+                        lastSelectedTroop = "healer"
+
                     if addButton.isClicked(coords) == True:
                         command = addButton.getValue()
                     if upgradeButton.isClicked(coords) == True:
@@ -898,6 +994,9 @@ class PlayerView(object):
         previewTroop = None
         selectedTroop = None
 
+        # For animating troop movements:
+        troopPreviousSquare = None
+
         # Holds stuff to send to the server here
         command    = None
         square     = None    # Is just a tuple of (x,y)
@@ -974,6 +1073,7 @@ class PlayerView(object):
             if square != None:
                 troop = board.getSquareValue(square)
                 if troop != None:
+                    troopPreviousSquare = square
                     if troop.getTeam() != player:
                         previewTroop = troop
                     if troop.getTeam() == player:
@@ -1029,10 +1129,20 @@ class PlayerView(object):
             else:
                 active = True
 
+            # Checks whether animation is necessary:
+            if selectedTroop != None and command == "move":
+                currentTroopSquare = self.findTroopSquareByID(board, selectedTroop.getID())
+                currentTroopLocation = (currentTroopSquare.getX(), currentTroopSquare.getY())
+
+                if currentTroopLocation != troopPreviousSquare:
+                    troopOrientation = self.findTroopSquareByID(board, selectedTroop.getID()).getTroop().getOrientation()
+                    self.animateMove(board, selectedTroop, troopPreviousSquare, troopOrientation)
+                    troopPreviousSquare = currentTroopLocation
+                
 
             if active == True:
                 if command != "move":       # Doesn't override 'square' on moves because  
-                    square = None           # we need to send two squares at the same time.
+                    square = None           # you need to send two squares at the same time.
                 if command == "move" and moveSquare != None:
                     moveSquare = None
                     square = None

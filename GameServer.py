@@ -10,13 +10,13 @@ import random
 ######
 import sys
 
-from Game import Game
+from _modules.Game import Game
 from _modules.Board import Board
 from _modules.Player import Player
 
-import _maps.basic_map as basic
-import _maps.test_map as test
-import _maps.big_map as big
+import _maps._basic_map.basic_map as basic
+import _maps._test_map.test_map as test
+import _maps._big_map.big_map as big
 
 class GameServer(Thread):
     def __init__(self, args=(), kwargs=None):
@@ -29,8 +29,8 @@ class GameServer(Thread):
         self.STARTTIME = math.floor(time.time())
         self.lastUpdate = self.STARTTIME
 
-        self.HOST = "142.93.118.50"    # For the server
-        # self.HOST = "127.0.0.1"    # For testing
+        # self.HOST = "142.93.118.50"    # For the server
+        self.HOST = "127.0.0.1"    # For testing
         self.PORT = self.args
 
         # Saves the print statements to a local text file:

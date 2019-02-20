@@ -81,7 +81,7 @@ class Board(object):
     def findTroopSquare(self, troop):
         """Accepts a Troop object.
            Iterates through all the squares and returns the square with the matching troop.
-           Returns nothing if the troop isn't found."""
+           Returns None if the troop isn't found."""
         for x in range(len(self.squares)):
             for y in range(len(self.squares[x])):
                 if self.squares[x][y].getTroop() == troop:

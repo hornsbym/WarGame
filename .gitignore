@@ -4,3 +4,4 @@
 /_modules/__pycache__/*
 /_logs/*
 writing.py
+mapReader.py

@@ -10,8 +10,10 @@ class Troop(object):
      (xDirection = info[6], int,
       yDirection = info[6], int)
         cooldown = info[7], int
-            cost = info[8], int"""
+            cost = info[8], int
+              ID = info[9], str"""
         self.MAX_HEALTH = info[5]
+        self.ID = info[9]
 
         self.name = info[0]
         self.level = info[1]
@@ -30,7 +32,7 @@ class Troop(object):
         self.color = ""
     
     def __str__(self):
-        return "<Troop Object name='%s', level=%i, team='%s'>" % (self.name,self.level,self.team.getName())
+        return "<Troop Object id='%s team='%s'>" % (self.ID,self.team.getName())
 
     def getName(self):
         """Returns the troop's classification."""
@@ -76,6 +78,11 @@ class Troop(object):
     def getCost(self):
         """Returns the troop's cosst (integer)."""
         return self.cost
+
+    def getID(self):
+        """ Accepts nothing.
+            Returns an str representation of the troop's id."""
+        return self.ID
 
     def setColor(self):
         """Sets the troop's color equal to the containing Player object's color."""

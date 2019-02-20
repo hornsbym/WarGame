@@ -19,6 +19,8 @@ class Square(object):
         self.troop = None
         self.color = ""
 
+    def __str__(self):
+        return "<Square x=%i y=%i coords=%s" % (self.x, self.y, str(self.coords))
 
     def getX(self):
         """Returns the square's x-value."""
@@ -55,6 +57,11 @@ class Square(object):
            Also sets the image."""
         self.icon = self.troop.getColor()+self.troop.getName()
 
+    def hideIcon(self):
+        """ For temporary use only.
+            Changes a square's icon to a blank, generic square icon."""
+        self.icon = "square"
+
     def setColor(self,color):
         """Accepts a string.
            This string represents the color of the occupying team."""
@@ -84,7 +91,8 @@ class Square(object):
         """Accepts a tuple of coordinates in form (x,y).
            Returns True if the coordinates fall within the board's active area.
            Returns False if not."""
-        xRange = self.coords[0] + (self.x * 32) +32
+        # Figures out where the square is on the display, not the board:
+        xRange = self.coords[0] + (self.x * 32) + 32
         yRange = self.coords[1] + ( self.y * 32) +32
 
         if coords[0] > self.coords[0] and coords[0] < xRange:
