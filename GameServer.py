@@ -17,6 +17,7 @@ from _modules.Player import Player
 import _maps._basic_map.basic_map as basic
 import _maps._test_map.test_map as test
 import _maps._big_map.big_map as big
+import _maps._huge_map.huge_map as huge
 
 class GameServer(Thread):
     def __init__(self, args=(), kwargs=None):
@@ -222,6 +223,8 @@ class GameServer(Thread):
                         self.map = big
                     if m == "BASIC":
                         self.map = basic
+                    if m == "HUGE":
+                        self.map = huge
 
                     # Builds the game board
                     self.board = Board(self.map.dimensions[0], self.map.dimensions[1], self.map.MAP)

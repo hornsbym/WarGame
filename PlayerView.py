@@ -30,7 +30,7 @@ def initializePygame():
     clock = pg.time.Clock()
     displayWidth = width
     displayHeight = height
-    return (pg.display.set_mode((displayWidth,displayHeight)), clock, (displayWidth, displayHeight))
+    return (pg.display.set_mode((displayWidth,displayHeight), pg.RESIZABLE), clock, (displayWidth, displayHeight))
     
 class PlayerView(object):
     """Instantiates a server for a player. 
@@ -142,8 +142,8 @@ class PlayerView(object):
         if selected == True:
             fontColor = (150,0,150)
             pg.draw.rect(self.display, (150,0,150), (x-3,y-15,maxHealth+6,37), 2) # Outlines selected troop
-        pg.draw.rect(self.display, (200,0,0), (x,y,maxHealth,5))   # Draws the red base for the healthbar
-        pg.draw.rect(self.display,(0,200,0),(x,y,currentHealth,5)) # Draws the green portion of the healthbar
+        pg.draw.rect(self.display, (200,0,0), (x,y,self.displayWidth*.15,5))   # Draws the red base for the healthbar
+        pg.draw.rect(self.display,(0,200,0),(x,y,(self.displayWidth*.15)*(currentHealth/maxHealth),5)) # Draws the green portion of the healthbar
         self.displayText(namePlate, (x,y-11),self.NAMEPLATE_FONT,fontColor)
         self.displayText(str(currentHealth)+" / "+str(maxHealth), (x,y+6),self.NAMEPLATE_FONT,fontColor) #Shows numbers
 
@@ -164,7 +164,7 @@ class PlayerView(object):
             x = 5
             y = 65
 
-            self.displayText(player.getName(),(x,y-35), self.BIG_FONT)
+            self.displayText(player.getName(),(5,5), self.BIG_FONT)
             for troop in troops:
                 name = troop.getName()
                 name = name[0].upper() + name[1:]
@@ -216,15 +216,15 @@ class PlayerView(object):
         side = side.upper()
         if side == "LEFT":
             x = 5
-            y = self.displayHeight * .76
+            y = self.displayHeight * .75
         if side == "RIGHT":
-            x = self.displayWidth *.78 - 5
-            y = self.displayHeight * .76
+            x = self.displayWidth *.8 + 5
+            y = self.displayHeight * .75
         spacing = (self.displayHeight - y) * .2
 
         troopName = troop.getName()[0].upper()+troop.getName()[1:]
 
-        pg.draw.rect(self.display,(0,0,0), (x,y,self.displayWidth*.22, self.displayHeight*.23),2) # Draws wireframe
+        pg.draw.rect(self.display,(0,0,0), (x,y,self.displayWidth*.19, self.displayHeight*.24),2) # Draws wireframe
         self.displayText(troopName + " - Level "+ str(troop.getLevel()) + " (" + str(troop.getCooldownCounter()) + ")", (x+10,y+5))
         self.displayText(str(troop.getHealth())+" health", (x+5,y+spacing), self.TROOPCARD_FONT)
         self.displayText(str(troop.getAttack())+" attack", (x+5,y+(2 * spacing)), self.TROOPCARD_FONT)
@@ -612,6 +612,8 @@ class PlayerView(object):
         testMap       = CommandButton("TEST",(2*self.displayWidth//5,self.displayHeight//2), (0,0,0), self.DEFAULT_FONT)
         baseMap       = CommandButton("BASIC",(3*self.displayWidth//5, self.displayHeight//2), (0,0,0), self.DEFAULT_FONT)
         bigMap        = CommandButton("BIG",(4*self.displayWidth//5, self.displayHeight//2), (0,0,0), self.DEFAULT_FONT)
+        hugeMap       = CommandButton("HUGE",(3*self.displayWidth//5, self.displayHeight//3), (0,0,0), self.DEFAULT_FONT)
+
 
         changeNameButton = CommandButton("Change name",(self.displayWidth//2,35), (100,100,100), self.DEFAULT_FONT)
         submitButton = CommandButton("SUBMIT", (self.displayWidth//2,self.displayHeight-40), (200,100,100), self.DEFAULT_FONT)
@@ -639,12 +641,15 @@ class PlayerView(object):
                             self.PLAYERNAME = name
                             submitted = True
                     
+                    ### Map button clicks here:
                     if testMap.isClicked(coords):
                         mapVote = testMap.getValue()
                     if bigMap.isClicked(coords):
                         mapVote = bigMap.getValue()
                     if baseMap.isClicked(coords):
                         mapVote = baseMap.getValue()
+                    if hugeMap.isClicked(coords):
+                        mapVote = hugeMap.getValue()
                     
 
             self.display.fill((255,255,255))
@@ -655,6 +660,7 @@ class PlayerView(object):
             testMap.showButton(self.display)
             baseMap.showButton(self.display)
             bigMap.showButton(self.display)
+            hugeMap.showButton(self.display)
             changeNameButton.showButton(self.display)
             if submitted == False:
                 submitButton.showButton(self.display)
@@ -715,24 +721,28 @@ class PlayerView(object):
 
             pg.display.update()
             self.clock.tick(30)
+        self.display.fill((255,255,255))
 
     def placementStage(self):
         """Allows the player to place pieces on the game board."""
         print("--- Entering placement stage.")
 
+        # Keep track of board view changes here:
+        mapX_Value = self.displayWidth//2
+        mapY_Value = self.displayHeight//2
+
         # Defines board here for simplification
         board = self.GAME.getBoard()
-        board.setCenterCoords((self.displayWidth//2, self.displayHeight//2))
+        board.setCenterCoords((mapX_Value, mapY_Value))
 
         # Define the global player object here
         self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
 
         # Static game widgets for player to interact with
-        startButton   = CommandButton("start",(self.displayWidth-70, self.displayHeight-30), (0,0,0), self.DEFAULT_FONT, False)
-
-        addButton     = CommandButton("add", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 2*self.displayHeight//6), (150,0,150), self.DEFAULT_FONT)
-        upgradeButton = CommandButton("upgrade",(board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 3*self.displayHeight//6), (200,150,0), self.DEFAULT_FONT)
-        switchButton  = CommandButton("switch",(board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 4*self.displayHeight//6), (0,0,0), self.DEFAULT_FONT)
+        startButton   = CommandButton("start",(self.displayWidth*.85, self.displayHeight-30), (0,0,0), self.DEFAULT_FONT, False)
+        addButton     = CommandButton("add", (self.displayWidth*.85, 2*self.displayHeight//6), (150,0,150), self.DEFAULT_FONT)
+        upgradeButton = CommandButton("upgrade",(self.displayWidth*.85, 3*self.displayHeight//6), (200,150,0), self.DEFAULT_FONT)
+        switchButton  = CommandButton("switch",(self.displayWidth*.85, 4*self.displayHeight//6), (0,0,0), self.DEFAULT_FONT)
 
         upgradeTroop = None
 
@@ -750,20 +760,32 @@ class PlayerView(object):
         # Indicates whether the above information should be reset.
         reset = False
 
+        # Creates info pane sections here:
+        troopPane = pg.Rect(0, 0, self.displayWidth*.2, self.displayHeight)
+        bannerPane = pg.Rect(self.displayWidth*.2, 0, self.displayWidth*.6, self.displayHeight*.15)
+        opponentPane = pg.Rect(self.displayWidth*.8, 0, self.displayWidth*.2, self.displayHeight)
+        buttonPane = pg.Rect(self.displayWidth*.2, self.displayHeight*.85, self.displayWidth*.6, self.displayHeight*.15)
+
         # Keeps track of when the user can interact with server
         active = False
         while True:
+            ##### Handles any changes to screen size here: 
+            ##### NEED TO DEFINE WIDGET POSITIONS WITHIN WHILE LOOP
+            # print("Resizing from (%i, %i)..." % (self.displayWidth, self.displayHeight))
+            # self.displayWidth, self.displayHeight = pg.display.get_surface().get_size()
+            # print("...to (%i, %i)" % (self.displayWidth, self.displayHeight))
+
             # Define the game board here... Just to simplify things.
             board = self.GAME.getBoard()
             player = self.GAME.getPlayerByName(self.PLAYERNAME)
 
             # Gives each troop a random ID number:
             randomID = random.randint(0,999999)
-            tb = TroopButton(("troop",1,1,25,1,100,(1,1),1,1,"t-%0.6d" % randomID), (board.getCoords()[0] - (board.getWidth()//2 * 32)-150, 2*self.displayHeight//6))
-            rb = TroopButton(("rifleman",1,3,50,1,80,(1,1),2,2,"r-%0.6d" % randomID), (board.getCoords()[0] - (board.getWidth()//2 * 32)-100, 2*self.displayHeight//6))
-            hb = TroopButton(("healer",1,1,-30,1,70,(1,1),2,2,"h-%0.6d" % randomID), (board.getCoords()[0] - (board.getWidth()//2 * 32)-150, 3*self.displayHeight//6))    
-            kb = TroopButton(("knight",1,1,30,2,120,(1,1),1,2,"k-%0.6d" % randomID), (board.getCoords()[0] - (board.getWidth()//2 * 32)-100, 3*self.displayHeight//6))
-            sb = TroopButton(("shield",1,1,10,1,175,(1,1),1,2,"s-%0.6d" % randomID), (board.getCoords()[0] - (board.getWidth()//2 * 32)-100, 4*self.displayHeight//6))
+            tb = TroopButton(("troop",1,1,25,1,100,(1,1),1,1,"t-%0.6d" % randomID), (self.displayWidth*.2 + (self.displayWidth*.6//6) , self.displayHeight*.9) )
+            rb = TroopButton(("rifleman",1,3,50,1,80,(1,1),2,2,"r-%0.6d" % randomID), (self.displayWidth*.2 + 2*(self.displayWidth*.6//6) , self.displayHeight*.9) )
+            hb = TroopButton(("healer",1,1,-30,1,70,(1,1),2,2,"h-%0.6d" % randomID), (self.displayWidth*.2 + 3*(self.displayWidth*.6//6) , self.displayHeight*.9) )    
+            kb = TroopButton(("knight",1,1,30,2,120,(1,1),1,2,"k-%0.6d" % randomID), (self.displayWidth*.2 + 4*(self.displayWidth*.6//6) , self.displayHeight*.9))
+            sb = TroopButton(("shield",1,1,10,1,175,(1,1),1,2,"s-%0.6d" % randomID), (self.displayWidth*.2 + 5*(self.displayWidth*.6//6) , self.displayHeight*.9))
 
             events = pg.event.get()
             for event in events:
@@ -784,6 +806,7 @@ class PlayerView(object):
                     if tb.isClicked(coords) == True or lastSelectedTroop == "troop":
                         newTroop = Troop(tb.getValue())
                         lastSelectedTroop = "troop"
+                        
                     if rb.isClicked(coords) == True or lastSelectedTroop == "rifleman":
                         newTroop = Troop(rb.getValue())
                         lastSelectedTroop = "rifleman"
@@ -823,7 +846,7 @@ class PlayerView(object):
                     if key[pg.K_q]:
                         newTroop = Troop(hb.getValue())
 
-                    # Actions
+                    # Actions:
                     if key[pg.K_1]:
                         command = addButton.getValue()
                     if key[pg.K_2]:
@@ -831,13 +854,29 @@ class PlayerView(object):
                     if key[pg.K_0]:
                         command = switchButton.getValue()
 
+                    # Changes map view:
+                    if key[pg.K_LEFT]:
+                        mapX_Value -= 25
+                    if key[pg.K_RIGHT]:
+                        mapX_Value += 25
+                    if key[pg.K_UP]:
+                        mapY_Value -= 25
+                    if key[pg.K_DOWN]:
+                        mapY_Value += 25
+
+
             # Clear previous screen, so it can be updated again.
-            self.display.fill((255,255,255))
+            self.display.fill((160,160,160))
 
-
-            # Draws the game board
-            # board.showBoard(self.display, self.IMAGES)
+            # Draws the game board 
+            ### MUST BE BEFORE THE PANES
             self.showBoard(board)
+
+            # Draws the info panes on the board here:
+            pg.draw.rect(self.display, (255,255,255), troopPane)
+            pg.draw.rect(self.display, (255,255,255), bannerPane)
+            pg.draw.rect(self.display, (255,255,255), opponentPane)
+            pg.draw.rect(self.display, (255,255,255), buttonPane)
 
             ## Deactivates buttons if it's not the player's turn.
             if active == False or start == True:
@@ -872,12 +911,13 @@ class PlayerView(object):
                 switchButton.activate()
 
 
+            # bannerPane = pg.Rect(self.displayWidth*.2, 0, self.displayWidth*.6, self.displayHeight*.15)
             # Draws information about the player/stage
-            self.displayText("Placement Stage", (0,0))
-            self.displayText(player.getName() + " - " + player.getColor(), (self.displayWidth//2, 0))
+            self.displayText("Placement Stage", (self.displayWidth*.2,0), font=self.NAMEPLATE_FONT)
+            self.displayText(command, (self.displayWidth*.2, self.displayHeight*.15 - 25))
+            self.displayText(player.getColor() + " team", (self.displayWidth*.2, 25))
             if active == True:
-                self.displayText(str(player.getTokens()) + " tokens left", (self.displayWidth//2, 40))
-            self.displayText(command, ((self.displayWidth//2)-(board.getWidth()/2*32), (self.displayHeight//2)-(board.getHeight()/2*32)-35))
+                self.displayText(str(player.getTokens()) + " tokens left", (self.displayWidth//2, 25))
             if previewTroop != None:
                 self.displayTroopCard(previewTroop, "right")
 
@@ -939,7 +979,7 @@ class PlayerView(object):
                 # Gets and sets up the board here
                 self.GAME = gameState['game']
                 board = self.GAME.getBoard()
-                board.setCenterCoords((self.displayWidth//2,self.displayHeight//2))
+                board.setCenterCoords((mapX_Value, mapY_Value))
 
                 self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
             except TimeoutError as t:
@@ -977,18 +1017,28 @@ class PlayerView(object):
     def battleStage(self):
         """Allows the player to place pieces on the game board."""
         print("-- Entering battle stage.")
+        # Keep track of board view changes here:
+        mapX_Value = self.displayWidth//2
+        mapY_Value = self.displayHeight//2
+
         # Defines board here for simplification
         board = self.GAME.getBoard()
-        board.setCenterCoords((self.displayWidth//2, self.displayHeight//2))
+        board.setCenterCoords((mapX_Value, mapY_Value))
 
         # Define the global player object here
         self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
 
+        # Creates info pane sections here:
+        troopPane = pg.Rect(0, 0, self.displayWidth*.2, self.displayHeight)
+        bannerPane = pg.Rect(self.displayWidth*.2, 0, self.displayWidth*.6, self.displayHeight*.15)
+        opponentPane = pg.Rect(self.displayWidth*.8, 0, self.displayWidth*.2, self.displayHeight)
+        bufferPane = pg.Rect(self.displayWidth*.2, self.displayHeight*.85, self.displayWidth*.6, self.displayHeight*.15)
+
         # Static game widgets for player to interact with
-        attackButton = CommandButton("attack", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 2*self.displayHeight//8), (0,50,200), self.DEFAULT_FONT)
-        moveButton = CommandButton("move", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 3*self.displayHeight//8), (50,150,0), self.DEFAULT_FONT)
-        rotateButton = CommandButton("rotate", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 4*self.displayHeight//8), (200,100,0), self.DEFAULT_FONT)
-        passButton = CommandButton("pass", (board.getCoords()[0] + ((board.getWidth()* 32)/2) + 32, 5*self.displayHeight//8), (200,50,250), self.DEFAULT_FONT)
+        attackButton = CommandButton("attack", (self.displayWidth*.85, 2*self.displayHeight//8), (0,50,200), self.DEFAULT_FONT)
+        moveButton = CommandButton("move", (self.displayWidth*.85, 3*self.displayHeight//8), (50,150,0), self.DEFAULT_FONT)
+        rotateButton = CommandButton("rotate", (self.displayWidth*.85, 4*self.displayHeight//8), (200,100,0), self.DEFAULT_FONT)
+        passButton = CommandButton("pass", (self.displayWidth*.85, 5*self.displayHeight//8), (200,50,250), self.DEFAULT_FONT)
         
         # Holds stuff to display on the player's screen here
         previewTroop = None
@@ -1040,12 +1090,32 @@ class PlayerView(object):
                         if board.isClicked(coords) == False:
                             command = None
 
+                # Allows users the option to choose troops and actions via keystrokes.
+                if event.type == pg.KEYDOWN:
+                    key = pg.key.get_pressed()
+                    
+                    # Changes map view:
+                    if key[pg.K_LEFT]:
+                        mapX_Value -= 25
+                    if key[pg.K_RIGHT]:
+                        mapX_Value += 25
+                    if key[pg.K_UP]:
+                        mapY_Value -= 25
+                    if key[pg.K_DOWN]:
+                        mapY_Value += 25
+
+
             # Clear previous screen, so it can be updated again.
-            self.display.fill((255,255,255))
+            self.display.fill((160,160,160))
 
             # Draws the game board
-            # board.showBoard(self.display, self.IMAGES)
             self.showBoard(board)
+
+            # Draws the info panes on the board here:
+            pg.draw.rect(self.display, (255,255,255), troopPane)
+            pg.draw.rect(self.display, (255,255,255), bannerPane)
+            pg.draw.rect(self.display, (255,255,255), opponentPane)
+            pg.draw.rect(self.display, (255,255,255), bufferPane)
 
             # Draws buttons for interacting with the game
             attackButton.showButton(self.display)
@@ -1054,11 +1124,11 @@ class PlayerView(object):
             passButton.showButton(self.display)
 
             # Draws information about the player/stage
-            self.displayText("Battle Stage", (0,0))
-            self.displayText(player.getName() + " - " + player.getColor(), (self.displayWidth//2, 0))
-            self.displayText(command, ((self.displayWidth//2)-(board.getWidth()/2*32), (self.displayHeight//2)-(board.getHeight()/2*32)-35))
+            self.displayText("Battle Stage", (self.displayWidth*.2,0), font=self.NAMEPLATE_FONT)
+            self.displayText(player.getColor() + " team", (self.displayWidth*.2, 25))
+            self.displayText(command, (self.displayWidth*.2, self.displayHeight*.15 - 25))
             if active == True:
-                self.displayText(str(player.getMoves()) + " moves left", (self.displayWidth//2, 40))
+                self.displayText(str(player.getMoves()) + " moves left", (self.displayWidth//2, 25))
             if previewTroop != None:
                 self.displayTroopCard(previewTroop, "right")
             if selectedTroop != None:
@@ -1111,7 +1181,7 @@ class PlayerView(object):
                 # Gets and sets up the board here
                 self.GAME = gameState['game']
                 board = self.GAME.getBoard()
-                board.setCenterCoords((self.displayWidth//2,self.displayHeight//2))
+                board.setCenterCoords((mapX_Value, mapY_Value))
 
                 self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
             except TimeoutError as t:
@@ -1152,6 +1222,5 @@ class PlayerView(object):
                         
             pg.display.update()
             self.clock.tick(30)
-
 
 PlayerView()
