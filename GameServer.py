@@ -18,6 +18,7 @@ import _maps._basic_map.basic_map as basic
 import _maps._test_map.test_map as test
 import _maps._big_map.big_map as big
 import _maps._huge_map.huge_map as huge
+from _maps.MapGenerator import MapGenerator
 
 class GameServer(Thread):
     def __init__(self, args=(), kwargs=None):
@@ -96,7 +97,6 @@ class GameServer(Thread):
             "ready":False,
             "start":False,
             "opponentPort": None,
-            'testObj':''
             }
 
         while True:
@@ -217,22 +217,45 @@ class GameServer(Thread):
                 # Only chooses one map for both players
                 if self.map == None:
                     m = random.choice(mapVotes)
+                    if m == "RANDOM":
+                        randomMap = MapGenerator((10,10), "RANDOM")
+                        self.map = randomMap.getMap()
+                        mapString = self.map
+                        width = randomMap.getDimensions()[0]
+                        height = randomMap.getDimensions()[1]
+                        tokens = randomMap.getTokens()
                     if m == "TEST":
                         self.map = test
+                        mapString = self.map.MAP
+                        width = self.map.dimensions[0]
+                        height = self.map.dimensions[1]
+                        tokens = self.map.tokens
                     if m == "BIG":
                         self.map = big
+                        mapString = self.map.MAP
+                        width = self.map.dimensions[0]
+                        height = self.map.dimensions[1]
+                        tokens = self.map.tokens
                     if m == "BASIC":
                         self.map = basic
+                        mapString = self.map.MAP
+                        width = self.map.dimensions[0]
+                        height = self.map.dimensions[1]
+                        tokens = self.map.tokens
                     if m == "HUGE":
                         self.map = huge
+                        mapString = self.map.MAP
+                        width = self.map.dimensions[0]
+                        height = self.map.dimensions[1]
+                        tokens = self.map.tokens
 
                     # Builds the game board
-                    self.board = Board(self.map.dimensions[0], self.map.dimensions[1], self.map.MAP)
+                    self.board = Board(width, height, mapString)
 
             # Both players' names have been entered, creates Player objects.\
             # Appends player objects to state variable. 
             if len(playerNames) == 2 and len(colors) > 0:
-                p = Player(playerNames[str(address)], colors.pop(), None, self.map.tokens, address)
+                p = Player(playerNames[str(address)], colors.pop(), None, tokens, address)
                 self.players.append(p)
                 
             # Player objects and Board object have both been created.
