@@ -599,22 +599,47 @@ class PlayerView(object):
         # Keeps track of player's information here:
         name = nameInput.get_text()
         mapVote = None
+        sizeVote = None
         submitted = False
 
         # Creates buttons here:
-        testMap       = Button("TEST", "TEST",(self.displayWidth//5,self.displayHeight//2), self.DEFAULT_FONT)
-        baseMap       = Button("BASIC", "BASIC", (2*self.displayWidth//5, self.displayHeight//2), self.DEFAULT_FONT)
-        bigMap        = Button("BIG", "BIG", (3*self.displayWidth//5, self.displayHeight//2), self.DEFAULT_FONT)
-        hugeMap       = Button("HUGE",  "HUGE", (4*self.displayWidth//5, self.displayHeight//2), self.DEFAULT_FONT)
-        randomMap     = Button("RANDOM",  "RANDOM", (3*self.displayWidth//5, 2*self.displayHeight//3), self.DEFAULT_FONT)
+        smallButton      = Button("5x7", "SMALL", None, self.DEFAULT_FONT)
+        mediumButton     = Button("7x9", "MEDIUM", None, self.DEFAULT_FONT)
+        bigButton        = Button("10x12", "BIG", None, self.DEFAULT_FONT)
+        hugeButton       = Button("12x15",  "HUGE", None, self.DEFAULT_FONT)
+        randomSizeButton = Button("Random",  "RANDOM", None, self.DEFAULT_FONT)
+
+        cornersButton   = Button("Corners", "CORNERS", None, self.DEFAULT_FONT)
+        crossButton     = Button("Cross", "CROSS", None, self.DEFAULT_FONT)
+        rowsButton      = Button("Rows", "ROWS", None, self.DEFAULT_FONT)
+        dotsButton      = Button("Dots",  "DOTS", None, self.DEFAULT_FONT)
+        randomMapButton = Button("Random",  "RANDOM", None, self.DEFAULT_FONT)
 
         changeNameButton = Button("Change name", None, (self.displayWidth//2,35), self.DEFAULT_FONT, bgColor=(100,100,100))
         submitButton = Button("SUBMIT", "SUBMIT", (self.displayWidth//2,self.displayHeight-40), self.DEFAULT_FONT, bgColor=(200,100,100))
+
+        # Creates panels here:
+        sizePanel = Panel((0, 0), (self.displayWidth//2, self.displayHeight))
+        mapPanel = Panel((self.displayWidth//2, 0), (self.displayWidth - (self.displayWidth//2), self.displayHeight),)
         
         # Creates labels here:
         stageLabel = Label("Setup Stage", (0, self.displayHeight-40), self.DEFAULT_FONT, bgColor=(200, 75, 100))
         nameLabel = Label("", (0,0), self.DEFAULT_FONT)
         mapLabel = Label("", (0,30), self.DEFAULT_FONT)
+        sizeLabel = Label("", (0,60), self.DEFAULT_FONT)
+
+        # Adds buttons to labels here:
+        sizePanel.addElement(smallButton, (sizePanel.getWidth()//2, sizePanel.getHeight()//6))
+        sizePanel.addElement(mediumButton, (sizePanel.getWidth()//2, 2*sizePanel.getHeight()//6))
+        sizePanel.addElement(bigButton, (sizePanel.getWidth()//2, 3*sizePanel.getHeight()//6))
+        sizePanel.addElement(hugeButton, (sizePanel.getWidth()//2, 4*sizePanel.getHeight()//6))
+        sizePanel.addElement(randomSizeButton, (sizePanel.getWidth()//2, 5*sizePanel.getHeight()//6))
+
+        mapPanel.addElement(cornersButton, (mapPanel.getWidth()//2, mapPanel.getHeight()//6))
+        mapPanel.addElement(crossButton, (mapPanel.getWidth()//2, 2*mapPanel.getHeight()//6))
+        mapPanel.addElement(rowsButton, (mapPanel.getWidth()//2, 3*mapPanel.getHeight()//6))
+        mapPanel.addElement(dotsButton, (mapPanel.getWidth()//2, 4*mapPanel.getHeight()//6))
+        mapPanel.addElement(randomMapButton, (mapPanel.getWidth()//2, 5*mapPanel.getHeight()//6))
 
         reset = False
         command = None
@@ -632,7 +657,7 @@ class PlayerView(object):
                     if changeNameButton.isClicked(coords):
                         name = nameInput.get_text()
                     if submitButton.isClicked(coords):
-                        if mapVote != None:     # Only lets you submit once you've voted
+                        if mapVote != None and sizeVote != None:     # Only lets you submit once you've voted
                             command = submitButton.getValue()
                             name = nameInput.get_text()
                             submitButton.deactivate()
@@ -640,26 +665,35 @@ class PlayerView(object):
                             submitted = True
                     
                     ### Map button clicks here:
-                    if testMap.isClicked(coords):
-                        mapVote = testMap.getValue()
-                    if bigMap.isClicked(coords):
-                        mapVote = bigMap.getValue()
-                    if baseMap.isClicked(coords):
-                        mapVote = baseMap.getValue()
-                    if hugeMap.isClicked(coords):
-                        mapVote = hugeMap.getValue()
-                    if randomMap.isClicked(coords):
-                        mapVote = randomMap.getValue()
-                    
+                    if smallButton.isClicked(coords):
+                        sizeVote = smallButton.getValue()
+                    if bigButton.isClicked(coords):
+                        sizeVote = bigButton.getValue()
+                    if mediumButton.isClicked(coords):
+                        sizeVote = mediumButton.getValue()
+                    if hugeButton.isClicked(coords):
+                        sizeVote = hugeButton.getValue()
+                    if randomSizeButton.isClicked(coords):
+                        sizeVote = randomSizeButton.getValue()
+
+                    if cornersButton.isClicked(coords):
+                        mapVote = cornersButton.getValue()
+                    if crossButton.isClicked(coords):
+                        mapVote = crossButton.getValue()
+                    if dotsButton.isClicked(coords):
+                        mapVote = dotsButton.getValue()
+                    if rowsButton.isClicked(coords):
+                        mapVote = rowsButton.getValue()
+                    if randomMapButton.isClicked(coords):
+                        mapVote = randomMapButton.getValue()
 
             self.display.fill((255,255,255))
+
+            # Draws panels here:
+            mapPanel.show(self.display)
+            sizePanel.show(self.display)
             
             # Draws buttons for interacting with the server here:
-            testMap.show(self.display)
-            baseMap.show(self.display)
-            bigMap.show(self.display)
-            hugeMap.show(self.display)
-            randomMap.show(self.display)
             changeNameButton.show(self.display)
             if submitted == False:
                 submitButton.show(self.display)
@@ -667,11 +701,14 @@ class PlayerView(object):
             # Updates labels here:
             nameLabel.updateText(name)
             mapLabel.updateText(mapVote)
+            sizeLabel.updateText(sizeVote)
 
             # Draws labels here:
             stageLabel.show(self.display)
             nameLabel.show(self.display)
             mapLabel.show(self.display)
+            sizeLabel.show(self.display)
+
 
             # Draw input area here:
             nameInput.update(events)
@@ -680,7 +717,7 @@ class PlayerView(object):
             outboundData = { 
                 'stage': 'setup',
                 'command': command,
-                'mapVote': mapVote,
+                'mapVote': (sizeVote, mapVote),
                 'playerName': name
                 }
             # Try to send data to GameServer here:

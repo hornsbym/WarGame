@@ -216,38 +216,48 @@ class GameServer(Thread):
             if len(mapVotes) == 2:
                 # Only chooses one map for both players
                 if self.map == None:
-                    m = random.choice(mapVotes)
-                    if m == "RANDOM":
-                        randomMap = MapGenerator((10,10), "RANDOM")
+                    mapTuple = random.choice(mapVotes)
+                    size = mapTuple[0]
+                    m = mapTuple[1]
+
+                    if size == "SMALL":
+                        randomMap = MapGenerator((5,7), m)
                         self.map = randomMap.getMap()
                         mapString = self.map
                         width = randomMap.getDimensions()[0]
                         height = randomMap.getDimensions()[1]
                         tokens = randomMap.getTokens()
-                    if m == "TEST":
-                        self.map = test
-                        mapString = self.map.MAP
-                        width = self.map.dimensions[0]
-                        height = self.map.dimensions[1]
-                        tokens = self.map.tokens
-                    if m == "BIG":
-                        self.map = big
-                        mapString = self.map.MAP
-                        width = self.map.dimensions[0]
-                        height = self.map.dimensions[1]
-                        tokens = self.map.tokens
-                    if m == "BASIC":
-                        self.map = basic
-                        mapString = self.map.MAP
-                        width = self.map.dimensions[0]
-                        height = self.map.dimensions[1]
-                        tokens = self.map.tokens
-                    if m == "HUGE":
-                        self.map = huge
-                        mapString = self.map.MAP
-                        width = self.map.dimensions[0]
-                        height = self.map.dimensions[1]
-                        tokens = self.map.tokens
+                    if size == "MEDIUM":
+                        randomMap = MapGenerator((7,9), m)
+                        self.map = randomMap.getMap()
+                        mapString = self.map
+                        width = randomMap.getDimensions()[0]
+                        height = randomMap.getDimensions()[1]
+                        tokens = randomMap.getTokens()
+                    if size == "BIG":
+                        randomMap = MapGenerator((10,12), m)
+                        self.map = randomMap.getMap()
+                        mapString = self.map
+                        width = randomMap.getDimensions()[0]
+                        height = randomMap.getDimensions()[1]
+                        tokens = randomMap.getTokens()
+                    if size == "HUGE":
+                        randomMap = MapGenerator((12,15), m)
+                        self.map = randomMap.getMap()
+                        mapString = self.map
+                        width = randomMap.getDimensions()[0]
+                        height = randomMap.getDimensions()[1]
+                        tokens = randomMap.getTokens()
+                    if size == "RANDOM":
+                        randWidth  = random.randint(5, 13)
+                        randHeight = random.randint(5, 13)
+
+                        randomMap = MapGenerator((randWidth,randHeight), m)
+                        self.map = randomMap.getMap()
+                        mapString = self.map
+                        width = randomMap.getDimensions()[0]
+                        height = randomMap.getDimensions()[1]
+                        tokens = randomMap.getTokens()
 
                     # Builds the game board
                     self.board = Board(width, height, mapString)
