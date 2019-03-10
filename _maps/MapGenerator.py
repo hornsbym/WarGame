@@ -68,6 +68,21 @@ class MapGenerator (object):
         """ Returns a tuple of form (int, int)."""
         return self.dimensions
 
+    def getBlankMap(self):
+        return self.blankMap
+    
+    def getSeededMap(self):
+        return self.seededMap
+    
+    def getWalledMap(self):
+        return self.walledMap
+    
+    def getBarricadedMap(self):
+        return self.barricadedMap
+
+    def getCompletedMap(self):
+        return self.completedMap
+
     def createBlankMap(self):
         """ Initializes the map."""
         width = self.dimensions[0]
@@ -491,12 +506,17 @@ class MapGenerator (object):
         m = mapStrings
         
         largest = 0
+        largestPocket = set()
         for row in range(self.dimensions[1] - 1):
             for column in range(self.dimensions[0] - 1):
-                pocket = self.recursePocket((row, column), set(), m)
-                if len(pocket) > largest:
-                    largest = len(pocket)
-                    self.placementArea = pocket
+                if (row, column) in largestPocket:
+                    pass
+                else:
+                    pocket = self.recursePocket((row, column), set(), m)
+                    if len(pocket) > largest:
+                        largest = len(pocket)
+                        largestPocket = pocket
+        self.placementArea = largestPocket
 
         if largest >= self.dimensions[0] * self.dimensions[1] *.5:
             return True

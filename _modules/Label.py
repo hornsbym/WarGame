@@ -45,6 +45,20 @@ class Label(object):
         """ Returns Int."""
         return self.height
 
+    def isHovering(self, coords):
+        """ Accepts a tuple of (x, y) coordinates.
+            Checks whether these coordinates are within range of the label's width/height.
+            Returns True is the coordinates are within the bounds of the width/height.
+            Returns False if otherwise."""
+        xRange = self.getPosition()[0] + self.getWidth()
+        yRange = self.getPosition()[1] + self.getHeight()
+
+        if coords[0] > self.getPosition()[0] and coords[0] < xRange and self.active == True:
+            if coords[1] > self.getPosition()[1] and coords[1] < yRange:
+                return True
+        
+        return False
+
     def getTextWidth(self):
         """Returns Int."""
         return self.textWidth

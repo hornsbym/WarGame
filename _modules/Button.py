@@ -39,10 +39,12 @@ class Button(Label):
     def isClicked(self, coords):
         """Accepts a tuple of coordinates in form (x,y).
            Returns True if the coordinates fall within the board's active area, if button is active.
-           Returns nothing if not."""
+           Returns False if not."""
         xRange = self.position[0] + self.getWidth()*1.3
         yRange = self.position[1] + self.getHeight()*1.3
 
         if coords[0] > self.position[0] and coords[0] < xRange and self.active == True:
             if coords[1] > self.position[1] and coords[1] < yRange:
                 return True
+        
+        return False

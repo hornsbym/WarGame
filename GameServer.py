@@ -65,28 +65,50 @@ class GameServer(Thread):
         self.players = []
 
         # GAME FUNCTIONS HERE:
-        self.lobbyStage()
-        self.setupStage()
-        self.placementStage()
-        self.battleStage()
-
+        try:
+            self.lobbyStage()
+            self.setupStage()
+            self.placementStage()
+            self.battleStage()
+            self.GAMECOMPLETE = True
+        except Exception as e:
+            print("***", str(e))
+            self.socket.close()
+            return "Game was dropped."
+            
         print("Closing socket...", file=self.logs)
 
         # Terminates the socket when the game is done
         self.socket.close()
+        return "Game was completed."
 
-    def cleanClientList(self, time):
+    def checkClientConnections(self, time):
         """Takes in a time value.
            Checks the players in the game's last update time against this new current time.
            Removes disconnected players from the game."""
         removeList = []
         for client in self.clients:
             diff = time - self.clientUpdateTimes[str(client)]
-            if diff > 1:
+            if diff > 1.25:
                 removeList.append(client)
+
         for client in removeList:
             print("Removing:", client, file=self.logs)
             self.clients.remove(client)
+
+        # Tells remaining player the game is done if the other player quits:
+        if len(removeList) > 0:
+            outboundData = "exit"
+            for client in self.clients:
+                outboundData = pickle.dumps(outboundData)
+                self.socket.sendto(outboundData, client)
+
+            class ConnectionError(Exception):
+                """ Error specific to a player either quitting or losing connection."""
+                pass
+            raise(ConnectionError("One or more players lost connection, terminating game."))
+            
+    ##### ACTUAL GAME STUFF BELOW #####
 
     def lobbyStage(self):
         """Handles connecting players and setting up the game."""
@@ -99,19 +121,17 @@ class GameServer(Thread):
             "opponentPort": None,
             }
 
+        counter = 0
         while True:
-            try:
-                inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
-                data = inboundData[0]                         # Separates data from address
-                
-                ########
-                self.bitsIn += sys.getsizeof(data)
+            inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
+            data = inboundData[0]                         # Separates data from address
+            
+            ########
+            self.bitsIn += sys.getsizeof(data)
 
-                address = inboundData[1]                      # Separates address from data
-                data = pickle.loads(data)                     # Unpickles data back into a python dict
-            except Exception as e:
-                print(e, file=self.logs)
-
+            address = inboundData[1]                      # Separates address from data
+            data = pickle.loads(data)                     # Unpickles data back into a python dict
+    
             # Keeps track of how often the server recieves information from each client.
             updatedTime = time.time()                     
             self.clientUpdateTimes[str(address)] = updatedTime
@@ -151,26 +171,19 @@ class GameServer(Thread):
                         break
 
             # Packages up data and sends it back to the client
-            try:
-                outboundData = pickle.dumps(gameState)
+            outboundData = pickle.dumps(gameState)
 
-                ######
-                self.bitsOut += sys.getsizeof(outboundData)
-                
-                self.socket.sendto(outboundData, address)
-            except TimeoutError as t:
-                print(t, file=self.logs)
-            except Exception as e:
-                print(e, file=self.logs)
-                
-
+            ######
+            self.bitsOut += sys.getsizeof(outboundData)
+            
+            self.socket.sendto(outboundData, address)
 
             # Continuously saves logging information to a text file:
             self.logs.close()
             self.logs = open(str(self.filepath)+"/_logs/"+ str(self.PORT) + ".txt", "a+")
 
             # Check client connections here
-            # self.cleanClientList(time.time())
+            self.checkClientConnections(time.time())
 
     def setupStage(self):
         """Determines dimensions of the game board, players' names, and eventually the player's army.
@@ -183,7 +196,6 @@ class GameServer(Thread):
         colors  = ["red", "blue"]
 
         gameState = {
-            "connection":self.PORT,
             "ready": False,
             "game": None     
         }
@@ -195,6 +207,11 @@ class GameServer(Thread):
             # Gets all the events from the game window. A.k.a., do stuff here.
             inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
             data = inboundData[0]                         # Separates data from address
+            address = inboundData[1]
+
+            # Keeps track of how often the server recieves information from each client.
+            updatedTime = time.time()                     
+            self.clientUpdateTimes[str(address)] = updatedTime
 
             ########
             self.bitsIn += sys.getsizeof(data)
@@ -288,6 +305,9 @@ class GameServer(Thread):
             self.bitsOut += sys.getsizeof(outboundData)
 
             self.socket.sendto(outboundData, address)
+        
+            # Check client connections here
+            self.checkClientConnections(time.time())
 
     def placementStage(self):
         """Communicates with player objects.
@@ -299,7 +319,6 @@ class GameServer(Thread):
         readyPlayers = set()
 
         gameState = {
-            "connection": str(self.PORT), 
             "active": activePlayer.getName(),
             "game": self.game,
             "ready": False,
@@ -312,6 +331,11 @@ class GameServer(Thread):
 
             inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
             data = inboundData[0]                         # Separates data from address
+            address = inboundData[1]
+
+            # Keeps track of how often the server recieves information from each client.
+            updatedTime = time.time()                     
+            self.clientUpdateTimes[str(address)] = updatedTime
             
             ########
             self.bitsIn += sys.getsizeof(data)
@@ -356,7 +380,7 @@ class GameServer(Thread):
             self.socket.sendto(outboundData, address)
 
             # Check client connections here
-            # self.cleanClientList(time.time())
+            self.checkClientConnections(time.time())
 
     def battleStage(self):
         """Communicates with player objects.
@@ -378,7 +402,6 @@ class GameServer(Thread):
         activePlayer = self.players[0]
 
         gameState = {
-            "connection": str(self.PORT), 
             "active": activePlayer.getName(),
             "game": self.game
             }
@@ -386,11 +409,15 @@ class GameServer(Thread):
             inboundData = self.socket.recvfrom(1024)      # Gets bundle of data from clients
             data = inboundData[0]                         # Separates data from address
 
+            address = inboundData[1]                      # Separates address from data
+            data = pickle.loads(data)                     # Unpickles data back into a python dict
+
             ########
             self.bitsIn += sys.getsizeof(data)
 
-            address = inboundData[1]                      # Separates address from data
-            data = pickle.loads(data)                     # Unpickles data back into a python dict
+            # Keeps track of how often the server recieves information from each client.
+            updatedTime = time.time()                     
+            self.clientUpdateTimes[str(address)] = updatedTime
 
             # Keeps track of how often the server recieves information from each client.
             updatedTime = time.time()                     
@@ -417,4 +444,4 @@ class GameServer(Thread):
             self.socket.sendto(outboundData, address)
 
             # Check client connections here
-            # self.cleanClientList(time.time())
+            self.checkClientConnections(time.time())

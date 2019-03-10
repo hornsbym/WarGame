@@ -99,7 +99,6 @@ class PlayerView(object):
         self.PORT = self.socket.getsockname()[1]
         print("Bound to", self.HOST, "on port", self.PORT)
 
-
         # Found a socket to establish on local machine, now connect to the server
         self.connect()
 
@@ -115,13 +114,18 @@ class PlayerView(object):
         self.PLAYERNAME = None
         self.PLAYEROBJECT = None
 
-        self.lobbyStage()       # Enters a lobby while waiting on another player
-        self.setupStage()
-        self.placementStage()
-        self.battleStage()
+        try:
+            self.lobbyStage()       # Enters a lobby while waiting on another player
+            self.setupStage()
+            self.placementStage()
+            self.battleStage()
+        except:
+            print("Closing socket...")
+            self.socket.close()
 
         pg.quit()
         quit()
+        self.socket.close()
 
     def drawHealthbar(self, namePlate, currentHealth, maxHealth, coords, selected=False):
         """Accepts a string for the name and level of the troop.
@@ -470,20 +474,32 @@ class PlayerView(object):
 
     def connect(self):
         """Connects to the Connector, which then tells the view which port the game is on."""
+        waitingLabel = Label("Waiting for an opponent...",(self.displayWidth//2, self.displayHeight//2), self.DEFAULT_FONT)
+
         # Packages data to send to the server here as a python dictionary
         outboundData = { 
             "hello": "hello" 
             }
-        print("Connected to connector server.")
+        print("Connected to connector.")
         # Try to communicate with server here:
         outboundData = pickle.dumps(outboundData)          # Packages outbound data into Pickle
-        self.socket.sendto(outboundData, self.CONNECTOR)   # Sends Pickled data to server
+        self.socket.sendto(outboundData, self.CONNECTOR)   # Sends Pickled data to connector
         
-        inData = self.socket.recvfrom(1024)      # Gets back data. Will be a Pickle object.
-        inData = inData[0]                       #### For some reason it's a tuple now?
-        serverLocation = pickle.loads(inData)         # Turn Pickle back into dictionary.
+        while (True):
+            try:
+                inData = self.socket.recvfrom(1024)      # Gets back data. Will be a Pickle object.
+                inData = inData[0]                       #### For some reason it's a tuple now?
+                serverLocation = pickle.loads(inData)    # Turn Pickle back into dictionary.
+                break
+            except:
+                self.display.fill((255,255,255))
 
+                waitingLabel.show(self.display)
+                pg.display.update()
 
+                self.clock.tick(30)
+                pass
+        
         self.SERVER = (serverLocation["gameServer host"], serverLocation["gameServer port"])
         print("Connector pointed to", self.SERVER)
 
@@ -641,7 +657,6 @@ class PlayerView(object):
         mapPanel.addElement(dotsButton, (mapPanel.getWidth()//2, 4*mapPanel.getHeight()//6))
         mapPanel.addElement(randomMapButton, (mapPanel.getWidth()//2, 5*mapPanel.getHeight()//6))
 
-        reset = False
         command = None
         while True:
 
@@ -721,29 +736,19 @@ class PlayerView(object):
                 'playerName': name
                 }
             # Try to send data to GameServer here:
+            outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
             try:          
-                outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
                 self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
-                if command != None:
-                    reset = True
-            except TimeoutError as t:
-                print(t)
-                pass
-            except Exception as e:
-                print(e)
-                pass    
-
-            try:
-                # SOCKET MUST BE BIG ENOUGH SO THAT THE GAME OBJECT CAN FIT
+                
+                # SOCKET MUST BE BIG ENOUGH SO THAT THE GAME OBJECT CAN FIT:
                 inData = self.socket.recvfrom(12000)      # Gets back data. Will be a Pickle object.
-                inData = inData[0]                        # (<data>, <address>)
-                gameState = pickle.loads(inData)          # Turn Pickle back into dictionary.
             except TimeoutError as t:
                 print(t)
-                pass
             except Exception as e:
                 print(e)
-                pass
+
+            inData = inData[0]                        # (<data>, <address>)
+            gameState = pickle.loads(inData)          # Turn Pickle back into dictionary.
                 
             if gameState['ready'] == True:
                 self.GAME = gameState['game']
@@ -751,8 +756,7 @@ class PlayerView(object):
                 self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
                 break       # Advances to next stage of the game.
     
-            if reset == True:
-                command = None
+            command = None
 
             pg.display.update()
             self.clock.tick(30)
@@ -817,9 +821,6 @@ class PlayerView(object):
         
         # Makes sure all troops are unique:
         lastSelectedTroop = None
-        
-        # Indicates whether the above information should be reset.
-        reset = False
 
         # Keeps track of which troop is being upgraded here:
         upgradeTroop = None
@@ -983,7 +984,7 @@ class PlayerView(object):
             # Displays the selected troop's info, if its present
             if newTroop != None:
                 self.displayTroopCard(newTroop, "left")
-            self.drawPlayerHealthbars(player, "left", None)
+            self.drawPlayerHealthbars(player, "left", previewTroop)
 
             # Gathers one of the other team's troops info
             if square != None:
@@ -1010,39 +1011,52 @@ class PlayerView(object):
                 "upgrades": upgrades,
                 "start": start
                 }
-            # Try to communicate with server here:
-            try:          
-                outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
-                self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
+            outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
 
-                if command == 'switch':
-                    reset = True
+            # Protocol for communicating to server when it's the player's turn:
+            if active == True:
+                counter = 0
 
-            except TimeoutError as t:
-                print(t)
-                pass
-            except Exception as e:
-                print(e)
-                pass
-            
-            try:
-                # SOCKET MUST BE BIG SO THAT THE GAME OBJECT CAN FIT
-                inData = self.socket.recvfrom(12000)     # Gets back data. Will be a Pickle object.
-                inData = inData[0]                       # (<data>, <address>)
-                gameState = pickle.loads(inData)         # Turn Pickle back into dictionary.
+                # Loops until the message is sent 
+                while True:
+                    try:      
+                        if counter > 0:
+                            print("Looping...", counter)
+    
+                        self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
 
-                # Gets and sets up the board here
-                self.GAME = gameState['game']
-                board = self.GAME.getBoard()
-                board.setCenterCoords((mapX_Value, mapY_Value))
+                        # SOCKET MUST BE BIG SO THAT THE GAME OBJECT CAN FIT
+                        inData = self.socket.recvfrom(12000)     # Gets back data. Will be a Pickle object.
 
-                self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
-            except TimeoutError as t:
-                print(t)
-                pass
-            except Exception as e:
-                print(e)
-                pass
+                        counter += 1
+                        break
+                    except TimeoutError as t:
+                        print(t)
+                    except Exception as e:
+                        print(e)
+
+            # Protocol for communicating to server when it's not the player's turn:
+            if active != True:
+                try:          
+                    self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
+
+                    # SOCKET MUST BE BIG SO THAT THE GAME OBJECT CAN FIT
+                    inData = self.socket.recvfrom(12000)     # Gets back data. Will be a Pickle object.
+                except TimeoutError as t:
+                    print(t)
+                except Exception as e:
+                    print(e)
+
+            # Processes recieved data here:
+            inData = inData[0]                       # (<data>, <address>)
+            gameState = pickle.loads(inData)         # Turn Pickle back into dictionary.
+
+            # Gets and sets up the board here
+            self.GAME = gameState['game']
+            board = self.GAME.getBoard()
+            board.setCenterCoords((mapX_Value, mapY_Value))
+
+            self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
 
             # When the server sends the signal, progresses game to next stage
             if gameState['start'] == True:
@@ -1233,17 +1247,36 @@ class PlayerView(object):
                 "square": square,
                 "moveSquare": moveSquare
                 }
-            # Try to send data to the GameServer here:
-            try:          
-                outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
-                self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
-            except TimeoutError as t:
-                print(t)
-                pass
-            except Exception as e:
-                print(e)
-                disconnectedLabel.show(self.display)
-                pass
+            outboundData = pickle.dumps(outboundData)           # Packages outbound data into Pickle
+
+            # Communicate with server when the active player:
+            if active == True:
+                # Send message until its recieved:
+                while True:
+                    try:
+                        self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
+
+                        # SOCKET MUST BE BIG ENOUGH FOR THE GAME OBJECT TO FIT
+                        inData = self.socket.recvfrom(12000)     # Gets back data. Will be a Pickle object.
+                        break
+                    except TimeoutError as t:
+                        print(t)
+                    except Exception as e:
+                        print(e)
+                        disconnectedLabel.show(self.display)
+
+            # Communicate with server when NOT the active player:
+            if active == False:
+                try:
+                    self.socket.sendto(outboundData, self.SERVER)       # Sends Pickled data to server
+
+                    # SOCKET MUST BE BIG ENOUGH FOR THE GAME OBJECT TO FIT
+                    inData = self.socket.recvfrom(12000)     # Gets back data. Will be a Pickle object.
+                except TimeoutError as t:
+                    print(t)
+                except Exception as e:
+                    print(e)
+                    disconnectedLabel.show(self.display)
 
             try:
                 # SOCKET MUST BE BIG ENOUGH FOR THE GAME OBJECT TO FIT
@@ -1259,11 +1292,9 @@ class PlayerView(object):
                 self.PLAYEROBJECT = self.GAME.getPlayerByName(self.PLAYERNAME)
             except TimeoutError as t:
                 print(t)
-                pass
             except Exception as e:
                 print(e)
                 disconnectedLabel.show(self.display)
-                pass
 
             # Decides whether the player can send data to the server.
             if self.GAME.getActivePlayer() != self.PLAYERNAME:
